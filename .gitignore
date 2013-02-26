@@ -1,0 +1,6 @@
+_ReSharper.NppManagedPluginDemo.VS2010
+bin
+obj
+/NppManagedPluginDemo.VS2010.sln.DotSettings.user
+/NppManagedPluginDemo.VS2010.suo
+/CsvQuery/CsvQuery.csproj.user
