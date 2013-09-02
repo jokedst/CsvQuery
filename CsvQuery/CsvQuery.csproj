@@ -146,6 +146,7 @@
     <Compile Include="CsharpSqlite\where_c.cs" />
     <Compile Include="CsharpSqlite\_Custom.cs" />
     <Compile Include="CsvAnalyzer.cs" />
+    <Compile Include="DataStorage.cs" />
     <Compile Include="DllExport\DllExportAttribute.cs" />
     <Compile Include="Forms\frmMyDlg.cs">
       <SubType>Form</SubType>
@@ -163,6 +164,8 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="SQLiteDatabase.cs" />
+    <Compile Include="SQLiteVdbe.cs" />
     <Compile Include="UnmanagedExports.cs" />
   </ItemGroup>
   <ItemGroup>

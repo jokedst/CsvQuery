@@ -91,6 +91,20 @@ namespace Community.CsharpSqlite
             return LastResult;
         }
 
+        // Note: added by jokedst
+        public double BindDouble(int index, double bDouble)
+        {
+            if ((LastResult = Sqlite3.sqlite3_bind_double(vm, index, bDouble)) == Sqlite3.SQLITE_OK)
+            { 
+                LastError = ""; 
+            }
+            else
+            {
+                LastError = "Error " + LastError + "binding Long [" + bDouble + "]";
+            }
+            return LastResult;
+        }
+
         /// <summary>
         /// BindText
         /// </summary>
@@ -146,6 +160,12 @@ namespace Community.CsharpSqlite
  Sqlite3.sqlite3_column_int64
 #endif
 (vm, index);
+        }
+
+        // Note: added by jokedst
+        public double Result_Double(int index)
+        {
+            return Sqlite3.sqlite3_column_double(vm, index);
         }
 
         /// <summary>

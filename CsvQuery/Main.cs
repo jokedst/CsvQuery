@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
+using Community.CsharpSqlite;
 using NppPluginNET;
 
 namespace CsvQuery
@@ -33,8 +35,8 @@ namespace CsvQuery
             iniFilePath = Path.Combine(iniFilePath, PluginName + ".ini");
             someSetting = (Win32.GetPrivateProfileInt("SomeSection", "SomeKey", 0, iniFilePath) != 0);
 
-            PluginBase.SetCommand(0, "MyMenuCommand", myMenuFunction, new ShortcutKey(false, false, false, Keys.None));
-            PluginBase.SetCommand(1, "MyDockableDialog", myDockableDialog); idMyDlg = 1;
+            PluginBase.SetCommand(0, "Popup test", myMenuFunction, new ShortcutKey(false, false, false, Keys.None));
+            PluginBase.SetCommand(1, "Toggle query window", myDockableDialog); idMyDlg = 1;
 
             // NppNotification.BufferActivated += nc => MessageBox.Show("Bufferswitch!" + nc.nmhdr.idFrom); 
         }
@@ -56,8 +58,54 @@ namespace CsvQuery
         #region " Menu functions "
         internal static void myMenuFunction()
         {
+            // This tests the SQLite in-memory DB by creating some shit and selecting it
             MessageBox.Show("Hello N++!");
+            var watch = new Stopwatch();
+            watch.Start();
+            var db = new SQLiteDatabase(":memory:");
+            var t1 = watch.ElapsedMilliseconds; watch.Restart();
+            db.ExecuteNonQuery("SELECT 1");
+            watch.Restart();
+
+            db.ExecuteNonQuery("CREATE TABLE Root (intIndex INTEGER PRIMARY KEY, strIndex TEXT, nr REAL)");
+            var t2a = watch.ElapsedMilliseconds; watch.Restart();
+            db.ExecuteNonQuery("CREATE TABLE This (intIndex INTEGER PRIMARY KEY, strIndex TEXT, nr REAL)");
+            var t2 = watch.ElapsedMilliseconds; watch.Restart();
+            db.ExecuteNonQuery("CREATE INDEX RootStrIndex ON Root (strIndex)");
+
+            string INSERT_Command = "INSERT INTO Root VALUES (?,?,?)";
+            int i;
+            var stmt = new SQLiteVdbe(db, INSERT_Command);
+            long start = DateTime.Now.Ticks;
+            long key = 1999;
+            for (i = 0; i < 10000; i++)
+            {
+                key = (3141592621L * key + 2718281829L) % 1000000007L;
+                stmt.Reset();
+                stmt.BindLong(1, key);
+                stmt.BindText(2, key.ToString());
+                stmt.BindDouble(3, 12.34);
+                stmt.ExecuteStep();
+            }
+            stmt.Close();
+            var t3 = watch.ElapsedMilliseconds; watch.Restart();
+
+            key = Int64.MinValue;
+            i = 0;
+            var c1 = new SQLiteVdbe(db, "SELECT * FROM Root ORDER BY intIndex LIMIT 10");
+            while (c1.ExecuteStep() != Sqlite3.SQLITE_DONE)
+            {
+                long intKey = (long)c1.Result_Long(0);
+                //MessageBox.Show(intKey + ":" + c1.Result_Text(1) + ":" + c1.Result_Double(2));
+                key = intKey;
+                i += 1;
+            }
+            c1.Close();
+            var t4 = watch.ElapsedMilliseconds; watch.Restart();
+
+            MessageBox.Show("Times: \nCreate DB: " + t1 + "ms\nCreate table 1: " + t2a + "ms\nCreate table 2: " + t2 + "ms\nInsert: " + t3 + "ms\nSelect: " + t4 + "ms");
         }
+
         internal static void myDockableDialog()
         {
             if (frmMyDlg == null)

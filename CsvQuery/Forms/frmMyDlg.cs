@@ -55,21 +55,34 @@ namespace CsvQuery
 
             var textreader = new StringReader(text);
             string line;
+            int columnsCount = 0;
             while ((line = textreader.ReadLine()) != null)
             //foreach (var line in lines)
             {
                 var cols = line.Split(csvSettings.Separator);
                 data.Add(cols);
-                if(first)
-                {
-                    first = false;
-                    //for (int i = 0; i < cols.Length; i++) dataGrid.Columns.Add("col" + i, "Col" + i);
-                    for (int i = 0; i < cols.Length; i++) table.Columns.Add("Col" + i);
-                }
-                table.Rows.Add(cols);
+
+                if (cols.Length > columnsCount)
+                    columnsCount = cols.Length;
+
+                //if(first)
+                //{
+                //    first = false;
+                //    //for (int i = 0; i < cols.Length; i++) dataGrid.Columns.Add("col" + i, "Col" + i);
+                //    for (int i = 0; i < cols.Length; i++) table.Columns.Add("Col" + i);
+                //}
+                //table.Rows.Add(cols);
                 //dataGrid.Rows.Add(cols);
             }
             var t3 = watch.ElapsedMilliseconds; watch.Restart();
+
+
+            for (int i = 0; i < columnsCount; i++) table.Columns.Add("Col" + i);
+            foreach (var cols in data)
+            {
+                table.Rows.Add(cols);
+            }
+            var t5 = watch.ElapsedMilliseconds; watch.Restart();
 
             dataGrid.DataSource = table;
             var t4 = watch.ElapsedMilliseconds; watch.Restart();
