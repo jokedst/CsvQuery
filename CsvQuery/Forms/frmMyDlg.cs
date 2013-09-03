@@ -76,9 +76,14 @@ namespace CsvQuery
             }
             var t3 = watch.ElapsedMilliseconds; watch.Restart();
 
+            DataStorage.SaveData(bufferId, data, false);
+            var t_saveToDb = watch.ElapsedMilliseconds; watch.Restart();
+            DataStorage.SetActiveTab(bufferId);
+            var toshow = DataStorage.ExecuteQuery("SELECT * FROM THIS");
+            var t_getFromDb = watch.ElapsedMilliseconds; watch.Restart();
 
             for (int i = 0; i < columnsCount; i++) table.Columns.Add("Col" + i);
-            foreach (var cols in data)
+            foreach (var cols in toshow)
             {
                 table.Rows.Add(cols);
             }
@@ -93,7 +98,9 @@ namespace CsvQuery
             //dataGrid.Rows.Add(new[] { "qwe", "rty" });
             dataGrid.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.DisplayedCells);
             watch.Stop();
-            MessageBox.Show("Times: \nGetText: "+t1+"ms\nAnalyze: "+t2+"ms\nTable: "+t3+"ms\nDatabind: "+t4+"ms\nResize: "+watch.ElapsedMilliseconds + "ms\nBuffer ID: " + bufferId );
+            MessageBox.Show("Times: \nGetText: " + t1 + "ms\nAnalyze: " + t2 + "ms\nTable: " + t3 + "ms\nDatabind: " +
+                            t4 + "ms\nResize: " + watch.ElapsedMilliseconds + "ms\nBuffer ID: " + bufferId +
+                            "\nSave to DB: " + t_saveToDb + "ms\nLoad from DB: " + t_getFromDb + "ms");
         }
     }
 }

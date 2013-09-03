@@ -12,10 +12,24 @@ namespace CsvQuery
         // For now only in-memroy DB, perhaps later you could have a config setting for saving to disk
         private static SQLiteDatabase db = new SQLiteDatabase(":memory:");
 
+        private static string[] PRAGMA_Commands =
+            {
+                "PRAGMA synchronous =  OFF",
+                "PRAGMA temp_store =  MEMORY",
+                "PRAGMA journal_mode = OFF",
+                "PRAGMA locking_mode=EXCLUSIVE"
+            };
+
         private static Dictionary<int, string> _createdTables = new Dictionary<int, string>();
 
         private static int _currentActiveBufferId = 0;
         private static int _lastCreatedTableName = 0;
+
+        static DataStorage()
+        {
+            for (int i = 0; i < PRAGMA_Commands.Length; i++) { db.ExecuteNonQuery(PRAGMA_Commands[i]); }
+            
+        }
 
         public static void SetActiveTab(int bufferId)
         {
@@ -42,23 +56,32 @@ namespace CsvQuery
             else
             {
                 tableName = "T" + ++_lastCreatedTableName;
+                _createdTables.Add(bufferId, tableName);
             }
 
             int columns = data[0].Length;
             // Figure out column types. For now just Int/Decimal/String
             // TODO
             var types = new List<string>();
+            var headerTypes = new List<string>();
             bool first = true;
             foreach (var cols in data)
             {
-                if (first)
+                if (first && (!hasHeader.HasValue || hasHeader.Value))
                 {
-                    first = false;
-                    if (!hasHeader.HasValue || hasHeader.Value)
+                    // Save to headerTypes
+                    foreach (var col in cols)
                     {
                         
                     }
                 }
+                else
+                {
+                    // Save to types
+                }
+
+                if (first)
+                    first = false;
             }
             
             // Create SQL by string concat - look out for SQL injection! (although rather harmless since it's all your own data)
@@ -96,8 +119,9 @@ namespace CsvQuery
                 }
             }
             createQuery.Append(")");
+            db.ExecuteNonQuery("BEGIN EXCLUSIVE");
             db.ExecuteNonQuery(createQuery.ToString());
-
+            db.ExecuteNonQuery("END");
 
 
             var insertQuery = new StringBuilder("INSERT INTO ");
@@ -106,7 +130,8 @@ namespace CsvQuery
             for (int i = 1; i < columns; i++)
                 insertQuery.Append(",?");
             insertQuery.Append(")");
-            
+
+            db.ExecuteNonQuery("BEGIN EXCLUSIVE");
             var stmt = new SQLiteVdbe(db, insertQuery.ToString());
             first = true;
             foreach (var stringse in data)
@@ -126,6 +151,7 @@ namespace CsvQuery
                 stmt.ExecuteStep();
             }
             stmt.Close();
+            db.ExecuteNonQuery("END");
 
             return tableName;
         }

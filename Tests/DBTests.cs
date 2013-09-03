@@ -10,6 +10,20 @@ namespace Tests
     [TestClass]
     public class DBTests
     {
+        private void AssertDataEqual(List<string[]> expected, List<string[]> actual)
+        {
+            Assert.AreEqual(expected.Count, actual.Count, "Not same number of rows");
+            for (int row = 0; row < expected.Count; row++)
+            {
+                Assert.AreEqual(expected[row].Count(), actual[row].Count(), "Row " + row + " does not have same number of columns");
+                for (int column = 0; column < expected[row].Count(); column++)
+                {
+                    Assert.AreEqual(expected[row][column], actual[row][column], "Value in row " + row + ", column " + column + " are not equal");
+                }
+            }
+            
+        }
+
         [TestMethod]
         public void SaveToDbAndReadItBack()
         {
@@ -26,15 +40,37 @@ namespace Tests
 
             var result = DataStorage.ExecuteQuery("SELECT * FROM " + tableName);
 
-            Assert.AreEqual(data.Count, result.Count, "Not same number of rows");
-            for (int row = 0; row < data.Count; row++)
-            {
-                Assert.AreEqual(data[row].Count(), result[row].Count(), "Row "+row+" does not have same number of columns");
-                for (int column = 0; column < data[row].Count(); column++)
+            AssertDataEqual(data, result);
+            //Assert.AreEqual(data.Count, result.Count, "Not same number of rows");
+            //for (int row = 0; row < data.Count; row++)
+            //{
+            //    Assert.AreEqual(data[row].Count(), result[row].Count(), "Row "+row+" does not have same number of columns");
+            //    for (int column = 0; column < data[row].Count(); column++)
+            //    {
+            //        Assert.AreEqual(data[row][column], result[row][column], "Value in row " + row + ", column " + column + " are not equal");
+            //    }
+            //}
+        }
+
+        [TestMethod]
+        public void CanSelectFromThis()
+        {
+
+            var data = new List<string[]>
                 {
-                    Assert.AreEqual(data[row][column], result[row][column], "Value in row " + row + ", column " + column + " are not equal");
-                }
-            }
+                    new[] {"hej", "du", "där"},
+                    new [] {"1", "2", "3"},
+                    new [] {"2", "12", "14"},
+                    new [] {"3", "12", "13"},
+                    new [] {"4", "2", "3"},
+                };
+
+            var tableName = DataStorage.SaveData(11, data, false);
+            DataStorage.SetActiveTab(11);
+
+            var result = DataStorage.ExecuteQuery("SELECT * FROM this");
+
+            AssertDataEqual(data, result);
         }
 
         [TestMethod]
@@ -55,7 +91,7 @@ namespace Tests
 
             var data = DataStorage.ExecuteQuery("SELECT * FROM Affinity");
 
-            // This doesn't really test anything, it's just to check how sqlite affinity works...
+            // This doesn't actually test anything, it's just to check how sqlite affinity works...
         }
     }
 }
