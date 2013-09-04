@@ -17,7 +17,9 @@ namespace CsvQuery
                 "PRAGMA synchronous =  OFF",
                 "PRAGMA temp_store =  MEMORY",
                 "PRAGMA journal_mode = OFF",
-                "PRAGMA locking_mode=EXCLUSIVE"
+                "PRAGMA locking_mode=EXCLUSIVE",
+                "PRAGMA main.page_size = 4096",
+                "PRAGMA main.cache_size=10000"
             };
 
         private static Dictionary<int, string> _createdTables = new Dictionary<int, string>();
