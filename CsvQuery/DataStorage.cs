@@ -61,10 +61,10 @@
             }
 
             int columns = data[0].Length;
-            // Figure out column types. For now just Int/Decimal/String
+            // Figure out column types. For now just Decimal/String
             // TODO
-            var types = new List<string>();
-            var headerTypes = new List<string>();
+            var types = new List<bool>();
+            var headerTypes = new List<bool>();
             bool first = true;
             foreach (var cols in data)
             {
@@ -73,12 +73,22 @@
                     // Save to headerTypes
                     foreach (var col in cols)
                     {
-                        
+                        double d;
+                        var isDouble = double.TryParse(col, out d);
+                        headerTypes.Add(isDouble);
                     }
                 }
                 else
                 {
                     // Save to types
+                    int i = 0;
+                    foreach (var col in cols)
+                    {
+                        double d;
+                        var isDouble = double.TryParse(col, out d);
+                        if (types.Count <= i) types.Add(isDouble);
+                        else if (types[i] && !isDouble) types[i] = false;
+                    }
                 }
 
                 if (first)

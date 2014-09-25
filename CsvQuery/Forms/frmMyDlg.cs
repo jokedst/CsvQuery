@@ -26,12 +26,28 @@ namespace CsvQuery
             watch.Start();
             var sci = PluginBase.GetCurrentScintilla();
             var length = (int)Win32.SendMessage(sci, SciMsg.SCI_GETLENGTH, 0, 0);
+            var codepage = (int)Win32.SendMessage(sci, SciMsg.SCI_GETCODEPAGE, 0, 0);
             var bufferId = (int)Win32.SendMessage(PluginBase.nppData._nppHandle, NppMsg.NPPM_GETCURRENTBUFFERID, 0, 0);
             string text;
             using (Sci_TextRange tr = new Sci_TextRange(0, length, length))
             {
                 Win32.SendMessage(sci, SciMsg.SCI_GETTEXTRANGE, 0, tr.NativePointer);
-                text = tr.lpstrText;
+
+                switch (codepage)
+                {
+                    case (int)SciMsg.SC_CP_UTF8:
+                        text = tr.GetFromUtf8();
+                        break;
+                    case (int)SciMsg.SC_CP_DBCS: // Double Byte Character Set, like unicode (utf16) - this never seems to happen, when the text is utc-2 we get SC_CP_UTF8 although that is a lie!
+                        text = tr.GetFromUnicode();
+                        break;
+                    case 0: // ansi?
+                        text = tr.lpstrText;
+                        break;
+                    default:
+                        text = tr.lpstrText;
+                        break;
+                }
 
                 //MessageBox.Show("Length: " + length + ", got: " + text.Length + " \n" + text.Substring(0, Math.Min(100, text.Length)));
             }
@@ -106,9 +122,22 @@ namespace CsvQuery
 
         private void btnExec_Click(object sender, EventArgs e)
         {
+            var sci = PluginBase.GetCurrentScintilla();
+            var bufferId = (int)Win32.SendMessage(PluginBase.nppData._nppHandle, NppMsg.NPPM_GETCURRENTBUFFERID, 0, 0);
+            DataStorage.SetActiveTab(bufferId);
+
             var table = new DataTable();
             var query = txbQuery.Text;
-            var toshow = DataStorage.ExecuteQueryWithColumnNames(query);
+            List<string[]> toshow;
+            try
+            {
+                toshow = DataStorage.ExecuteQueryWithColumnNames(query);
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("Could not execute query", "Error in query");
+                return;
+            }
 
             // Create columns
             foreach (var s in toshow[0])
@@ -124,6 +153,14 @@ namespace CsvQuery
 
             dataGrid.DataSource = table;
             dataGrid.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.DisplayedCells);
+        }
+
+        private void txbQuery_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Return)
+            {
+                btnExec.PerformClick();
+            }
         }
     }
 }

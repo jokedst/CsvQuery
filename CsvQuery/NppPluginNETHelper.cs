@@ -1987,6 +1987,23 @@ namespace NppPluginNET
                 _disposed = true;
             }
         }
+
+        public string GetFromUtf8()
+        {
+            _readNativeStruct();
+            int len = 0;
+            while (Marshal.ReadByte(_sciTextRange.lpstrText, len) != 0) ++len;
+            var buffer = new byte[len];
+            Marshal.Copy(_sciTextRange.lpstrText, buffer, 0, buffer.Length);
+            return Encoding.UTF8.GetString(buffer);
+        }
+
+        public string GetFromUnicode()
+        {
+            _readNativeStruct();
+            return Marshal.PtrToStringUni(_sciTextRange.lpstrText);
+        }
+
         ~Sci_TextRange()
         {
             Dispose();

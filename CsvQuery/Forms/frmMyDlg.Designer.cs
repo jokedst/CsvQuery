@@ -39,10 +39,11 @@
             // 
             this.txbQuery.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.txbQuery.Location = new System.Drawing.Point(0, 0);
+            this.txbQuery.Location = new System.Drawing.Point(2, 0);
             this.txbQuery.Name = "txbQuery";
             this.txbQuery.Size = new System.Drawing.Size(110, 20);
             this.txbQuery.TabIndex = 0;
+            this.txbQuery.KeyDown += new System.Windows.Forms.KeyEventHandler(this.txbQuery_KeyDown);
             // 
             // dataGrid
             // 
@@ -62,7 +63,7 @@
             // btnAnalyze
             // 
             this.btnAnalyze.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnAnalyze.Location = new System.Drawing.Point(197, -2);
+            this.btnAnalyze.Location = new System.Drawing.Point(197, 0);
             this.btnAnalyze.Name = "btnAnalyze";
             this.btnAnalyze.Size = new System.Drawing.Size(75, 23);
             this.btnAnalyze.TabIndex = 2;
@@ -73,7 +74,7 @@
             // btnExec
             // 
             this.btnExec.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnExec.Location = new System.Drawing.Point(116, -3);
+            this.btnExec.Location = new System.Drawing.Point(116, 0);
             this.btnExec.Name = "btnExec";
             this.btnExec.Size = new System.Drawing.Size(75, 23);
             this.btnExec.TabIndex = 3;
@@ -83,7 +84,6 @@
             // 
             // frmMyDlg
             // 
-            this.AcceptButton = this.btnExec;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(284, 262);

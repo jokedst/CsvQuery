@@ -113,5 +113,31 @@ namespace Tests
 
             // This doesn't actually test anything, it's just to check how sqlite affinity works...
         }
+
+        [TestMethod]
+        public void CanHandleCpQuery()
+        {
+
+            var data = new List<string[]>
+                {
+                    new[] {"hej", "du", "där"},
+                    new [] {"1", "2", "3"},
+                    new [] {"2", "12", "14"},
+                    new [] {"3", "12", "13"},
+                    new [] {"4", "2", "3"},
+                };
+
+            DataStorage.SaveData(11, data, true);
+            DataStorage.SetActiveTab(11);
+
+            try
+            {
+                DataStorage.ExecuteQueryWithColumnNames("cp");
+            }
+            catch (Exception e)
+            {
+                
+            }
+        }
     }
 }
