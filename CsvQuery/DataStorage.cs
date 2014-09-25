@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using Community.CsharpSqlite;
-
-namespace CsvQuery
+﻿namespace CsvQuery
 {
+    using System.Collections.Generic;
+    using System.Text;
+    using System.Text.RegularExpressions;
+
+    using Community.CsharpSqlite;
+
     public static class DataStorage
     {
         // For now only in-memroy DB, perhaps later you could have a config setting for saving to disk
@@ -172,6 +171,35 @@ namespace CsvQuery
                 }
                 result.Add(data.ToArray());
             }
+
+            c1.Close();
+            return result;
+        }
+
+        public static List<string[]> ExecuteQueryWithColumnNames(string query)
+        {
+            var result = new List<string[]>();
+            var c1 = new SQLiteVdbe(db, query);
+            int columns = 0;
+            while (c1.ExecuteStep() != Sqlite3.SQLITE_DONE)
+            {
+                columns = c1.ResultColumnCount();
+                var data = new List<string>();
+                for (int i = 0; i < columns; i++)
+                {
+                    data.Add(c1.Result_Text(i));
+                }
+                result.Add(data.ToArray());
+            }
+
+
+            var columnNames = new List<string>();
+            for (int i = 0; i < columns; i++)
+            {
+                columnNames.Add(c1.ColumnName(i));
+            }
+            result.Insert(0, columnNames.ToArray());
+
             c1.Close();
             return result;
         }

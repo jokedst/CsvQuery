@@ -12,3 +12,4 @@ obj
 /NppManagedPluginDemo.VS2010.vsmdi
 
 /TraceAndTestImpact.testsettings
+/Tests/*.user

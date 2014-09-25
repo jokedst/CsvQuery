@@ -23,5 +23,13 @@ namespace Tests
             var result = CsvAnalyzer.Analyze(csvData);
             Assert.AreEqual(',',result.Separator);
         }
+
+        [TestMethod]
+        public void CanFindSemicolonInBigFile()
+        {
+            var csvData = Helpers.GetResource("Avtalsprislista992220_20140623-112840802.csv");
+            var result = CsvAnalyzer.Analyze(csvData);
+            Assert.AreEqual(';', result.Separator);
+        }
     }
 }

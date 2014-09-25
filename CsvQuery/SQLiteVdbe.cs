@@ -44,7 +44,6 @@ namespace Community.CsharpSqlite
         }
 
         /// <summary>
-        /// <summary>
         /// BindInteger
         /// </summary>
         /// <param name="index"></param>
@@ -67,7 +66,6 @@ namespace Community.CsharpSqlite
             return LastResult;
         }
 
-        /// <summary>
         /// <summary>
         /// BindLong
         /// </summary>
@@ -109,7 +107,7 @@ namespace Community.CsharpSqlite
         /// BindText
         /// </summary>
         /// <param name="index"></param>
-        /// <param name="bLong"></param>
+        /// <param name="bText"></param>
         /// <returns>LastResult</returns>
         public int BindText(int index, string bText)
         {
@@ -131,7 +129,6 @@ namespace Community.CsharpSqlite
         /// <summary>
         /// Execute statement
         /// </summary>
-        /// </param>
         /// <returns>LastResult</returns>
         public int ExecuteStep()
         {
@@ -149,7 +146,6 @@ namespace Community.CsharpSqlite
         /// <summary>
         /// Returns Result column as Long
         /// </summary>
-        /// </param>
         /// <returns>Result column</returns>
         public long Result_Long(int index)
         {
@@ -171,7 +167,6 @@ namespace Community.CsharpSqlite
         /// <summary>
         /// Returns Result column as Text
         /// </summary>
-        /// </param>
         /// <returns>Result column</returns>
         public string Result_Text(int index)
         {
@@ -188,7 +183,6 @@ namespace Community.CsharpSqlite
         /// <summary>
         /// Returns Count of Result Rows
         /// </summary>
-        /// </param>
         /// <returns>Count of Results</returns>
         public int ResultColumnCount()
         {
@@ -198,8 +192,6 @@ namespace Community.CsharpSqlite
         /// <summary>
         /// Reset statement
         /// </summary>
-        /// </param>
-        /// </returns>
         public void Reset()
         {
             // Reset the statment so it's ready to use again
@@ -225,5 +217,15 @@ namespace Community.CsharpSqlite
 (vm);
         }
 
+        // Note: added by jokedst
+        /// <summary>
+        /// Gets column name
+        /// </summary>
+        /// <param name="index">index of column</param>
+        /// <returns>Name of column</returns>
+        public string ColumnName(int index)
+        {
+            return Sqlite3.sqlite3_column_name(vm, index);
+        }
     }
 }

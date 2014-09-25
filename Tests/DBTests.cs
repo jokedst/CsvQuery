@@ -74,6 +74,26 @@ namespace Tests
         }
 
         [TestMethod]
+        public void CanSelectFromThisWithHeaders()
+        {
+            var data = new List<string[]>
+                {
+                    new[] {"hej", "du", "där"},
+                    new [] {"1", "2", "3"},
+                    new [] {"2", "12", "14"},
+                    new [] {"3", "12", "13"},
+                    new [] {"4", "2", "3"},
+                };
+
+            DataStorage.SaveData(11, data, true);
+            DataStorage.SetActiveTab(11);
+
+            var result = DataStorage.ExecuteQueryWithColumnNames("SELECT * FROM this");
+
+            AssertDataEqual(data, result);
+        }
+
+        [TestMethod]
         public void AffinityTest()
         {
             const string create = "CREATE TABLE affinity ( " +

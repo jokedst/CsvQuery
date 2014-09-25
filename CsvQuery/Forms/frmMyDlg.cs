@@ -9,6 +9,7 @@ using System.Windows.Forms;
 namespace CsvQuery
 {
     using System.IO;
+    using System.Linq;
 
     using NppPluginNET;
 
@@ -101,6 +102,28 @@ namespace CsvQuery
             MessageBox.Show("Times: \nGetText: " + t1 + "ms\nAnalyze: " + t2 + "ms\nTable: " + t3 + "ms\nDatabind: " +
                             t4 + "ms\nResize: " + watch.ElapsedMilliseconds + "ms\nBuffer ID: " + bufferId +
                             "\nSave to DB: " + t_saveToDb + "ms\nLoad from DB: " + t_getFromDb + "ms");
+        }
+
+        private void btnExec_Click(object sender, EventArgs e)
+        {
+            var table = new DataTable();
+            var query = txbQuery.Text;
+            var toshow = DataStorage.ExecuteQueryWithColumnNames(query);
+
+            // Create columns
+            foreach (var s in toshow[0])
+            {
+                table.Columns.Add(s);
+            }
+
+            // Insert rows
+            foreach (var row in toshow.Skip(1))
+            {
+                table.Rows.Add(row);
+            }
+
+            dataGrid.DataSource = table;
+            dataGrid.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.DisplayedCells);
         }
     }
 }

@@ -74,7 +74,7 @@
             
             // The char with lowest variance is most likely the separator
             var result = new CsvSettings();
-            result.Separator = GetSeparatorFromVariance(variances, occurrences);
+            result.Separator = GetSeparatorFromVariance(variances, occurrences, lineCount);
             
             return result;
         }
@@ -124,7 +124,7 @@
             return statistics;
         }
 
-        private static char GetSeparatorFromVariance(Dictionary<char, float> variances, Dictionary<char, int> occurrences)
+        private static char GetSeparatorFromVariance(Dictionary<char, float> variances, Dictionary<char, int> occurrences, int lineCount)
         {
             // The char with lowest variance is most likely the separator
             // Optimistic: check prefered with 0 variance 
@@ -137,13 +137,15 @@
             if (separator != null) 
                 return separator.Value;
 
-            // Ok, no perfect separator. Check if the best char is a prefered separator
-            var best = variances.OrderBy(x => x.Value).First();
-            if (preferredSeparators.IndexOf(best.Key) != -1) 
+            var defaultKV = default(KeyValuePair<char, float>);
+
+            // Ok, no perfect separator. Check if the best char that exists on all lines is a prefered separator
+            var best = variances.OrderBy(x => x.Value).FirstOrDefault(x => occurrences[x.Key] >= lineCount);
+            if (!best.Equals(defaultKV) && preferredSeparators.IndexOf(best.Key) != -1) 
                 return best.Key;
 
             // Now we need to somehow decide how much of a 'bonus' a prefered separator should have
-
+            var bestPreffered = variances.OrderBy(x => x.Value).FirstOrDefault(x => occurrences[x.Key] >= lineCount*2 && preferredSeparators.IndexOf(x.Key) != -1);
 
 
             // Ok, I have no idea
