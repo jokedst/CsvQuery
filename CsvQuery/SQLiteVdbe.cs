@@ -3,7 +3,6 @@ using System;
 
 namespace Community.CsharpSqlite
 {
-
     using Vdbe = Sqlite3.Vdbe;
 
     /// <summary>

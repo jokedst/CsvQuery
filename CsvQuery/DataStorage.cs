@@ -1,6 +1,7 @@
 ﻿namespace CsvQuery
 {
     using System.Collections.Generic;
+    using System.Linq;
     using System.Text;
     using System.Text.RegularExpressions;
 
@@ -61,11 +62,10 @@
             }
 
             int columns = data[0].Length;
-            // Figure out column types. For now just Decimal/String
-            // TODO
+            // Figure out column types. For now just double/string
             var types = new List<bool>();
             var headerTypes = new List<bool>();
-            bool first = true;
+            bool first = true, allStrings = true;
             foreach (var cols in data)
             {
                 if (first && (!hasHeader.HasValue || hasHeader.Value))
@@ -76,6 +76,7 @@
                         double d;
                         var isDouble = double.TryParse(col, out d);
                         headerTypes.Add(isDouble);
+                        if (isDouble) allStrings = false;
                     }
                 }
                 else
@@ -88,27 +89,38 @@
                         var isDouble = double.TryParse(col, out d);
                         if (types.Count <= i) types.Add(isDouble);
                         else if (types[i] && !isDouble) types[i] = false;
+                        i++;
                     }
                 }
 
                 if (first)
                     first = false;
             }
-            
+
+            // If the first row is all strings, but the data rows have numbers, it's probably a header
+            if (!hasHeader.HasValue && allStrings)
+            {
+                var dataAllStrings = !types.Any(x => x);
+                if (!dataAllStrings) hasHeader = true;
+            }
+            // Check if first row differs significantly from the rest, if so it's probably a header
+
             // Create SQL by string concat - look out for SQL injection! (although rather harmless since it's all your own data)
             var createQuery = new StringBuilder("CREATE TABLE " + tableName + "(");
             if (hasHeader ?? false)
             {
                 var colnames = new List<string>();
                 first = true;
+                int i = 0;
                 foreach (var colName in data[0])
                 {
                     var columnNameClean = Regex.Replace(colName, @"[^\w_]", "");
+                    if (string.IsNullOrEmpty(columnNameClean)) columnNameClean = "Col" + i;
                     if (colnames.Contains(columnNameClean))
                     {
-                        var c = 1;
+                        var c = 2;
                         var fixedName = columnNameClean + c;
-                        while (colnames.Contains(columnNameClean))
+                        while (colnames.Contains(fixedName))
                             fixedName = columnNameClean + ++c;
                         columnNameClean = fixedName;
                     }
@@ -116,6 +128,7 @@
                     else createQuery.Append(", ");
                     colnames.Add(columnNameClean);
                     createQuery.AppendFormat("{0} CHAR", columnNameClean);
+                    i++;
                 }
             }
             else

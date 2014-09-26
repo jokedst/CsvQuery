@@ -93,16 +93,28 @@ namespace CsvQuery
             }
             var t3 = watch.ElapsedMilliseconds; watch.Restart();
 
-            DataStorage.SaveData(bufferId, data, false);
+            DataStorage.SaveData(bufferId, data, null);
             var t_saveToDb = watch.ElapsedMilliseconds; watch.Restart();
             DataStorage.SetActiveTab(bufferId);
-            var toshow = DataStorage.ExecuteQuery("SELECT * FROM THIS");
+            var toshow = DataStorage.ExecuteQueryWithColumnNames("SELECT * FROM THIS");
             var t_getFromDb = watch.ElapsedMilliseconds; watch.Restart();
 
-            for (int i = 0; i < columnsCount; i++) table.Columns.Add("Col" + i);
-            foreach (var cols in toshow)
+            //for (int i = 0; i < columnsCount; i++) table.Columns.Add("Col" + i);
+            //foreach (var cols in toshow)
+            //{
+            //    table.Rows.Add(cols);
+            //}
+
+            // Create columns
+            foreach (var s in toshow[0])
             {
-                table.Rows.Add(cols);
+                table.Columns.Add(s);
+            }
+
+            // Insert rows
+            foreach (var row in toshow.Skip(1))
+            {
+                table.Rows.Add(row);
             }
             var t5 = watch.ElapsedMilliseconds; watch.Restart();
 
