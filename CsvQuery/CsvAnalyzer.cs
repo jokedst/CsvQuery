@@ -32,6 +32,8 @@
                 if (cols.Length > columnsCount)
                     columnsCount = cols.Length;
             }
+
+            return data;
         }
     }
 

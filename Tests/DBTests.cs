@@ -212,7 +212,8 @@ namespace Tests
 
             var result = DataStorage.ExecuteQueryWithColumnNames("SELECT * FROM this");
 
-            AssertDataEqual(data.Skip(1).ToList(), result.Skip(1).ToList());
+            //AssertDataEqual(data.Skip(1).ToList(), result.Skip(1).ToList());
+            Assert.AreEqual("ArtGrp", result[0][0], "whitelisting not working");
         }
     }
 }

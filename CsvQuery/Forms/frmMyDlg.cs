@@ -62,35 +62,11 @@ namespace CsvQuery
             var t2 = watch.ElapsedMilliseconds; watch.Restart();
             dataGrid.DataSource = null;
             var table = new DataTable();
-            //table.Rows.
+
             dataGrid.Rows.Clear();
             dataGrid.Columns.Clear();
-            bool first = true;
 
-            //var lines = text.Split('\n');
-            var data = new List<string[]>();
-
-            var textreader = new StringReader(text);
-            string line;
-            int columnsCount = 0;
-            while ((line = textreader.ReadLine()) != null)
-            //foreach (var line in lines)
-            {
-                var cols = line.Split(csvSettings.Separator);
-                data.Add(cols);
-
-                if (cols.Length > columnsCount)
-                    columnsCount = cols.Length;
-
-                //if(first)
-                //{
-                //    first = false;
-                //    //for (int i = 0; i < cols.Length; i++) dataGrid.Columns.Add("col" + i, "Col" + i);
-                //    for (int i = 0; i < cols.Length; i++) table.Columns.Add("Col" + i);
-                //}
-                //table.Rows.Add(cols);
-                //dataGrid.Rows.Add(cols);
-            }
+            var data = csvSettings.Parse(text);
             var t3 = watch.ElapsedMilliseconds; watch.Restart();
 
             DataStorage.SaveData(bufferId, data, null);
@@ -127,7 +103,7 @@ namespace CsvQuery
             //dataGrid.Rows.Add(new[] { "qwe", "rty" });
             dataGrid.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.DisplayedCells);
             watch.Stop();
-            MessageBox.Show("Times: \nGetText: " + t1 + "ms\nAnalyze: " + t2 + "ms\nTable: " + t3 + "ms\nDatabind: " +
+            MessageBox.Show("Times: \nGetText: " + t1 + "ms\nAnalyze: " + t2 + "ms\nParse: " + t3 + "ms\nTo table:" + t5 + "ms\nDatabind: " +
                             t4 + "ms\nResize: " + watch.ElapsedMilliseconds + "ms\nBuffer ID: " + bufferId +
                             "\nSave to DB: " + t_saveToDb + "ms\nLoad from DB: " + t_getFromDb + "ms");
         }
