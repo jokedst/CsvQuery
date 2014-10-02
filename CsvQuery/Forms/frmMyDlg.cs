@@ -90,7 +90,9 @@ namespace CsvQuery
             // Insert rows
             foreach (var row in toshow.Skip(1))
             {
+// ReSharper disable CoVariantArrayConversion
                 table.Rows.Add(row);
+// ReSharper restore CoVariantArrayConversion
             }
             var t5 = watch.ElapsedMilliseconds; watch.Restart();
 

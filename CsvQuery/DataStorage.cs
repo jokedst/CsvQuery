@@ -10,9 +10,9 @@
     public static class DataStorage
     {
         // For now only in-memroy DB, perhaps later you could have a config setting for saving to disk
-        private static SQLiteDatabase db = new SQLiteDatabase(":memory:");
+        private static readonly SQLiteDatabase db = new SQLiteDatabase(":memory:");
 
-        private static string[] PRAGMA_Commands =
+        private static readonly string[] PRAGMA_Commands =
             {
                 "PRAGMA synchronous =  OFF",
                 "PRAGMA temp_store =  MEMORY",
@@ -29,8 +29,7 @@
 
         static DataStorage()
         {
-            for (int i = 0; i < PRAGMA_Commands.Length; i++) { db.ExecuteNonQuery(PRAGMA_Commands[i]); }
-            
+            foreach (string command in PRAGMA_Commands) db.ExecuteNonQuery(command);
         }
 
         public static void SetActiveTab(int bufferId)
@@ -204,7 +203,7 @@
             var result = new List<string[]>();
             var c1 = new SQLiteVdbe(db, query);
             int columns = 0;
-            while (c1.ExecuteStep() != Sqlite3.SQLITE_DONE)
+            while (c1.ExecuteStep() == Sqlite3.SQLITE_ROW)
             {
                 columns = c1.ResultColumnCount();
                 var data = new List<string>();
@@ -214,6 +213,8 @@
                 }
                 result.Add(data.ToArray());
             }
+
+            if(c1.LastResult != 0){}
 
 
             var columnNames = new List<string>();

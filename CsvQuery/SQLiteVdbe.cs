@@ -10,9 +10,9 @@ namespace Community.CsharpSqlite
     /// </summary>
     public class SQLiteVdbe
     {
-        private Vdbe vm = null;
-        private string LastError = "";
-        private int LastResult = 0;
+        private readonly Vdbe vm;
+        public string LastError { get; private set; }
+        public int LastResult { get; private set; }
 
         /// <summary>
         /// Creates new instance of SQLiteVdbe class by compiling a statement
@@ -22,9 +22,15 @@ namespace Community.CsharpSqlite
         public SQLiteVdbe(SQLiteDatabase db, String query)
         {
             vm = null;
+            LastError = string.Empty;
 
             // prepare and compile 
-            Sqlite3.sqlite3_prepare_v2(db.Connection(), query, query.Length, ref vm, 0);
+            LastResult = Sqlite3.sqlite3_prepare_v2(db.Connection(), query, query.Length, ref vm, 0);
+
+            if (LastResult != Sqlite3.SQLITE_OK)
+            {
+                throw new SQliteException("Could not execute query: " + query, LastResult);
+            }
         }
 
         /// <summary>
@@ -46,7 +52,9 @@ namespace Community.CsharpSqlite
         public int BindInteger(int index, int bInteger)
         {
             if ((LastResult = Sqlite3.sqlite3_bind_int(vm, index, bInteger)) == Sqlite3.SQLITE_OK)
-            { LastError = ""; }
+            { 
+                LastError = ""; 
+            }
             else
             {
                 LastError = "Error " + LastError + "binding Integer [" + bInteger + "]";
@@ -63,7 +71,9 @@ namespace Community.CsharpSqlite
         public int BindLong(int index, long bLong)
         {
             if ((LastResult = Sqlite3.sqlite3_bind_int64(vm, index, bLong)) == Sqlite3.SQLITE_OK)
-            { LastError = ""; }
+            {
+                LastError = string.Empty;
+            }
             else
             {
                 LastError = "Error " + LastError + "binding Long [" + bLong + "]";
@@ -71,12 +81,17 @@ namespace Community.CsharpSqlite
             return LastResult;
         }
 
-        // Note: added by jokedst
+        /// <summary>
+        /// BindDouble
+        /// </summary>
+        /// <param name="index"></param>
+        /// <param name="bDouble"></param>
+        /// <returns>LastResults</returns>
         public double BindDouble(int index, double bDouble)
         {
             if ((LastResult = Sqlite3.sqlite3_bind_double(vm, index, bDouble)) == Sqlite3.SQLITE_OK)
             { 
-                LastError = ""; 
+                LastError = string.Empty; 
             }
             else
             {
@@ -94,7 +109,9 @@ namespace Community.CsharpSqlite
         public int BindText(int index, string bText)
         {
             if ((LastResult = Sqlite3.sqlite3_bind_text(vm, index, bText, -1, null)) == Sqlite3.SQLITE_OK)
-            { LastError = ""; }
+            {
+                LastError = string.Empty;
+            }
             else
             {
                 LastError = "Error " + LastError + "binding Text [" + bText + "]";
@@ -109,7 +126,7 @@ namespace Community.CsharpSqlite
         public int ExecuteStep()
         {
             // Execute the statement
-            int LastResult = Sqlite3.sqlite3_step(vm);
+            LastResult = Sqlite3.sqlite3_step(vm);
             return LastResult;
         }
 
@@ -159,7 +176,6 @@ namespace Community.CsharpSqlite
         /// <summary>
         /// Closes statement
         /// </summary>
-        /// <returns>LastResult</returns>
         public void Close()
         {
             Sqlite3.sqlite3_finalize(vm);
@@ -174,6 +190,14 @@ namespace Community.CsharpSqlite
         public string ColumnName(int index)
         {
             return Sqlite3.sqlite3_column_name(vm, index);
+        }
+    }
+
+    public class SQliteException : Exception
+    {
+        public SQliteException(string message, int code) : base(message)
+        {
+            
         }
     }
 }

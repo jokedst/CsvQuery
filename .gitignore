@@ -1,4 +1,4 @@
-_ReSharper.NppManagedPluginDemo.VS2010
+_ReSharper.CsvQuerySolution
 bin
 obj
 /CsvQuery/CsvQuery.csproj.user
@@ -9,3 +9,4 @@ obj
 /TraceAndTestImpact.testsettings
 /Tests/*.user
 /*.suo
+/CsvQuerySolution.sln.DotSettings.user
