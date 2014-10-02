@@ -1,8 +1,6 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
+Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NppManagedPluginDemo.VS2010", "NppManagedPluginDemo\NppManagedPluginDemo.VS2010.csproj", "{EB8FC3A3-93E8-457B-B281-FAFA5119611A}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CsvQuery", "CsvQuery\CsvQuery.csproj", "{CE079981-61E0-4113-9447-88C0A63696CF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{E526081B-A5A3-457F-A30D-4AB0D2DB5A05}"
@@ -23,10 +21,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{EB8FC3A3-93E8-457B-B281-FAFA5119611A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{EB8FC3A3-93E8-457B-B281-FAFA5119611A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{EB8FC3A3-93E8-457B-B281-FAFA5119611A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{EB8FC3A3-93E8-457B-B281-FAFA5119611A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{CE079981-61E0-4113-9447-88C0A63696CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{CE079981-61E0-4113-9447-88C0A63696CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CE079981-61E0-4113-9447-88C0A63696CF}.Release|Any CPU.ActiveCfg = Release|Any CPU

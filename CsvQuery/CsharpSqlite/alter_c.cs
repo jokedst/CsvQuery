@@ -447,7 +447,7 @@ static void reloadTableSchema( Parse pParse, Table pTab, string zName )
 */
 static int isSystemTable( Parse pParse, string zName )
 {
-    if (zName.StartsWith("sqlite_", System.StringComparison.OrdinalIgnoreCase))
+  if (zName.StartsWith("sqlite_", System.StringComparison.OrdinalIgnoreCase))
   {
     sqlite3ErrorMsg( pParse, "table %s may not be altered", zName );
     return 1;

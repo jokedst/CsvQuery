@@ -1,15 +1,11 @@
 _ReSharper.NppManagedPluginDemo.VS2010
 bin
 obj
-/NppManagedPluginDemo.VS2010.sln.DotSettings.user
-/NppManagedPluginDemo.VS2010.suo
 /CsvQuery/CsvQuery.csproj.user
 /TestResults
 
 /Local.testsettings
 
-/NppManagedPluginDemo.VS2010.v11.suo
-/NppManagedPluginDemo.VS2010.vsmdi
-
 /TraceAndTestImpact.testsettings
 /Tests/*.user
+/*.suo
