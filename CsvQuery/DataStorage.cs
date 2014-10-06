@@ -17,9 +17,9 @@
                 "PRAGMA synchronous =  OFF",
                 "PRAGMA temp_store =  MEMORY",
                 "PRAGMA journal_mode = OFF",
-                "PRAGMA locking_mode=EXCLUSIVE",
+                "PRAGMA locking_mode = EXCLUSIVE",
                 "PRAGMA main.page_size = 4096",
-                "PRAGMA main.cache_size=10000"
+                "PRAGMA main.cache_size = 10000"
             };
 
         private static Dictionary<int, string> _createdTables = new Dictionary<int, string>();
@@ -46,6 +46,14 @@
             }
         }
 
+        /// <summary>
+        /// Saves parsed data into SQLite database.
+        /// This function currently does a little too much, it detects headers and column types (which it then pretty much ignore)
+        /// </summary>
+        /// <param name="bufferId"></param>
+        /// <param name="data"></param>
+        /// <param name="hasHeader"></param>
+        /// <returns></returns>
         public static string SaveData(int bufferId, List<string[]> data, bool? hasHeader)
         {
             string tableName;
@@ -198,6 +206,11 @@
             return result;
         }
 
+        /// <summary>
+        /// Executes the query. The first row in the results will be the column names
+        /// </summary>
+        /// <param name="query">SQL query to execute</param>
+        /// <returns>Query results</returns>
         public static List<string[]> ExecuteQueryWithColumnNames(string query)
         {
             var result = new List<string[]>();

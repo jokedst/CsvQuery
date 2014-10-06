@@ -13,7 +13,7 @@
         public char EscapeCharacter { get; set; }
 
         /// <summary>
-        /// PArses a big text blob into rows and columns, using the settings
+        /// Parses a big text blob into rows and columns, using the settings
         /// </summary>
         /// <param name="text">Big blob of text</param>
         /// <returns>Parsed data</returns>
@@ -54,7 +54,7 @@
             // 3 times, one for none, one for ' and one for " and see which has best variances
             // That wouldn't detect escape chars though, or odd variants like [this]
 
-            // First do a letter frequency anaylsis on each row
+            // First do a letter frequency analysis on each row
             var s = new StringReader(csvString);
             string line;
             int lineCount = 0;
