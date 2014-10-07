@@ -145,6 +145,7 @@
     <Compile Include="CsharpSqlite\wal_h.cs" />
     <Compile Include="CsharpSqlite\where_c.cs" />
     <Compile Include="CsharpSqlite\_Custom.cs" />
+    <Compile Include="Csv.cs" />
     <Compile Include="CsvAnalyzer.cs" />
     <Compile Include="DataStorage.cs" />
     <Compile Include="DllExport\DllExportAttribute.cs" />
