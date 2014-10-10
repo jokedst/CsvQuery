@@ -5,7 +5,7 @@
     using System.Text.RegularExpressions;
 
     // From http://stackoverflow.com/questions/769621/dealing-with-commas-in-a-csv-file
-    public sealed class CsvReader : System.IDisposable
+    public sealed class CsvReader : IDisposable
     {
         public CsvReader(string fileName)
             : this(new FileStream(fileName, FileMode.Open, FileAccess.Read))
@@ -14,27 +14,27 @@
 
         public CsvReader(Stream stream)
         {
-            __reader = new StreamReader(stream);
+            this.reader = new StreamReader(stream);
         }
 
         public System.Collections.IEnumerable RowEnumerator
         {
             get
             {
-                if (null == __reader)
-                    throw new System.ApplicationException("I can't start reading without CSV input.");
+                if (null == this.reader)
+                    throw new ApplicationException("I can't start reading without CSV input.");
 
-                __rowno = 0;
+                this.rowNumber = 0;
                 string sLine;
-                string sNextLine;
 
-                while (null != (sLine = __reader.ReadLine()))
+                while (null != (sLine = this.reader.ReadLine()))
                 {
-                    while (rexRunOnLine.IsMatch(sLine) && null != (sNextLine = __reader.ReadLine()))
+                    string sNextLine;
+                    while (RunOnLineRegex.IsMatch(sLine) && null != (sNextLine = this.reader.ReadLine()))
                         sLine += "\n" + sNextLine;
 
-                    __rowno++;
-                    string[] values = rexCsvSplitter.Split(sLine);
+                    this.rowNumber++;
+                    string[] values = CsvSplitterRegex.Split(sLine);
 
                     for (int i = 0; i < values.Length; i++)
                         values[i] = Csv.Unescape(values[i]);
@@ -42,24 +42,24 @@
                     yield return values;
                 }
 
-                __reader.Close();
+                this.reader.Close();
             }
         }
 
-        public long RowIndex { get { return __rowno; } }
+        public long RowIndex { get { return this.rowNumber; } }
 
         public void Dispose()
         {
-            if (null != __reader) __reader.Dispose();
+            if (null != this.reader) this.reader.Dispose();
         }
 
         //============================================
 
 
-        private long __rowno = 0;
-        private TextReader __reader;
-        private static Regex rexCsvSplitter = new Regex(@",(?=(?:[^""]*""[^""]*"")*(?![^""]*""))");
-        private static Regex rexRunOnLine = new Regex(@"^[^""]*(?:""[^""]*""[^""]*)*""[^""]*$");
+        private long rowNumber;
+        private readonly TextReader reader;
+        private static readonly Regex CsvSplitterRegex = new Regex(@",(?=(?:[^""]*""[^""]*"")*(?![^""]*""))");
+        private static readonly Regex RunOnLineRegex = new Regex(@"^[^""]*(?:""[^""]*""[^""]*)*""[^""]*$");
     }
 
     public static class Csv
@@ -91,14 +91,14 @@
 
         private const string QUOTE = "\"";
         private const string ESCAPED_QUOTE = "\"\"";
-        private static char[] CHARACTERS_THAT_MUST_BE_QUOTED = { ',', '"', '\n' };
+        private static readonly char[] CHARACTERS_THAT_MUST_BE_QUOTED = { ',', '"', '\n' };
     }
 
     public class CsvTest
     {
         public static void Main()
         {
-            using (CsvReader reader = new CsvReader("data.csv"))
+            using (var reader = new CsvReader("data.csv"))
             {
                 foreach (string[] values in reader.RowEnumerator)
                 {

@@ -45,8 +45,8 @@ Licenced under GPL v3
 
 ### CSharpSQLite
 
-SQLite database rewritten in C#.
+SQLite database rewritten in C#.  
 I basically copied the whole codebase into CSV Query to get a single DLL (and to mess around with it a bit).
 
-https://code.google.com/p/csharp-sqlite/
+https://code.google.com/p/csharp-sqlite/  
 MIT Licence
