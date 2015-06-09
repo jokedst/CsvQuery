@@ -122,6 +122,7 @@
                 foreach (var colName in data[0])
                 {
                     var columnNameClean = Regex.Replace(colName, @"[^\w_]", "");
+                    //if(Sqlite3.yy)
                     if (string.IsNullOrEmpty(columnNameClean)) columnNameClean = "Col" + i;
                     if (colnames.Contains(columnNameClean))
                     {
@@ -134,7 +135,7 @@
                     if (first) first = false;
                     else createQuery.Append(", ");
                     colnames.Add(columnNameClean);
-                    createQuery.AppendFormat("{0} CHAR", columnNameClean);
+                    createQuery.AppendFormat("[{0}] CHAR", columnNameClean);
                     i++;
                 }
             }

@@ -79,7 +79,7 @@ namespace Tests
         {
             var data = new List<string[]>
                 {
-                    new[] {"hej", "du", "där"},
+                    new[] {"hej", "du", "all"},
                     new [] {"1", "2", "3"},
                     new [] {"2", "12", "14"},
                     new [] {"3", "12", "13"},

@@ -10,7 +10,7 @@ License
 -------
 This package as a whole is licensed under the GPL v3. See gpl-3.0.txt
 
-The CsharpSqlite code is licensed undet MIT license (as apparantly allowed by GPL v3 section 7). See CsharpSqlite\License-CsharpSqlite-MIT.txt
+The CsharpSqlite code is licensed under MIT license (which is apparantly GPL v3 compatible). See CsharpSqlite\License-CsharpSqlite-MIT.txt
 
 
 Planned features
@@ -22,6 +22,7 @@ Planned features
 * Support for more types of CSV files (more test cases, basically)
 * Optimizations
 
+
 Auto-detection
 --------------
 
@@ -30,6 +31,7 @@ CSV Query detects the separator by calculating the variance in occurance of char
 If the first line is all strings and the rest of the lines have at least one numeric column, it assumes the first line is a header and use it for the column names in the database.
 
 The column types are detected by simply doing a *double.TryParse()* on the strings. It seems to be the fastest way.
+
 
 Used Libraries
 --------------
@@ -42,10 +44,12 @@ As far as I know it doesn't have it's own page, but it's available in the downlo
 http://sourceforge.net/projects/sourcecookifier/
 Licenced under GPL v3
 
+Update: a new version (0.7) is available at https://bitbucket.org/uph0/npppluginnet (CsvQuery is still using 0.6 though)
+
 
 ### CSharpSQLite
 
-SQLite database rewritten in C#.  
+SQLite database rewritten in C#.
 I basically copied the whole codebase into CSV Query to get a single DLL (and to mess around with it a bit).
 
 https://code.google.com/p/csharp-sqlite/  
