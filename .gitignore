@@ -10,3 +10,4 @@ obj
 /Tests/*.user
 /*.suo
 /CsvQuerySolution.sln.DotSettings.user
+/.vs

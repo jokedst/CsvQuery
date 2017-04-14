@@ -29,7 +29,7 @@ namespace CsvQuery
             var codepage = (int)Win32.SendMessage(sci, SciMsg.SCI_GETCODEPAGE, 0, 0);
             var bufferId = (int)Win32.SendMessage(PluginBase.nppData._nppHandle, NppMsg.NPPM_GETCURRENTBUFFERID, 0, 0);
             string text;
-            using (Sci_TextRange tr = new Sci_TextRange(0, length, length))
+            using (Sci_TextRange tr = new Sci_TextRange(0, length, length + 1))
             {
                 Win32.SendMessage(sci, SciMsg.SCI_GETTEXTRANGE, 0, tr.NativePointer);
 
