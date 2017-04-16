@@ -19,8 +19,6 @@ namespace CsvQuery
         static bool someSetting = false;
         static frmMyDlg frmMyDlg = null;
         static int idMyDlg = -1;
-        static Bitmap tbBmp = Properties.Resources.star;
-        static Bitmap tbBmp_tbTab = Properties.Resources.star_bmp;
         static Bitmap tbBmp_cq = Properties.Resources.cq;
         static Icon tbIcon = null;
 
@@ -141,7 +139,7 @@ namespace CsvQuery
                     colorMap[0].NewColor = Color.FromKnownColor(KnownColor.ButtonFace);
                     ImageAttributes attr = new ImageAttributes();
                     attr.SetRemapTable(colorMap);
-                    g.DrawImage(tbBmp_tbTab, new Rectangle(0, 0, 16, 16), 0, 0, 16, 16, GraphicsUnit.Pixel, attr);
+                    g.DrawImage(tbBmp_cq, new Rectangle(0, 0, 16, 16), 0, 0, 16, 16, GraphicsUnit.Pixel, attr);
                     tbIcon = Icon.FromHandle(newBmp.GetHicon());
                 }
 
