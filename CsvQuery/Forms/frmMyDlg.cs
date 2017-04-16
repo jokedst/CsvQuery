@@ -12,6 +12,7 @@ namespace CsvQuery
     using System.Linq;
 
     using NppPluginNET;
+    using PluginInfrastructure;
 
     public partial class frmMyDlg : Form
     {
@@ -27,9 +28,10 @@ namespace CsvQuery
             var sci = PluginBase.GetCurrentScintilla();
             var length = (int)Win32.SendMessage(sci, SciMsg.SCI_GETLENGTH, 0, 0);
             var codepage = (int)Win32.SendMessage(sci, SciMsg.SCI_GETCODEPAGE, 0, 0);
-            var bufferId = (int)Win32.SendMessage(PluginBase.nppData._nppHandle, NppMsg.NPPM_GETCURRENTBUFFERID, 0, 0);
+            var bufferId = (int)Win32.SendMessage(PluginBase.nppData._nppHandle,(uint) NppMsg.NPPM_GETCURRENTBUFFERID, 0, 0);
             string text;
-            using (Sci_TextRange tr = new Sci_TextRange(0, length, length + 1))
+            using (var tr = new TextRange(0, length))
+            //using (Sci_TextRange tr = new Sci_TextRange(0, length, length + 1))
             {
                 Win32.SendMessage(sci, SciMsg.SCI_GETTEXTRANGE, 0, tr.NativePointer);
 
@@ -113,7 +115,7 @@ namespace CsvQuery
         private void btnExec_Click(object sender, EventArgs e)
         {
             var sci = PluginBase.GetCurrentScintilla();
-            var bufferId = (int)Win32.SendMessage(PluginBase.nppData._nppHandle, NppMsg.NPPM_GETCURRENTBUFFERID, 0, 0);
+            var bufferId = (int)Win32.SendMessage(PluginBase.nppData._nppHandle,(uint) NppMsg.NPPM_GETCURRENTBUFFERID, 0, 0);
             DataStorage.SetActiveTab(bufferId);
 
             var table = new DataTable();

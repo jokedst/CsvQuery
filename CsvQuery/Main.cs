@@ -1,19 +1,19 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
-using Community.CsharpSqlite;
-using NppPluginNET;
+using CsvQuery.PluginInfrastructure;
 
 namespace CsvQuery
 {
+    using System.Diagnostics;
+    using Community.CsharpSqlite;
+
     class Main
     {
-        #region " Fields "
         internal const string PluginName = "CsvQuery";
         static string iniFilePath = null;
         static bool someSetting = false;
@@ -23,13 +23,23 @@ namespace CsvQuery
         static Bitmap tbBmp_tbTab = Properties.Resources.star_bmp;
         static Bitmap tbBmp_cq = Properties.Resources.cq;
         static Icon tbIcon = null;
-        #endregion
 
-        #region " StartUp/CleanUp "
+        public static void OnNotification(ScNotification notification)
+        {
+            // This method is invoked whenever something is happening in notepad++
+            // use eg. as
+            // if (notification.Header.Code == (uint)NppMsg.NPPN_xxx)
+            // { ... }
+            // or
+            //
+            // if (notification.Header.Code == (uint)SciMsg.SCNxxx)
+            // { ... }
+        }
+
         internal static void CommandMenuInit()
         {
             StringBuilder sbIniFilePath = new StringBuilder(Win32.MAX_PATH);
-            Win32.SendMessage(PluginBase.nppData._nppHandle, NppMsg.NPPM_GETPLUGINSCONFIGDIR, Win32.MAX_PATH, sbIniFilePath);
+            Win32.SendMessage(PluginBase.nppData._nppHandle, (uint) NppMsg.NPPM_GETPLUGINSCONFIGDIR, Win32.MAX_PATH, sbIniFilePath);
             iniFilePath = sbIniFilePath.ToString();
             if (!Directory.Exists(iniFilePath)) Directory.CreateDirectory(iniFilePath);
             iniFilePath = Path.Combine(iniFilePath, PluginName + ".ini");
@@ -37,25 +47,35 @@ namespace CsvQuery
 
             PluginBase.SetCommand(0, "Popup test", myMenuFunction, new ShortcutKey(false, false, false, Keys.None));
             PluginBase.SetCommand(1, "Toggle query window", myDockableDialog); idMyDlg = 1;
-
-            // NppNotification.BufferActivated += nc => MessageBox.Show("Bufferswitch!" + nc.nmhdr.idFrom); 
+            PluginBase.SetCommand(2, "Test Scintilla", ScinTest);
         }
+
         internal static void SetToolBarIcon()
         {
             toolbarIcons tbIcons = new toolbarIcons();
             tbIcons.hToolbarBmp = tbBmp_cq.GetHbitmap();
             IntPtr pTbIcons = Marshal.AllocHGlobal(Marshal.SizeOf(tbIcons));
             Marshal.StructureToPtr(tbIcons, pTbIcons, false);
-            Win32.SendMessage(PluginBase.nppData._nppHandle, NppMsg.NPPM_ADDTOOLBARICON, PluginBase._funcItems.Items[idMyDlg]._cmdID, pTbIcons);
+            Win32.SendMessage(PluginBase.nppData._nppHandle, (uint) NppMsg.NPPM_ADDTOOLBARICON, PluginBase._funcItems.Items[idMyDlg]._cmdID, pTbIcons);
             Marshal.FreeHGlobal(pTbIcons);
         }
+
         internal static void PluginCleanUp()
         {
             Win32.WritePrivateProfileString("SomeSection", "SomeKey", someSetting ? "1" : "0", iniFilePath);
         }
-        #endregion
 
-        #region " Menu functions "
+        internal static void ScinTest()
+        {
+            var npp = new NotepadPPGateway();
+            var gateway = PluginBase.GetGatewayFactory()();
+            var length = gateway.GetLength();
+            var codepage = gateway.GetCodePage();
+            var bufferId = npp.GetCurrentBufferId();
+            var text = gateway.GetAllText();
+            MessageBox.Show($"Length: {length}, got: {text.Length}\nBuffer: {bufferId}, codepage: {codepage} \n{text.Substring(0, Math.Min(100, text.Length))}");
+        }
+
         internal static void myMenuFunction()
         {
             // This tests the SQLite in-memory DB by creating some shit and selecting it
@@ -135,30 +155,21 @@ namespace CsvQuery
                 IntPtr _ptrNppTbData = Marshal.AllocHGlobal(Marshal.SizeOf(_nppTbData));
                 Marshal.StructureToPtr(_nppTbData, _ptrNppTbData, false);
 
-                Win32.SendMessage(PluginBase.nppData._nppHandle, NppMsg.NPPM_DMMREGASDCKDLG, 0, _ptrNppTbData);
-
-                // NppNotification.BufferActivated += nc => MessageBox.Show("Bufferswitch!" + nc.nmhdr.idFrom); 
+                Win32.SendMessage(PluginBase.nppData._nppHandle, (uint) NppMsg.NPPM_DMMREGASDCKDLG, 0, _ptrNppTbData);
             }
             else
             {
                 if (!frmMyDlg.Visible)
                 {
-                    Win32.SendMessage(PluginBase.nppData._nppHandle, NppMsg.NPPM_DMMSHOW, 0, frmMyDlg.Handle);
-                    Win32.SendMessage(
-                        PluginBase.nppData._nppHandle, NppMsg.NPPM_SETMENUITEMCHECK, PluginBase._funcItems.Items[idMyDlg]._cmdID, 1);
+                    Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_DMMSHOW, 0, frmMyDlg.Handle);
+                    Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_SETMENUITEMCHECK, PluginBase._funcItems.Items[idMyDlg]._cmdID, 1);
                 }
                 else
                 {
-                    Win32.SendMessage(PluginBase.nppData._nppHandle, NppMsg.NPPM_DMMHIDE, 0, frmMyDlg.Handle);
-                    Win32.SendMessage(
-                        PluginBase.nppData._nppHandle, NppMsg.NPPM_SETMENUITEMCHECK, PluginBase._funcItems.Items[idMyDlg]._cmdID, 0);
+                    Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_DMMHIDE, 0, frmMyDlg.Handle);
+                    Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_SETMENUITEMCHECK, PluginBase._funcItems.Items[idMyDlg]._cmdID, 0);
                 }
             }
-            //else
-            //{
-            //    Win32.SendMessage(PluginBase.nppData._nppHandle, NppMsg.NPPM_DMMSHOW, 0, frmMyDlg.Handle);
-            //}
         }
-        #endregion
     }
 }
