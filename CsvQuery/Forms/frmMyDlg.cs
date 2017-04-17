@@ -1,17 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Text;
-using System.Data;
-using System.Windows.Forms;
-
-namespace CsvQuery
+﻿namespace CsvQuery.Forms
 {
-    using System.IO;
+    using System;
+    using System.Collections.Generic;
+    using System.Data;
     using System.Linq;
-
-    using NppPluginNET;
+    using System.Windows.Forms;
     using PluginInfrastructure;
 
     public partial class frmMyDlg : Form
@@ -19,6 +12,12 @@ namespace CsvQuery
         public frmMyDlg()
         {
             InitializeComponent();
+        }
+
+        public void ExecuteQuery(string query)
+        {
+            txbQuery.Text = query;
+            btnExec.PerformClick();
         }
 
         private void btnAnalyze_Click(object sender, EventArgs e)
@@ -145,6 +144,9 @@ namespace CsvQuery
 
             dataGrid.DataSource = table;
             dataGrid.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.DisplayedCells);
+
+            // Store query in history
+            queryAutoComplete.Add(query);
         }
 
         private void txbQuery_KeyDown(object sender, KeyEventArgs e)

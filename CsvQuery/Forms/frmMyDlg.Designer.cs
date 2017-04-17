@@ -1,4 +1,4 @@
-﻿namespace CsvQuery
+﻿namespace CsvQuery.Forms
 {
     partial class frmMyDlg
     {
@@ -32,6 +32,7 @@
             this.dataGrid = new System.Windows.Forms.DataGridView();
             this.btnAnalyze = new System.Windows.Forms.Button();
             this.btnExec = new System.Windows.Forms.Button();
+            this.queryAutoComplete = new System.Windows.Forms.AutoCompleteStringCollection();
             ((System.ComponentModel.ISupportInitialize)(this.dataGrid)).BeginInit();
             this.SuspendLayout();
             // 
@@ -44,6 +45,9 @@
             this.txbQuery.Size = new System.Drawing.Size(110, 20);
             this.txbQuery.TabIndex = 0;
             this.txbQuery.KeyDown += new System.Windows.Forms.KeyEventHandler(this.txbQuery_KeyDown);
+            this.txbQuery.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+            this.txbQuery.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.CustomSource;
+            this.txbQuery.AutoCompleteCustomSource = queryAutoComplete;
             // 
             // dataGrid
             // 
@@ -105,5 +109,6 @@
         private System.Windows.Forms.DataGridView dataGrid;
         private System.Windows.Forms.Button btnAnalyze;
         private System.Windows.Forms.Button btnExec;
+        private System.Windows.Forms.AutoCompleteStringCollection queryAutoComplete;
     }
 }

@@ -11,6 +11,7 @@ namespace CsvQuery
 {
     using System.Diagnostics;
     using Community.CsharpSqlite;
+    using Forms;
 
     class Main
     {
@@ -44,8 +45,10 @@ namespace CsvQuery
             someSetting = (Win32.GetPrivateProfileInt("SomeSection", "SomeKey", 0, iniFilePath) != 0);
 
             PluginBase.SetCommand(0, "Popup test", myMenuFunction, new ShortcutKey(false, false, false, Keys.None));
-            PluginBase.SetCommand(1, "Toggle query window", myDockableDialog); idMyDlg = 1;
+            PluginBase.SetCommand(1, "Toggle query window", ToggleQueryWindow); idMyDlg = 1;
             PluginBase.SetCommand(2, "Test Scintilla", ScinTest);
+            PluginBase.SetCommand(3, "currline", CurrentLine);
+            PluginBase.SetCommand(3, "List parsed tables", ListSqliteTables);
         }
 
         internal static void SetToolBarIcon()
@@ -63,6 +66,13 @@ namespace CsvQuery
             Win32.WritePrivateProfileString("SomeSection", "SomeKey", someSetting ? "1" : "0", iniFilePath);
         }
 
+        internal static void ListSqliteTables()
+        {
+            const string query = "SELECT * FROM sqlite_master";
+            QueryWindowVisible(true);
+            frmMyDlg.ExecuteQuery(query);
+        }
+
         internal static void ScinTest()
         {
             var npp = new NotepadPPGateway();
@@ -71,7 +81,16 @@ namespace CsvQuery
             var codepage = gateway.GetCodePage();
             var bufferId = npp.GetCurrentBufferId();
             var text = gateway.GetAllText();
-            MessageBox.Show($"Length: {length}, got: {text.Length}\nBuffer: {bufferId}, codepage: {codepage} \n{text.Substring(0, Math.Min(100, text.Length))}");
+            var sciNr = PluginBase.ScintillaNumber();
+            MessageBox.Show($"Length: {length}, got: {text.Length}\nBuffer: {bufferId}, codepage: {codepage}, sciNr: {sciNr} \n{text.Substring(0, Math.Min(100, text.Length))}");
+        }
+
+        internal static void CurrentLine()
+        {
+            var sciNr = PluginBase.ScintillaNumber();
+            var gateway = PluginBase.CurrentScintillaGateway;
+            var line = gateway.GetCurLine(2);
+            MessageBox.Show($"Length: {line.Length}, sciNr: {sciNr}\n {line}");
         }
 
         internal static void myMenuFunction()
@@ -124,7 +143,12 @@ namespace CsvQuery
             MessageBox.Show("Times: \nCreate DB: " + t1 + "ms\nCreate table 1: " + t2a + "ms\nCreate table 2: " + t2 + "ms\nInsert: " + t3 + "ms\nSelect: " + t4 + "ms");
         }
 
-        internal static void myDockableDialog()
+        internal static void ToggleQueryWindow()
+        {
+            QueryWindowVisible(null);
+        }
+
+        internal static void QueryWindowVisible(bool? show = null)
         {
             if (frmMyDlg == null)
             {
@@ -157,7 +181,7 @@ namespace CsvQuery
             }
             else
             {
-                if (!frmMyDlg.Visible)
+                if (show ?? !frmMyDlg.Visible)
                 {
                     Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_DMMSHOW, 0, frmMyDlg.Handle);
                     Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_SETMENUITEMCHECK, PluginBase._funcItems.Items[idMyDlg]._cmdID, 1);
