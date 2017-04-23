@@ -7,9 +7,9 @@
     using System.Windows.Forms;
     using PluginInfrastructure;
 
-    public partial class frmMyDlg : Form
+    public partial class QueryWindow : Form
     {
-        public frmMyDlg()
+        public QueryWindow()
         {
             InitializeComponent();
         }
@@ -27,7 +27,7 @@
             var sci = PluginBase.GetCurrentScintilla();
             var length = (int)Win32.SendMessage(sci, SciMsg.SCI_GETLENGTH, 0, 0);
             var codepage = (int)Win32.SendMessage(sci, SciMsg.SCI_GETCODEPAGE, 0, 0);
-            var bufferId = (int)Win32.SendMessage(PluginBase.nppData._nppHandle,(uint) NppMsg.NPPM_GETCURRENTBUFFERID, 0, 0);
+            var bufferId = Win32.SendMessage(PluginBase.nppData._nppHandle,(uint) NppMsg.NPPM_GETCURRENTBUFFERID, 0, 0);
             string text;
             using (var tr = new TextRange(0, length))
             //using (Sci_TextRange tr = new Sci_TextRange(0, length, length + 1))
@@ -71,10 +71,10 @@
             var t3 = watch.ElapsedMilliseconds; watch.Restart();
 
             DataStorage.SaveData(bufferId, data, null);
-            var t_saveToDb = watch.ElapsedMilliseconds; watch.Restart();
+            var timeSaveToDb = watch.ElapsedMilliseconds; watch.Restart();
             DataStorage.SetActiveTab(bufferId);
             var toshow = DataStorage.ExecuteQueryWithColumnNames("SELECT * FROM THIS");
-            var t_getFromDb = watch.ElapsedMilliseconds; watch.Restart();
+            var timeGetFromDb = watch.ElapsedMilliseconds; watch.Restart();
 
             //for (int i = 0; i < columnsCount; i++) table.Columns.Add("Col" + i);
             //foreach (var cols in toshow)
@@ -106,15 +106,13 @@
             //dataGrid.Rows.Add(new[] { "qwe", "rty" });
             dataGrid.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.DisplayedCells);
             watch.Stop();
-            MessageBox.Show("Times: \nGetText: " + t1 + "ms\nAnalyze: " + t2 + "ms\nParse: " + t3 + "ms\nTo table:" + t5 + "ms\nDatabind: " +
-                            t4 + "ms\nResize: " + watch.ElapsedMilliseconds + "ms\nBuffer ID: " + bufferId +
-                            "\nSave to DB: " + t_saveToDb + "ms\nLoad from DB: " + t_getFromDb + "ms");
+            MessageBox.Show($"Times: \nGetText: {t1}ms\nAnalyze: {t2}ms\nParse: {t3}ms\nTo table:{t5}ms\nDatabind: {t4}ms\nResize: {watch.ElapsedMilliseconds}ms\nBuffer ID: {bufferId}\nSave to DB: {timeSaveToDb}ms\nLoad from DB: {timeGetFromDb}ms");
         }
 
         private void btnExec_Click(object sender, EventArgs e)
         {
             var sci = PluginBase.GetCurrentScintilla();
-            var bufferId = (int)Win32.SendMessage(PluginBase.nppData._nppHandle,(uint) NppMsg.NPPM_GETCURRENTBUFFERID, 0, 0);
+            var bufferId = Win32.SendMessage(PluginBase.nppData._nppHandle,(uint) NppMsg.NPPM_GETCURRENTBUFFERID, 0, 0);
             DataStorage.SetActiveTab(bufferId);
 
             var table = new DataTable();

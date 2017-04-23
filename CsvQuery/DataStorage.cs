@@ -1,16 +1,16 @@
 ﻿namespace CsvQuery
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
     using System.Text.RegularExpressions;
-
     using Community.CsharpSqlite;
 
     public static class DataStorage
     {
-        // For now only in-memroy DB, perhaps later you could have a config setting for saving to disk
-        private static readonly SQLiteDatabase db = new SQLiteDatabase(":memory:");
+        // For now only in-memory DB, perhaps later we could have a config setting for saving to disk
+        private static readonly SQLiteDatabase Db = new SQLiteDatabase(":memory:");
 
         private static readonly string[] PRAGMA_Commands =
             {
@@ -22,26 +22,29 @@
                 "PRAGMA main.cache_size = 10000"
             };
 
-        private static Dictionary<int, string> _createdTables = new Dictionary<int, string>();
+        private static readonly Dictionary<IntPtr, string> CreatedTables = new Dictionary<IntPtr, string>();
 
-        private static int _currentActiveBufferId = 0;
-        private static int _lastCreatedTableName = 0;
+        private static IntPtr _currentActiveBufferId;
+        private static int _lastCreatedTableName;
 
         static DataStorage()
         {
-            foreach (string command in PRAGMA_Commands) db.ExecuteNonQuery(command);
+            foreach (string command in PRAGMA_Commands) Db.ExecuteNonQuery(command);
         }
 
-        public static void SetActiveTab(int bufferId)
+        /// <summary>
+        /// Set current document as active, i.e. "this" should refer to this document if it has been parsed
+        /// </summary>
+        /// <param name="bufferId"></param>
+        public static void SetActiveTab(IntPtr bufferId)
         {
-            if (_currentActiveBufferId != bufferId && _createdTables.ContainsKey(bufferId))
+            if (_currentActiveBufferId != bufferId && CreatedTables.ContainsKey(bufferId))
             {
-                if (_currentActiveBufferId != 0)
+                if (_currentActiveBufferId != default(IntPtr))
                 {
-                    db.ExecuteNonQuery("DROP VIEW this");
-                    
+                    Db.ExecuteNonQuery("DROP VIEW this");
                 }
-                db.ExecuteNonQuery("CREATE VIEW this AS SELECT * FROM " + _createdTables[bufferId]);
+                Db.ExecuteNonQuery("CREATE VIEW this AS SELECT * FROM " + CreatedTables[bufferId]);
                 _currentActiveBufferId = bufferId;
             }
         }
@@ -54,18 +57,18 @@
         /// <param name="data"></param>
         /// <param name="hasHeader"></param>
         /// <returns></returns>
-        public static string SaveData(int bufferId, List<string[]> data, bool? hasHeader)
+        public static string SaveData(IntPtr bufferId, List<string[]> data, bool? hasHeader)
         {
             string tableName;
-            if (_createdTables.ContainsKey(bufferId))
+            if (CreatedTables.ContainsKey(bufferId))
             {
-                tableName = _createdTables[bufferId];
-                db.ExecuteNonQuery("DROP TABLE IF EXISTS " + tableName);
+                tableName = CreatedTables[bufferId];
+                Db.ExecuteNonQuery("DROP TABLE IF EXISTS " + tableName);
             }
             else
             {
                 tableName = "T" + ++_lastCreatedTableName;
-                _createdTables.Add(bufferId, tableName);
+                CreatedTables.Add(bufferId, tableName);
             }
 
             int columns = data[0].Length;
@@ -151,9 +154,9 @@
                 }
             }
             createQuery.Append(")");
-            db.ExecuteNonQuery("BEGIN EXCLUSIVE");
-            db.ExecuteNonQuery(createQuery.ToString());
-            db.ExecuteNonQuery("END");
+            Db.ExecuteNonQuery("BEGIN EXCLUSIVE");
+            Db.ExecuteNonQuery(createQuery.ToString());
+            Db.ExecuteNonQuery("END");
 
 
             var insertQuery = new StringBuilder("INSERT INTO ");
@@ -163,15 +166,15 @@
                 insertQuery.Append(",?");
             insertQuery.Append(")");
 
-            db.ExecuteNonQuery("BEGIN EXCLUSIVE");
-            var stmt = new SQLiteVdbe(db, insertQuery.ToString());
+            Db.ExecuteNonQuery("BEGIN EXCLUSIVE");
+            var stmt = new SQLiteVdbe(Db, insertQuery.ToString());
             first = true;
             foreach (var stringse in data)
             {
                 if (first)
                 {
                     first = false;
-                    if(hasHeader ?? false == true)
+                    if(hasHeader ?? false)
                         continue;
                 }
                 stmt.Reset();
@@ -183,7 +186,7 @@
                 stmt.ExecuteStep();
             }
             stmt.Close();
-            db.ExecuteNonQuery("END");
+            Db.ExecuteNonQuery("END");
 
             return tableName;
         }
@@ -191,7 +194,7 @@
         public static List<string[]> ExecuteQuery(string query)
         {
             var result = new List<string[]>();
-            var c1 = new SQLiteVdbe(db, query);
+            var c1 = new SQLiteVdbe(Db, query);
             while (c1.ExecuteStep() != Sqlite3.SQLITE_DONE)
             {
                 var columns = c1.ResultColumnCount();
@@ -215,7 +218,7 @@
         public static List<string[]> ExecuteQueryWithColumnNames(string query)
         {
             var result = new List<string[]>();
-            var c1 = new SQLiteVdbe(db, query);
+            var c1 = new SQLiteVdbe(Db, query);
             int columns = 0;
             while (c1.ExecuteStep() == Sqlite3.SQLITE_ROW)
             {
@@ -244,7 +247,7 @@
 
         public static void ExecuteNonQuery(string query)
         {
-            db.ExecuteNonQuery(query);
+            Db.ExecuteNonQuery(query);
         }
     }
 }

@@ -37,7 +37,7 @@ namespace Tests
                     new [] {"4", "2", "3"},
                 };
 
-            var tableName = DataStorage.SaveData(10, data, false);
+            var tableName = DataStorage.SaveData(new IntPtr(10), data, false);
 
             var result = DataStorage.ExecuteQuery("SELECT * FROM " + tableName);
 
@@ -66,8 +66,8 @@ namespace Tests
                     new [] {"4", "2", "3"},
                 };
 
-            var tableName = DataStorage.SaveData(11, data, false);
-            DataStorage.SetActiveTab(11);
+            var tableName = DataStorage.SaveData(new IntPtr(11), data, false);
+            DataStorage.SetActiveTab(new IntPtr(11));
 
             var result = DataStorage.ExecuteQuery("SELECT * FROM this");
 
@@ -86,8 +86,8 @@ namespace Tests
                     new [] {"4", "2", "3"},
                 };
 
-            DataStorage.SaveData(11, data, true);
-            DataStorage.SetActiveTab(11);
+            DataStorage.SaveData(new IntPtr(11), data, true);
+            DataStorage.SetActiveTab(new IntPtr(11));
 
             var result = DataStorage.ExecuteQueryWithColumnNames("SELECT * FROM this");
 
@@ -127,8 +127,8 @@ namespace Tests
                     new [] {"4", "2", "3"},
                 };
 
-            DataStorage.SaveData(11, data, true);
-            DataStorage.SetActiveTab(11);
+            DataStorage.SaveData(new IntPtr(11), data, true);
+            DataStorage.SetActiveTab(new IntPtr(11));
 
             // This should throw an SQliteException
             DataStorage.ExecuteQueryWithColumnNames("cp");
@@ -146,8 +146,8 @@ namespace Tests
                     new [] {"4", "2", "3"},
                 };
 
-            DataStorage.SaveData(11, data, null);
-            DataStorage.SetActiveTab(11);
+            DataStorage.SaveData(new IntPtr(11), data, null);
+            DataStorage.SetActiveTab(new IntPtr(11));
 
             var result = DataStorage.ExecuteQueryWithColumnNames("SELECT * FROM this");
 
@@ -166,8 +166,8 @@ namespace Tests
                     new [] {"4", "2", "3"},
                 };
 
-            DataStorage.SaveData(11, data, null);
-            DataStorage.SetActiveTab(11);
+            DataStorage.SaveData(new IntPtr(11), data, null);
+            DataStorage.SetActiveTab(new IntPtr(11));
 
             var result = DataStorage.ExecuteQuery("SELECT * FROM this");
 
@@ -203,8 +203,8 @@ namespace Tests
                     new[] { "211", "Skinka kokt rökt hel press rim", "148999", "B", "J", "SKINKA JUL RI 3D MSVGOTL3KGSBU", "SBU5255", "KG", "1,00", "1", "1,000", "KG", "", "44,87", "KG", "44,87", "KG", "", "", "", "029", "FÄRSK KÖTT-FÄRSER", "02928" },
                 };
 
-            DataStorage.SaveData(11, data, null);
-            DataStorage.SetActiveTab(11);
+            DataStorage.SaveData(new IntPtr(11), data, null);
+            DataStorage.SetActiveTab(new IntPtr(11));
 
             var result = DataStorage.ExecuteQueryWithColumnNames("SELECT * FROM this");
 

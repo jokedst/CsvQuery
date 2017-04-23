@@ -1,6 +1,6 @@
 ﻿namespace CsvQuery.Forms
 {
-    partial class frmMyDlg
+    partial class QueryWindow
     {
         /// <summary>
         /// Required designer variable.
@@ -86,7 +86,7 @@
             this.btnExec.UseVisualStyleBackColor = true;
             this.btnExec.Click += new System.EventHandler(this.btnExec_Click);
             // 
-            // frmMyDlg
+            // QueryWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -95,8 +95,8 @@
             this.Controls.Add(this.btnAnalyze);
             this.Controls.Add(this.dataGrid);
             this.Controls.Add(this.txbQuery);
-            this.Name = "frmMyDlg";
-            this.Text = "frmMyDlg";
+            this.Name = "QueryWindow";
+            this.Text = "QueryWindow";
             ((System.ComponentModel.ISupportInitialize)(this.dataGrid)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();

@@ -9,16 +9,26 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
 		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E56F6E12-089C-40ED-BCFD-923E5FA121A1}.Debug|x64.ActiveCfg = Debug|x64
+		{E56F6E12-089C-40ED-BCFD-923E5FA121A1}.Debug|x64.Build.0 = Debug|x64
 		{E56F6E12-089C-40ED-BCFD-923E5FA121A1}.Debug|x86.ActiveCfg = Debug|x86
 		{E56F6E12-089C-40ED-BCFD-923E5FA121A1}.Debug|x86.Build.0 = Debug|x86
+		{E56F6E12-089C-40ED-BCFD-923E5FA121A1}.Release|x64.ActiveCfg = Release|x64
+		{E56F6E12-089C-40ED-BCFD-923E5FA121A1}.Release|x64.Build.0 = Release|x64
 		{E56F6E12-089C-40ED-BCFD-923E5FA121A1}.Release|x86.ActiveCfg = Release|x86
 		{E56F6E12-089C-40ED-BCFD-923E5FA121A1}.Release|x86.Build.0 = Release|x86
+		{E526081B-A5A3-457F-A30D-4AB0D2DB5A05}.Debug|x64.ActiveCfg = Debug|x64
+		{E526081B-A5A3-457F-A30D-4AB0D2DB5A05}.Debug|x64.Build.0 = Debug|x64
 		{E526081B-A5A3-457F-A30D-4AB0D2DB5A05}.Debug|x86.ActiveCfg = Debug|x86
 		{E526081B-A5A3-457F-A30D-4AB0D2DB5A05}.Debug|x86.Build.0 = Debug|x86
+		{E526081B-A5A3-457F-A30D-4AB0D2DB5A05}.Release|x64.ActiveCfg = Release|x64
+		{E526081B-A5A3-457F-A30D-4AB0D2DB5A05}.Release|x64.Build.0 = Release|x64
 		{E526081B-A5A3-457F-A30D-4AB0D2DB5A05}.Release|x86.ActiveCfg = Release|x86
 		{E526081B-A5A3-457F-A30D-4AB0D2DB5A05}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection

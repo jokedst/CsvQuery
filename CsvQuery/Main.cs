@@ -13,15 +13,17 @@ namespace CsvQuery
     using Community.CsharpSqlite;
     using Forms;
 
-    class Main
+    internal class Main
     {
         internal const string PluginName = "CsvQuery";
         static string iniFilePath = null;
         static bool someSetting = false;
-        static frmMyDlg frmMyDlg = null;
+        static QueryWindow _queryWindow = null;
         static int idMyDlg = -1;
         static Bitmap tbBmp_cq = Properties.Resources.cq;
         static Icon tbIcon = null;
+
+        internal static Settings Settings = new Settings();
 
         public static void OnNotification(ScNotification notification)
         {
@@ -37,18 +39,19 @@ namespace CsvQuery
 
         internal static void CommandMenuInit()
         {
-            StringBuilder sbIniFilePath = new StringBuilder(Win32.MAX_PATH);
-            Win32.SendMessage(PluginBase.nppData._nppHandle, (uint) NppMsg.NPPM_GETPLUGINSCONFIGDIR, Win32.MAX_PATH, sbIniFilePath);
-            iniFilePath = sbIniFilePath.ToString();
-            if (!Directory.Exists(iniFilePath)) Directory.CreateDirectory(iniFilePath);
-            iniFilePath = Path.Combine(iniFilePath, PluginName + ".ini");
-            someSetting = (Win32.GetPrivateProfileInt("SomeSection", "SomeKey", 0, iniFilePath) != 0);
+            PluginBase.SetCommand(0, "Toggle query window", ToggleQueryWindow); idMyDlg = 0;
+            PluginBase.SetCommand(0, "List parsed tables", ListSqliteTables);
+            PluginBase.SetCommand(0, "---", null);
+            PluginBase.SetCommand(0, "&Settings", ShowSettings);
+            PluginBase.SetCommand(0, "Zeta", Settings.ShowDialog);
+            PluginBase.SetCommand(0, "&About", AboutCsvQuery);
+        }
 
-            PluginBase.SetCommand(0, "Popup test", myMenuFunction, new ShortcutKey(false, false, false, Keys.None));
-            PluginBase.SetCommand(1, "Toggle query window", ToggleQueryWindow); idMyDlg = 1;
-            PluginBase.SetCommand(2, "Test Scintilla", ScinTest);
-            PluginBase.SetCommand(3, "currline", CurrentLine);
-            PluginBase.SetCommand(3, "List parsed tables", ListSqliteTables);
+        private static void ShowSettings()
+        {
+            var settingsWindow = new SettingsDialog(Settings.Clone());
+            //settingsWindow.settingsGrid.SelectedObject = Settings;
+            settingsWindow.ShowDialog();
         }
 
         internal static void SetToolBarIcon()
@@ -63,14 +66,18 @@ namespace CsvQuery
 
         internal static void PluginCleanUp()
         {
-            Win32.WritePrivateProfileString("SomeSection", "SomeKey", someSetting ? "1" : "0", iniFilePath);
+            Settings.Save();
         }
 
         internal static void ListSqliteTables()
         {
-            const string query = "SELECT * FROM sqlite_master";
             QueryWindowVisible(true);
-            frmMyDlg.ExecuteQuery(query);
+            _queryWindow.ExecuteQuery("SELECT * FROM sqlite_master");
+        }
+
+        internal static void AboutCsvQuery()
+        {
+            MessageBox.Show("Hello", "About CSV Query");
         }
 
         internal static void ScinTest()
@@ -83,14 +90,6 @@ namespace CsvQuery
             var text = gateway.GetAllText();
             var sciNr = PluginBase.ScintillaNumber();
             MessageBox.Show($"Length: {length}, got: {text.Length}\nBuffer: {bufferId}, codepage: {codepage}, sciNr: {sciNr} \n{text.Substring(0, Math.Min(100, text.Length))}");
-        }
-
-        internal static void CurrentLine()
-        {
-            var sciNr = PluginBase.ScintillaNumber();
-            var gateway = PluginBase.CurrentScintillaGateway;
-            var line = gateway.GetCurLine(2);
-            MessageBox.Show($"Length: {line.Length}, sciNr: {sciNr}\n {line}");
         }
 
         internal static void myMenuFunction()
@@ -150,9 +149,9 @@ namespace CsvQuery
 
         internal static void QueryWindowVisible(bool? show = null)
         {
-            if (frmMyDlg == null)
+            if (_queryWindow == null)
             {
-                frmMyDlg = new frmMyDlg();
+                _queryWindow = new QueryWindow();
 
                 using (Bitmap newBmp = new Bitmap(16, 16))
                 {
@@ -168,7 +167,7 @@ namespace CsvQuery
                 }
 
                 NppTbData _nppTbData = new NppTbData();
-                _nppTbData.hClient = frmMyDlg.Handle;
+                _nppTbData.hClient = _queryWindow.Handle;
                 _nppTbData.pszName = "CSV Query";
                 _nppTbData.dlgID = idMyDlg;
                 _nppTbData.uMask = NppTbMsg.DWS_DF_CONT_BOTTOM | NppTbMsg.DWS_ICONTAB | NppTbMsg.DWS_ICONBAR;
@@ -181,14 +180,14 @@ namespace CsvQuery
             }
             else
             {
-                if (show ?? !frmMyDlg.Visible)
+                if (show ?? !_queryWindow.Visible)
                 {
-                    Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_DMMSHOW, 0, frmMyDlg.Handle);
+                    Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_DMMSHOW, 0, _queryWindow.Handle);
                     Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_SETMENUITEMCHECK, PluginBase._funcItems.Items[idMyDlg]._cmdID, 1);
                 }
                 else
                 {
-                    Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_DMMHIDE, 0, frmMyDlg.Handle);
+                    Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_DMMHIDE, 0, _queryWindow.Handle);
                     Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_SETMENUITEMCHECK, PluginBase._funcItems.Items[idMyDlg]._cmdID, 0);
                 }
             }

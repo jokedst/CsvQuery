@@ -56,9 +56,9 @@ namespace CsvQuery.PluginInfrastructure
         /// Gets the ID of the current tab in Notepad++
         /// </summary>
         /// <returns></returns>
-	    public int GetCurrentBufferId()
+	    public ulong GetCurrentBufferId()
         {
-            return (int)Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_GETCURRENTBUFFERID, Unused, Unused);
+            return (ulong)Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_GETCURRENTBUFFERID, Unused, Unused);
         }
 	}
 

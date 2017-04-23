@@ -24,7 +24,13 @@
     <Copy 
         SourceFiles="$(TargetPath)" 
         DestinationFolder="C:\Program Files (x86)\Notepad++\plugins\" 
-        Condition="Exists('C:\Program Files (x86)\Notepad++\plugins\')"
+        Condition="Exists('C:\Program Files (x86)\Notepad++\plugins\') AND '$(PlatformTarget)' == 'x86'"
+        ContinueOnError="false" />
+ 
+    <Copy 
+        SourceFiles="$(TargetPath)" 
+        DestinationFolder="C:\Program Files\Notepad++\plugins\" 
+        Condition="Exists('C:\Program Files\Notepad++\plugins\') AND '$(PlatformTarget)' == 'x64'"
         ContinueOnError="false" />
   </Target>
 </Project>
