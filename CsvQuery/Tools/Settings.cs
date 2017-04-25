@@ -1,6 +1,5 @@
-﻿namespace CsvQuery
+﻿namespace CsvQuery.Tools
 {
-    using System;
     using System.Collections.Generic;
     using System.ComponentModel;
     using System.Drawing;
@@ -10,25 +9,49 @@
     using System.Windows.Forms;
     using PluginInfrastructure;
 
+    /// <summary>
+    /// Manages application settings
+    /// </summary>
     public class Settings
     {
+        [Description("In debugmode extra diagnostics are output"), Category("General"), DefaultValue(false)]
+        public bool DebugMode { get; set; }
+
+        [Description("Separators that are detected automatically"), Category("General"), DefaultValue(",;|\t")]
+        public string Separators { get; set; } = ",;|\t:";
+
+#region Inner workings
         private static readonly string IniFilePath;
-        public static Settings Current;
 
         static Settings()
         {
+            // Figure out default N++ config file path
             var sbIniFilePath = new StringBuilder(Win32.MAX_PATH);
-            Win32.SendMessage(PluginBase.nppData._nppHandle, (uint) NppMsg.NPPM_GETPLUGINSCONFIGDIR, Win32.MAX_PATH,
-                sbIniFilePath);
+            Win32.SendMessage(PluginBase.nppData._nppHandle, (uint) NppMsg.NPPM_GETPLUGINSCONFIGDIR, Win32.MAX_PATH, sbIniFilePath);
             var configDirectory = sbIniFilePath.ToString();
             if (!Directory.Exists(configDirectory)) Directory.CreateDirectory(configDirectory);
             IniFilePath = Path.Combine(configDirectory, Main.PluginName + ".ini");
         }
 
+        /// <summary>
+        /// By default loads settings from the default N++ config folder
+        /// </summary>
+        /// <param name="loadFromFile"> If false will not load anything and have default values set </param>
         public Settings(bool loadFromFile = true)
         {
-            if (!loadFromFile || !File.Exists(IniFilePath)) return;
-            var loaded = GetKeys(IniFilePath, "General");
+            if (loadFromFile) ReadFromIniFile();
+        }
+
+        /// <summary>
+        /// Saves all settings to an ini-file, under "General" section
+        /// </summary>
+        /// <param name="filename">File to write to (default is N++ plugin config)</param>
+        public void ReadFromIniFile(string filename = null)
+        {
+            filename = filename ?? IniFilePath;
+            if (!File.Exists(filename)) return;
+
+            var loaded = GetKeys(filename, "General");
             foreach (var propertyInfo in GetType().GetProperties())
             {
                 var name = propertyInfo.Name;
@@ -40,61 +63,27 @@
                         propertyInfo.SetValue(this, converter.ConvertFromString(loaded[name]), null);
                     }
                 }
-
-                //if (loaded.ContainsKey(name) && !string.IsNullOrEmpty(loaded[name]))
-                //    if (propertyInfo.PropertyType == typeof(string))
-                //        propertyInfo.SetValue(this, loaded[name], null);
-                //    else if (propertyInfo.PropertyType == typeof(bool))
-                //        if (bool.TryParse(loaded[name], out var dbg))
-                //            propertyInfo.SetValue(this, dbg, null);
             }
         }
 
-        [Description("In debugmode extra diagnostics are output")]
-        [Category("General")]
-        [DefaultValue(false)]
-        public bool DebugMode { get; set; }
-
-        [Description("Separators that are detected automatically")]
-        [Category("General")]
-        [DefaultValue(",;|\t")]
-        public string Separators { get; set; } = ",;|\t";
-
-        public void Save()
+        /// <summary>
+        /// Saves all settings to an ini-file, under "General" section
+        /// </summary>
+        /// <param name="filename">File to load (default is N++ plugin config)</param>
+        public void SaveToIniFile(string filename = null)
         {
+            filename = filename ?? IniFilePath;
             var sb = new StringBuilder();
-            //sb.Append($"DebugMode={DebugMode}\0");
-
             foreach (var propertyInfo in GetType().GetProperties())
                 sb.AppendFormat("{0}={1}\0", propertyInfo.Name, propertyInfo.GetValue(this, null));
-            Win32.WritePrivateProfileSection("General", sb.ToString(), IniFilePath);
+            Win32.WritePrivateProfileSection("General", sb.ToString(), filename);
         }
 
-        public bool Convert<T>(string attemptedValue, Action<T> setAction)
-        {
-            var converter = TypeDescriptor.GetConverter(typeof(T));
-            if (converter == null || !converter.IsValid(attemptedValue)) return false;
-            var parsed = (T) converter.ConvertFromString(attemptedValue);
-            setAction(parsed);
-            return true;
-        }
-
-        public static bool Is<T>(string input)
-        {
-            try
-            {
-                var tc = TypeDescriptor.GetConverter(typeof(T));
-                var can = tc.CanConvertFrom(typeof(string));
-                TypeDescriptor.GetConverter(typeof(T)).ConvertFromString(input);
-            }
-            catch
-            {
-                return false;
-            }
-
-            return true;
-        }
-
+        /// <summary>
+        /// Read a section from an ini-file
+        /// </summary>
+        /// <param name="iniFile">Path to ini-file</param>
+        /// <param name="category">Section to read</param>
         private Dictionary<string, string> GetKeys(string iniFile, string category)
         {
             var buffer = new byte[8 * 1024];
@@ -106,13 +95,12 @@
                 .ToDictionary(x => x[0], x => x[1]);
         }
 
-        public Settings Clone()
-        {
-            return (Settings) MemberwiseClone();
-        }
-
+        /// <summary>
+        /// Opens a window that edits all settings
+        /// </summary>
         public void ShowDialog()
         {
+            // We bind a copy of this object and only apply it after they click "Ok"
             var copy = (Settings) MemberwiseClone();
             var dialog = new Form
             {
@@ -154,12 +142,15 @@
             dialog.Controls["Cancel"].Click += (a, b) => dialog.Close();
             dialog.Controls["Ok"].Click += (a, b) =>
             {
-                copy.Save();
-                Current = copy;
+                copy.SaveToIniFile();
+                // Copy all settings to this
+                foreach (var propertyInfo in GetType().GetProperties())
+                    propertyInfo.SetValue(this, propertyInfo.GetValue(copy, null), null);
                 dialog.Close();
             };
 
             dialog.ShowDialog();
         }
+#endregion
     }
 }

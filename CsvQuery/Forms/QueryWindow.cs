@@ -3,9 +3,11 @@
     using System;
     using System.Collections.Generic;
     using System.Data;
+    using System.Diagnostics;
     using System.Linq;
     using System.Windows.Forms;
     using PluginInfrastructure;
+    using Tools;
 
     public partial class QueryWindow : Form
     {
@@ -22,8 +24,7 @@
 
         private void btnAnalyze_Click(object sender, EventArgs e)
         {
-            var watch = new System.Diagnostics.Stopwatch();
-            watch.Start();
+            var watch = Stopwatch.StartNew();
             var sci = PluginBase.GetCurrentScintilla();
             var length = (int)Win32.SendMessage(sci, SciMsg.SCI_GETLENGTH, 0, 0);
             var codepage = (int)Win32.SendMessage(sci, SciMsg.SCI_GETCODEPAGE, 0, 0);
@@ -99,23 +100,21 @@
 
             dataGrid.DataSource = table;
             var t4 = watch.ElapsedMilliseconds; watch.Restart();
-
-            //dataGrid.Columns.Add("col1", "Column 1");
-            //dataGrid.Columns.Add("col2", "Column 2");
-            //dataGrid.Rows.Add(new[] { "hej", "san" });
-            //dataGrid.Rows.Add(new[] { "qwe", "rty" });
+            
             dataGrid.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.DisplayedCells);
             watch.Stop();
-            MessageBox.Show($"Times: \nGetText: {t1}ms\nAnalyze: {t2}ms\nParse: {t3}ms\nTo table:{t5}ms\nDatabind: {t4}ms\nResize: {watch.ElapsedMilliseconds}ms\nBuffer ID: {bufferId}\nSave to DB: {timeSaveToDb}ms\nLoad from DB: {timeGetFromDb}ms");
+            var diagnostic = $"Times: \nGetText: {t1}ms\nAnalyze: {t2}ms\nParse: {t3}ms\nTo table:{t5}ms\nDatabind: {t4}ms\nResize: {watch.ElapsedMilliseconds}ms\nBuffer ID: {bufferId}\nSave to DB: {timeSaveToDb}ms\nLoad from DB: {timeGetFromDb}ms";
+            Trace.TraceInformation(diagnostic);
+            if(Main.Settings.DebugMode) MessageBox.Show(diagnostic);
         }
 
         private void btnExec_Click(object sender, EventArgs e)
         {
-            var sci = PluginBase.GetCurrentScintilla();
+            var watch = new DiagnosticTimer();
             var bufferId = Win32.SendMessage(PluginBase.nppData._nppHandle,(uint) NppMsg.NPPM_GETCURRENTBUFFERID, 0, 0);
             DataStorage.SetActiveTab(bufferId);
+            watch.Checkpoint("Switch buffer");
 
-            var table = new DataTable();
             var query = txbQuery.Text;
             List<string[]> toshow;
             try
@@ -127,7 +126,9 @@
                 MessageBox.Show("Could not execute query", "Error in query");
                 return;
             }
+            watch.Checkpoint("Execute query");
 
+            var table = new DataTable();
             // Create columns
             foreach (var s in toshow[0])
             {
@@ -139,12 +140,17 @@
             {
                 table.Rows.Add(row);
             }
+            watch.Checkpoint("Create DataTable");
 
             dataGrid.DataSource = table;
             dataGrid.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.DisplayedCells);
+            watch.Checkpoint("Display");
 
             // Store query in history
             queryAutoComplete.Add(query);
+            var diagnosticMessage = watch.LastCheckpoint("Save query in history");
+            Trace.TraceInformation(diagnosticMessage);
+            if (Main.Settings.DebugMode) MessageBox.Show(diagnosticMessage);
         }
 
         private void txbQuery_KeyDown(object sender, KeyEventArgs e)

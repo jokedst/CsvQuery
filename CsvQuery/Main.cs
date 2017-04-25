@@ -12,6 +12,7 @@ namespace CsvQuery
     using System.Diagnostics;
     using Community.CsharpSqlite;
     using Forms;
+    using Tools;
 
     internal class Main
     {
@@ -42,16 +43,8 @@ namespace CsvQuery
             PluginBase.SetCommand(0, "Toggle query window", ToggleQueryWindow); idMyDlg = 0;
             PluginBase.SetCommand(0, "List parsed tables", ListSqliteTables);
             PluginBase.SetCommand(0, "---", null);
-            PluginBase.SetCommand(0, "&Settings", ShowSettings);
-            PluginBase.SetCommand(0, "Zeta", Settings.ShowDialog);
+            PluginBase.SetCommand(0, "&Settings", Settings.ShowDialog);
             PluginBase.SetCommand(0, "&About", AboutCsvQuery);
-        }
-
-        private static void ShowSettings()
-        {
-            var settingsWindow = new SettingsDialog(Settings.Clone());
-            //settingsWindow.settingsGrid.SelectedObject = Settings;
-            settingsWindow.ShowDialog();
         }
 
         internal static void SetToolBarIcon()
@@ -66,7 +59,7 @@ namespace CsvQuery
 
         internal static void PluginCleanUp()
         {
-            Settings.Save();
+            Settings.SaveToIniFile();
         }
 
         internal static void ListSqliteTables()

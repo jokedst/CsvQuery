@@ -155,12 +155,6 @@
     <Compile Include="Csv.cs" />
     <Compile Include="CsvAnalyzer.cs" />
     <Compile Include="DataStorage.cs" />
-    <Compile Include="Forms\SettingsDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Forms\SettingsDialog.Designer.cs">
-      <DependentUpon>SettingsDialog.cs</DependentUpon>
-    </Compile>
     <Compile Include="PluginInfrastructure\ClikeStringArray.cs" />
     <Compile Include="PluginInfrastructure\DllExport\DllExportAttribute.cs" />
     <Compile Include="Forms\QueryWindow.cs">
@@ -190,16 +184,14 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="PluginInfrastructure\UnmanagedExports.cs" />
-    <Compile Include="Settings.cs" />
+    <Compile Include="Tools\DiagnosticTimer.cs" />
+    <Compile Include="Tools\Settings.cs" />
     <Compile Include="SQLiteDatabase.cs" />
     <Compile Include="SQLiteVdbe.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Forms\QueryWindow.resx">
       <DependentUpon>QueryWindow.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Forms\SettingsDialog.resx">
-      <DependentUpon>SettingsDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
