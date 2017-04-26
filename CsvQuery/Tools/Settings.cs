@@ -29,7 +29,6 @@
             var sbIniFilePath = new StringBuilder(Win32.MAX_PATH);
             Win32.SendMessage(PluginBase.nppData._nppHandle, (uint) NppMsg.NPPM_GETPLUGINSCONFIGDIR, Win32.MAX_PATH, sbIniFilePath);
             var configDirectory = sbIniFilePath.ToString();
-            if (!Directory.Exists(configDirectory)) Directory.CreateDirectory(configDirectory);
             IniFilePath = Path.Combine(configDirectory, Main.PluginName + ".ini");
         }
 
@@ -73,6 +72,8 @@
         public void SaveToIniFile(string filename = null)
         {
             filename = filename ?? IniFilePath;
+            var dir = Path.GetDirectoryName(filename);
+            if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
             var sb = new StringBuilder();
             foreach (var propertyInfo in GetType().GetProperties())
                 sb.AppendFormat("{0}={1}\0", propertyInfo.Name, propertyInfo.GetValue(this, null));
