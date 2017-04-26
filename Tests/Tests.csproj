@@ -74,16 +74,19 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <EmbeddedResource Include="TestFiles\Avtalsprislista992220_20140623-112840802.csv" />
+    <None Include="TestFiles\convertcsv.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <EmbeddedResource Include="TestFiles\semicolon.csv" />
+    <None Include="TestFiles\sentences.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CsvQuery\CsvQuery.csproj">
       <Project>{CE079981-61E0-4113-9447-88C0A63696CF}</Project>
       <Name>CsvQuery</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="TestFiles\PB__20140923_000000_PB201409230500105043.TXT" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
