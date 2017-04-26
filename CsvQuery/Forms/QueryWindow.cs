@@ -65,8 +65,6 @@
             watch.Checkpoint("Analyze");
 
             dataGrid.DataSource = null;
-            var table = new DataTable();
-
             dataGrid.Rows.Clear();
             dataGrid.Columns.Clear();
 
@@ -76,38 +74,16 @@
             DataStorage.SaveData(bufferId, data, null);
             watch.Checkpoint("Saved to DB");
 
-            DataStorage.SetActiveTab(bufferId);
-            var toshow = DataStorage.ExecuteQueryWithColumnNames("SELECT * FROM THIS");
-            watch.Checkpoint("Read from DB");
+            txbQuery.Text = "SELECT * FROM THIS";
+            Execute(bufferId, watch);
 
-            // Create columns
-            foreach (var s in toshow[0])
-            {
-                table.Columns.Add(s);
-            }
-
-            // Insert rows
-            foreach (var row in toshow.Skip(1))
-            {
-// ReSharper disable CoVariantArrayConversion
-                table.Rows.Add(row);
-// ReSharper restore CoVariantArrayConversion
-            }
-            watch.Checkpoint("To table");
-
-            dataGrid.DataSource = table;
-            watch.Checkpoint("Databind");
-
-            dataGrid.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.DisplayedCells);
             var diagnostic = watch.LastCheckpoint("Resize");
             Trace.TraceInformation(diagnostic);
             if(Main.Settings.DebugMode) MessageBox.Show(diagnostic);
         }
 
-        private void btnExec_Click(object sender, EventArgs e)
+        private void Execute(IntPtr bufferId, DiagnosticTimer watch)
         {
-            var watch = new DiagnosticTimer();
-            var bufferId = Win32.SendMessage(PluginBase.nppData._nppHandle,(uint) NppMsg.NPPM_GETCURRENTBUFFERID, 0, 0);
             DataStorage.SetActiveTab(bufferId);
             watch.Checkpoint("Switch buffer");
 
@@ -144,6 +120,15 @@
 
             // Store query in history
             queryAutoComplete.Add(query);
+        }
+
+        private void btnExec_Click(object sender, EventArgs e)
+        {
+            var watch = new DiagnosticTimer();
+            var bufferId = Win32.SendMessage(PluginBase.nppData._nppHandle,(uint) NppMsg.NPPM_GETCURRENTBUFFERID, 0, 0);
+           
+            Execute(bufferId, watch);
+
             var diagnosticMessage = watch.LastCheckpoint("Save query in history");
             Trace.TraceInformation(diagnosticMessage);
             if (Main.Settings.DebugMode) MessageBox.Show(diagnosticMessage);

@@ -153,5 +153,10 @@
             dialog.ShowDialog();
         }
 #endregion
+
+        public void OpenFile()
+        {
+            Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_DOOPEN, 0, IniFilePath);
+        }
     }
 }

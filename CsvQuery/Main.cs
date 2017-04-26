@@ -15,11 +15,8 @@
     {
         public const string PluginName = "CsvQuery";
         public static Settings Settings = new Settings();
-        public static QueryWindow _queryWindow = null;
-        public static int idMyDlg = -1;
-        public static Bitmap tbBmp_cq = Properties.Resources.cq;
-        //public static Icon tbIcon = null;
-
+        public static QueryWindow QueryWindow;
+        public static int MenuToggleId = -1;
 
         public static void OnNotification(ScNotification notification)
         {
@@ -30,20 +27,21 @@
 
         public static void CommandMenuInit()
         {
-            idMyDlg = PluginBase.AddMenuItem("Toggle query window", ToggleQueryWindow, true, new ShortcutKey(true, true, false, Keys.C));
-            PluginBase.AddMenuItem("List parsed tables", ListSqliteTables);
+            MenuToggleId = PluginBase.AddMenuItem("Toggle query window", ToggleQueryWindow, true, new ShortcutKey(true, true, false, Keys.C));
+            PluginBase.AddMenuItem("List parsed files", ListSqliteTables);
             PluginBase.AddMenuItem("---", null);
             PluginBase.AddMenuItem("&Settings", Settings.ShowDialog);
+            PluginBase.AddMenuItem("Settings file", Settings.OpenFile);
             PluginBase.AddMenuItem("&About", AboutCsvQuery);
         }
 
         public static void SetToolBarIcon()
         {
             toolbarIcons tbIcons = new toolbarIcons();
-            tbIcons.hToolbarBmp = tbBmp_cq.GetHbitmap();
+            tbIcons.hToolbarBmp = Properties.Resources.cq.GetHbitmap();
             IntPtr pTbIcons = Marshal.AllocHGlobal(Marshal.SizeOf(tbIcons));
             Marshal.StructureToPtr(tbIcons, pTbIcons, false);
-            Win32.SendMessage(PluginBase.nppData._nppHandle, (uint) NppMsg.NPPM_ADDTOOLBARICON, PluginBase._funcItems.Items[idMyDlg]._cmdID, pTbIcons);
+            Win32.SendMessage(PluginBase.nppData._nppHandle, (uint) NppMsg.NPPM_ADDTOOLBARICON, PluginBase._funcItems.Items[MenuToggleId]._cmdID, pTbIcons);
             Marshal.FreeHGlobal(pTbIcons);
         }
 
@@ -55,35 +53,75 @@
         public static void ListSqliteTables()
         {
             QueryWindowVisible(true);
-            _queryWindow.ExecuteQuery("SELECT * FROM sqlite_master");
+            QueryWindow.ExecuteQuery("SELECT * FROM sqlite_master");
         }
 
         public static void AboutCsvQuery()
         {
-            MessageBox.Show("Hello", "About CSV Query");
+            const int xsize = 300, ysize = 180;
+
+            var dialog = new Form
+            {
+                Text = "About CSV Query",
+                ClientSize = new Size(xsize, ysize),
+                SizeGripStyle = SizeGripStyle.Hide,
+                ShowIcon = false,
+                FormBorderStyle = FormBorderStyle.FixedToolWindow,
+                ShowInTaskbar = false,
+                Controls =
+                {
+                    new Button
+                    {
+                        Name = "Ok",
+                        Text = "&Ok",
+                        Size = new Size(75, 23),
+                        Location = new Point(xsize - 75 - 13, ysize - 23 - 13),
+                        UseVisualStyleBackColor = true
+                    },
+                    new Label
+                    {
+                        Location = new Point(13,13),
+                        Size = new Size(xsize-13-13,ysize-13-13-23-6),
+                        Text = "CSV Query\r\n\r\nAllows SQL queries against CSV files.\r\n\r\nThe SQL syntax is the same as SQLite.\r\nThe table \"THIS\" represents the current file.\r\n\r\nBy jokedst",
+                        TextAlign = ContentAlignment.MiddleCenter,
+                        Font = new Font("Consolas", 8.25F)
+                    }
+                }
+            };
+            dialog.Controls["Ok"].Click += (a, b) => dialog.Close();
+
+            if (Settings.DebugMode)
+            {
+                var testbutton = new Button
+                {
+                    Text = "Test",
+                    Size = new Size(75, 23),
+                    Location = new Point(13, ysize - 23 - 13),
+                    UseVisualStyleBackColor = true
+                };
+                testbutton.Click += (a, b) => TestDatabase();
+                dialog.Controls.Add(testbutton);
+            }
+
+            dialog.ShowDialog();
         }
 
-        internal static void myMenuFunction()
+        public static void TestDatabase()
         {
             // This tests the SQLite in-memory DB by creating some shit and selecting it
-            MessageBox.Show("Hello N++!");
-            var watch = new Stopwatch();
-            watch.Start();
+            var watch = new DiagnosticTimer();
             var db = new SQLiteDatabase(":memory:");
-            var t1 = watch.ElapsedMilliseconds; watch.Restart();
-            db.ExecuteNonQuery("SELECT 1");
-            watch.Restart();
+            watch.Checkpoint("Create DB");
 
             db.ExecuteNonQuery("CREATE TABLE Root (intIndex INTEGER PRIMARY KEY, strIndex TEXT, nr REAL)");
-            var t2a = watch.ElapsedMilliseconds; watch.Restart();
+            watch.Checkpoint("Create table 1");
             db.ExecuteNonQuery("CREATE TABLE This (intIndex INTEGER PRIMARY KEY, strIndex TEXT, nr REAL)");
-            var t2 = watch.ElapsedMilliseconds; watch.Restart();
+            watch.Checkpoint("Create table 2");
             db.ExecuteNonQuery("CREATE INDEX RootStrIndex ON Root (strIndex)");
 
             string INSERT_Command = "INSERT INTO Root VALUES (?,?,?)";
             int i;
             var stmt = new SQLiteVdbe(db, INSERT_Command);
-            long start = DateTime.Now.Ticks;
             long key = 1999;
             for (i = 0; i < 10000; i++)
             {
@@ -95,22 +133,19 @@
                 stmt.ExecuteStep();
             }
             stmt.Close();
-            var t3 = watch.ElapsedMilliseconds; watch.Restart();
-
-            key = Int64.MinValue;
+            watch.Checkpoint("Insert 10000 rows");
+            
             i = 0;
-            var c1 = new SQLiteVdbe(db, "SELECT * FROM Root ORDER BY intIndex LIMIT 10");
+            var c1 = new SQLiteVdbe(db, "SELECT * FROM Root ORDER BY intIndex LIMIT 5000");
             while (c1.ExecuteStep() != Sqlite3.SQLITE_DONE)
             {
-                long intKey = (long)c1.Result_Long(0);
-                //MessageBox.Show(intKey + ":" + c1.Result_Text(1) + ":" + c1.Result_Double(2));
+                long intKey = c1.Result_Long(0);
                 key = intKey;
                 i += 1;
             }
             c1.Close();
-            var t4 = watch.ElapsedMilliseconds; watch.Restart();
-
-            MessageBox.Show("Times: \nCreate DB: " + t1 + "ms\nCreate table 1: " + t2a + "ms\nCreate table 2: " + t2 + "ms\nInsert: " + t3 + "ms\nSelect: " + t4 + "ms");
+            var diagnostic = watch.LastCheckpoint("Select 5000 sorted rows");
+            MessageBox.Show(diagnostic);
         }
 
         private static void ToggleQueryWindow()
@@ -120,9 +155,9 @@
 
         internal static void QueryWindowVisible(bool? show = null)
         {
-            if (_queryWindow == null)
+            if (QueryWindow == null)
             {
-                _queryWindow = new QueryWindow();
+                QueryWindow = new QueryWindow();
                 Icon tbIcon;
 
                 using (Bitmap newBmp = new Bitmap(16, 16))
@@ -134,14 +169,14 @@
                     colorMap[0].NewColor = Color.FromKnownColor(KnownColor.ButtonFace);
                     ImageAttributes attr = new ImageAttributes();
                     attr.SetRemapTable(colorMap);
-                    g.DrawImage(tbBmp_cq, new Rectangle(0, 0, 16, 16), 0, 0, 16, 16, GraphicsUnit.Pixel, attr);
+                    g.DrawImage(Properties.Resources.cq, new Rectangle(0, 0, 16, 16), 0, 0, 16, 16, GraphicsUnit.Pixel, attr);
                     tbIcon = Icon.FromHandle(newBmp.GetHicon());
                 }
 
                 NppTbData _nppTbData = new NppTbData();
-                _nppTbData.hClient = _queryWindow.Handle;
+                _nppTbData.hClient = QueryWindow.Handle;
                 _nppTbData.pszName = "CSV Query";
-                _nppTbData.dlgID = idMyDlg;
+                _nppTbData.dlgID = MenuToggleId;
                 _nppTbData.uMask = NppTbMsg.DWS_DF_CONT_BOTTOM | NppTbMsg.DWS_ICONTAB | NppTbMsg.DWS_ICONBAR;
                 _nppTbData.hIconTab = (uint)tbIcon.Handle;
                 _nppTbData.pszModuleName = PluginName;
@@ -152,15 +187,15 @@
             }
             else
             {
-                if (show ?? !_queryWindow.Visible)
+                if (show ?? !QueryWindow.Visible)
                 {
-                    Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_DMMSHOW, 0, _queryWindow.Handle);
-                    Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_SETMENUITEMCHECK, PluginBase._funcItems.Items[idMyDlg]._cmdID, 1);
+                    Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_DMMSHOW, 0, QueryWindow.Handle);
+                    Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_SETMENUITEMCHECK, PluginBase._funcItems.Items[MenuToggleId]._cmdID, 1);
                 }
                 else
                 {
-                    Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_DMMHIDE, 0, _queryWindow.Handle);
-                    Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_SETMENUITEMCHECK, PluginBase._funcItems.Items[idMyDlg]._cmdID, 0);
+                    Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_DMMHIDE, 0, QueryWindow.Handle);
+                    Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_SETMENUITEMCHECK, PluginBase._funcItems.Items[MenuToggleId]._cmdID, 0);
                 }
             }
         }

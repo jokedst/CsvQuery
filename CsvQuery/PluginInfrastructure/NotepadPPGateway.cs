@@ -10,7 +10,7 @@ namespace CsvQuery.PluginInfrastructure
 		void FileNew();
 
 		string GetCurrentFilePath();
-		unsafe string GetFilePath(int bufferId);
+		unsafe string GetFilePath(IntPtr bufferId);
 		void SetCurrentLanguage(LangType language);
 	}
 
@@ -40,7 +40,7 @@ namespace CsvQuery.PluginInfrastructure
 		/// <summary>
 		/// Gets the path of the current document.
 		/// </summary>
-		public unsafe string GetFilePath(int bufferId)
+		public unsafe string GetFilePath(IntPtr bufferId)
 		{
 			var path = new StringBuilder(2000);
 			Win32.SendMessage(PluginBase.nppData._nppHandle, (uint) NppMsg.NPPM_GETFULLPATHFROMBUFFERID, bufferId, path);
@@ -56,11 +56,17 @@ namespace CsvQuery.PluginInfrastructure
         /// Gets the ID of the current tab in Notepad++
         /// </summary>
         /// <returns></returns>
-	    public ulong GetCurrentBufferId()
+	    public IntPtr GetCurrentBufferId()
         {
-            return (ulong)Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_GETCURRENTBUFFERID, Unused, Unused);
+            return Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_GETCURRENTBUFFERID, Unused, Unused);
         }
-	}
+
+	    public void OpenFileInNpp(string filename)
+	    {
+            // NPPM_DOOPEN
+	        Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_DOOPEN, Unused, filename);
+        }
+    }
 
 	/// <summary>
 	/// This class holds helpers for sending messages defined in the Resource_h.cs file. It is at the moment
