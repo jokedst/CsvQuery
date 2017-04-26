@@ -56,6 +56,9 @@
             QueryWindow.ExecuteQuery("SELECT * FROM sqlite_master");
         }
 
+        /// <summary>
+        /// Shows the "About" dialog window
+        /// </summary>
         public static void AboutCsvQuery()
         {
             const int xsize = 300, ysize = 180;
@@ -106,9 +109,11 @@
             dialog.ShowDialog();
         }
 
+        /// <summary>
+        /// This tests the SQLite in-memory DB by creating some data and then selecting it
+        /// </summary>
         public static void TestDatabase()
         {
-            // This tests the SQLite in-memory DB by creating some shit and selecting it
             var watch = new DiagnosticTimer();
             var db = new SQLiteDatabase(":memory:");
             watch.Checkpoint("Create DB");

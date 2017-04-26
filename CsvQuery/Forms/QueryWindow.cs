@@ -10,6 +10,9 @@
     using PluginInfrastructure;
     using Tools;
 
+    /// <summary>
+    /// The query window that whos the current query and the results in a grid
+    /// </summary>
     public partial class QueryWindow : Form
     {
         public QueryWindow()
@@ -17,6 +20,10 @@
             InitializeComponent();
         }
 
+        /// <summary>
+        /// Executes given query and shows the result in this window
+        /// </summary>
+        /// <param name="query"> SQL query to run </param>
         public void ExecuteQuery(string query)
         {
             txbQuery.Text = query;
@@ -26,34 +33,8 @@
         private void btnAnalyze_Click(object sender, EventArgs e)
         {
             var watch = new DiagnosticTimer();
-            var sci = PluginBase.GetCurrentScintilla();
-            var length = (int)Win32.SendMessage(sci, SciMsg.SCI_GETLENGTH, 0, 0);
-            var codepage = (int)Win32.SendMessage(sci, SciMsg.SCI_GETCODEPAGE, 0, 0);
-            var bufferId = Win32.SendMessage(PluginBase.nppData._nppHandle,(uint) NppMsg.NPPM_GETCURRENTBUFFERID, 0, 0);
-            string text;
-            using (var tr = new TextRange(0, length))
-            //using (Sci_TextRange tr = new Sci_TextRange(0, length, length + 1))
-            {
-                Win32.SendMessage(sci, SciMsg.SCI_GETTEXTRANGE, 0, tr.NativePointer);
-
-                switch (codepage)
-                {
-                    case (int)SciMsg.SC_CP_UTF8:
-                        text = tr.GetFromUtf8();
-                        break;
-                    case (int)SciMsg.SC_CP_DBCS: // Double Byte Character Set, like unicode (utf16) - this never seems to happen, when the text is utc-2 we get SC_CP_UTF8 although that is a lie!
-                        text = tr.GetFromUnicode();
-                        break;
-                    case 0: // ansi?
-                        text = tr.lpstrText;
-                        break;
-                    default:
-                        text = tr.lpstrText;
-                        break;
-                }
-
-                //MessageBox.Show("Length: " + length + ", got: " + text.Length + " \n" + text.Substring(0, Math.Min(100, text.Length)));
-            }
+            var bufferId = NotepadPPGateway.GetCurrentBufferId();
+            string text = PluginBase.CurrentScintillaGateway.GetAllText();
             watch.Checkpoint("GetText");
 
             var csvSettings = CsvAnalyzer.Analyze(text);
