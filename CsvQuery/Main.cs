@@ -1,41 +1,31 @@
-﻿using System;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.IO;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Windows.Forms;
-using CsvQuery.PluginInfrastructure;
-
-namespace CsvQuery
+﻿namespace CsvQuery
 {
+    using System;
     using System.Diagnostics;
+    using System.Drawing;
+    using System.Drawing.Imaging;
+    using System.Runtime.InteropServices;
+    using System.Windows.Forms;
     using Community.CsharpSqlite;
-    using Forms;
-    using Tools;
+    using CsvQuery.PluginInfrastructure;
+    using CsvQuery.Forms;
+    using CsvQuery.Tools;
 
     internal class Main
     {
-        internal const string PluginName = "CsvQuery";
-        static string iniFilePath = null;
-        static bool someSetting = false;
-        static QueryWindow _queryWindow = null;
-        static int idMyDlg = -1;
-        static Bitmap tbBmp_cq = Properties.Resources.cq;
-        static Icon tbIcon = null;
+        public const string PluginName = "CsvQuery";
+        public static Settings Settings = new Settings();
+        public static QueryWindow _queryWindow = null;
+        public static int idMyDlg = -1;
+        public static Bitmap tbBmp_cq = Properties.Resources.cq;
+        //public static Icon tbIcon = null;
 
-        internal static Settings Settings = new Settings();
 
         public static void OnNotification(ScNotification notification)
         {
-            // This method is invoked whenever something is happening in notepad++
-            // use eg. as
-            // if (notification.Header.Code == (uint)NppMsg.NPPN_xxx)
-            // { ... }
-            // or
-            //
-            // if (notification.Header.Code == (uint)SciMsg.SCNxxx)
-            // { ... }
+            // This method is invoked whenever something is happening in notepad++. Use as:
+            // if (notification.Header.Code == (uint)NppMsg.NPPN_xxx) {...}
+            // (or SciMsg.SCNxxx)
         }
 
         public static void CommandMenuInit()
@@ -123,9 +113,9 @@ namespace CsvQuery
             MessageBox.Show("Times: \nCreate DB: " + t1 + "ms\nCreate table 1: " + t2a + "ms\nCreate table 2: " + t2 + "ms\nInsert: " + t3 + "ms\nSelect: " + t4 + "ms");
         }
 
-        internal static void ToggleQueryWindow()
+        private static void ToggleQueryWindow()
         {
-            QueryWindowVisible(null);
+            QueryWindowVisible();
         }
 
         internal static void QueryWindowVisible(bool? show = null)
@@ -133,6 +123,7 @@ namespace CsvQuery
             if (_queryWindow == null)
             {
                 _queryWindow = new QueryWindow();
+                Icon tbIcon;
 
                 using (Bitmap newBmp = new Bitmap(16, 16))
                 {

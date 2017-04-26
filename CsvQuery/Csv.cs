@@ -1,9 +1,10 @@
-﻿namespace CsvQuery
+﻿namespace CsvQuery.Evaluation
 {
     using System;
     using System.IO;
     using System.Text.RegularExpressions;
 
+    // This file is here for EVALUATION ONLY - the plugin does not use it.
     // From http://stackoverflow.com/questions/769621/dealing-with-commas-in-a-csv-file
     public sealed class CsvReader : IDisposable
     {

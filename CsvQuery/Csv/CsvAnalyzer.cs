@@ -1,52 +1,22 @@
-﻿namespace CsvQuery
+﻿namespace CsvQuery.Csv
 {
-    using System.IO;
-    using System;
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
-    using System.Text;
-
-    public class CsvSettings
-    {
-        public char Separator { get; set; }
-        public char TextQualifier { get; set; }
-        public char EscapeCharacter { get; set; }
-
-        /// <summary>
-        /// Parses a big text blob into rows and columns, using the settings
-        /// </summary>
-        /// <param name="text">Big blob of text</param>
-        /// <returns>Parsed data</returns>
-        public List<string[]> Parse(string text)
-        {
-            var data = new List<string[]>();
-
-            var textreader = new StringReader(text);
-            string line;
-            int columnsCount = 0;
-            while ((line = textreader.ReadLine()) != null)
-            {
-                var cols = line.Split(this.Separator);
-                data.Add(cols);
-
-                if (cols.Length > columnsCount)
-                    columnsCount = cols.Length;
-            }
-
-            return data;
-        }
-    }
 
     public class CsvAnalyzer
     {
-        private static string preferredSeparators = ",;|:\t ";
         private class Stat
         {
             public int Occurances;
-
             public float Variance;
         }
 
+        /// <summary>
+        /// Analyzes a CSV text and tries to figure out separators, quote chars etc
+        /// </summary>
+        /// <param name="csvString"></param>
+        /// <returns></returns>
         public static CsvSettings Analyze(string csvString)
         {
             // TODO: strings with quoted values (e.g. 'hej,san')
@@ -150,6 +120,8 @@
 
         private static char GetSeparatorFromVariance(Dictionary<char, float> variances, Dictionary<char, int> occurrences, int lineCount)
         {
+            var preferredSeparators = Main.Settings.Separators.Replace("\\t", "\t");
+
             // The char with lowest variance is most likely the separator
             // Optimistic: check prefered with 0 variance 
             var separator = variances
@@ -164,14 +136,25 @@
             var defaultKV = default(KeyValuePair<char, float>);
 
             // Ok, no perfect separator. Check if the best char that exists on all lines is a prefered separator
-            var best = variances.OrderBy(x => x.Value).FirstOrDefault(x => occurrences[x.Key] >= lineCount);
+            var sortedVariances = variances.OrderBy(x => x.Value).ToList();
+            var best = sortedVariances.FirstOrDefault(x => occurrences[x.Key] >= lineCount);
             if (!best.Equals(defaultKV) && preferredSeparators.IndexOf(best.Key) != -1) 
                 return best.Key;
 
-            // Now we need to somehow decide how much of a 'bonus' a prefered separator should have
-            var bestPreffered = variances.OrderBy(x => x.Value).FirstOrDefault(x => occurrences[x.Key] >= lineCount*2 && preferredSeparators.IndexOf(x.Key) != -1);
+            // No? Second best?
+            best = sortedVariances.Where(x => occurrences[x.Key] >= lineCount).Skip(1).FirstOrDefault();
+            if (!best.Equals(defaultKV) && preferredSeparators.IndexOf(best.Key) != -1)
+                return best.Key;
 
-
+            // Ok, screw the preferred separators, is any other char a perfect separator? (and common, i.e. at least 3 per line)
+            separator = variances
+                .Where(x => x.Value == 0f && occurrences[x.Key] >= lineCount*2)
+                .OrderByDescending(x => occurrences[x.Key])
+                .Select(x => (char?)x.Key)
+                .FirstOrDefault();
+            if (separator != null)
+                return separator.Value;
+            
             // Ok, I have no idea
             return '\0';
         }

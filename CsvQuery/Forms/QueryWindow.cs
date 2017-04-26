@@ -6,6 +6,7 @@
     using System.Diagnostics;
     using System.Linq;
     using System.Windows.Forms;
+    using Csv;
     using PluginInfrastructure;
     using Tools;
 
@@ -24,7 +25,7 @@
 
         private void btnAnalyze_Click(object sender, EventArgs e)
         {
-            var watch = Stopwatch.StartNew();
+            var watch = new DiagnosticTimer();
             var sci = PluginBase.GetCurrentScintilla();
             var length = (int)Win32.SendMessage(sci, SciMsg.SCI_GETLENGTH, 0, 0);
             var codepage = (int)Win32.SendMessage(sci, SciMsg.SCI_GETCODEPAGE, 0, 0);
@@ -53,15 +54,16 @@
 
                 //MessageBox.Show("Length: " + length + ", got: " + text.Length + " \n" + text.Substring(0, Math.Min(100, text.Length)));
             }
-            var t1 = watch.ElapsedMilliseconds; watch.Restart();
-            var csvSettings = CsvAnalyzer.Analyze(text);
+            watch.Checkpoint("GetText");
 
+            var csvSettings = CsvAnalyzer.Analyze(text);
             if(csvSettings.Separator == '\0')
             {
                 MessageBox.Show("Could not figure out separator");
                 return;
             }
-            var t2 = watch.ElapsedMilliseconds; watch.Restart();
+            watch.Checkpoint("Analyze");
+
             dataGrid.DataSource = null;
             var table = new DataTable();
 
@@ -69,19 +71,14 @@
             dataGrid.Columns.Clear();
 
             var data = csvSettings.Parse(text);
-            var t3 = watch.ElapsedMilliseconds; watch.Restart();
+            watch.Checkpoint("Parse");
 
             DataStorage.SaveData(bufferId, data, null);
-            var timeSaveToDb = watch.ElapsedMilliseconds; watch.Restart();
+            watch.Checkpoint("Saved to DB");
+
             DataStorage.SetActiveTab(bufferId);
             var toshow = DataStorage.ExecuteQueryWithColumnNames("SELECT * FROM THIS");
-            var timeGetFromDb = watch.ElapsedMilliseconds; watch.Restart();
-
-            //for (int i = 0; i < columnsCount; i++) table.Columns.Add("Col" + i);
-            //foreach (var cols in toshow)
-            //{
-            //    table.Rows.Add(cols);
-            //}
+            watch.Checkpoint("Read from DB");
 
             // Create columns
             foreach (var s in toshow[0])
@@ -96,14 +93,13 @@
                 table.Rows.Add(row);
 // ReSharper restore CoVariantArrayConversion
             }
-            var t5 = watch.ElapsedMilliseconds; watch.Restart();
+            watch.Checkpoint("To table");
 
             dataGrid.DataSource = table;
-            var t4 = watch.ElapsedMilliseconds; watch.Restart();
-            
+            watch.Checkpoint("Databind");
+
             dataGrid.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.DisplayedCells);
-            watch.Stop();
-            var diagnostic = $"Times: \nGetText: {t1}ms\nAnalyze: {t2}ms\nParse: {t3}ms\nTo table:{t5}ms\nDatabind: {t4}ms\nResize: {watch.ElapsedMilliseconds}ms\nBuffer ID: {bufferId}\nSave to DB: {timeSaveToDb}ms\nLoad from DB: {timeGetFromDb}ms";
+            var diagnostic = watch.LastCheckpoint("Resize");
             Trace.TraceInformation(diagnostic);
             if(Main.Settings.DebugMode) MessageBox.Show(diagnostic);
         }

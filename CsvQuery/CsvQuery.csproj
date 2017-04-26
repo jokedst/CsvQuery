@@ -153,8 +153,9 @@
     <Compile Include="CsharpSqlite\where_c.cs" />
     <Compile Include="CsharpSqlite\_Custom.cs" />
     <Compile Include="Csv.cs" />
-    <Compile Include="CsvAnalyzer.cs" />
-    <Compile Include="DataStorage.cs" />
+    <Compile Include="Csv\CsvAnalyzer.cs" />
+    <Compile Include="Csv\CsvSettings.cs" />
+    <Compile Include="Tools\DataStorage.cs" />
     <Compile Include="PluginInfrastructure\ClikeStringArray.cs" />
     <Compile Include="PluginInfrastructure\DllExport\DllExportAttribute.cs" />
     <Compile Include="Forms\QueryWindow.cs">
@@ -186,8 +187,8 @@
     <Compile Include="PluginInfrastructure\UnmanagedExports.cs" />
     <Compile Include="Tools\DiagnosticTimer.cs" />
     <Compile Include="Tools\Settings.cs" />
-    <Compile Include="SQLiteDatabase.cs" />
-    <Compile Include="SQLiteVdbe.cs" />
+    <Compile Include="Tools\SQLiteDatabase.cs" />
+    <Compile Include="Tools\SQLiteVdbe.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Forms\QueryWindow.resx">
@@ -200,8 +201,8 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="cq.png" />
     <Content Include="CsharpSqlite\License-CsharpSqlite-MIT.txt" />
+    <Content Include="Properties\CSVQueryIcon.png" />
     <None Include="License.txt" />
     <None Include="gpl-3.0.txt" />
   </ItemGroup>

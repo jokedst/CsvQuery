@@ -17,8 +17,8 @@
         [Description("In debugmode extra diagnostics are output"), Category("General"), DefaultValue(false)]
         public bool DebugMode { get; set; }
 
-        [Description("Separators that are detected automatically"), Category("General"), DefaultValue(",;|\t")]
-        public string Separators { get; set; } = ",;|\t:";
+        [Description("Separators that are detected automatically"), Category("General"), DefaultValue(",;|\\t")]
+        public string Separators { get; set; } = ",;|\\t:";
 
 #region Inner workings
         private static readonly string IniFilePath;
