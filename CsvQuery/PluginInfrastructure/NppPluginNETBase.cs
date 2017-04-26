@@ -9,32 +9,48 @@ namespace CsvQuery.PluginInfrastructure
         internal static FuncItems _funcItems = new FuncItems();
         protected static ScintillaGateway[] scintillaGateways = new ScintillaGateway[2];
 
-        internal static void SetCommand(int index, string commandName, NppFuncItemDelegate functionPointer)
+        /// <summary>
+        /// Adds an entry in the Notepad++ Plugin menu.
+        /// 
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="functionPointer"></param>
+        /// <param name="checkOnInit"></param>
+        /// <param name="shortcut"></param>
+        /// <returns></returns>
+        public static int AddMenuItem(string text, NppFuncItemDelegate functionPointer, bool checkOnInit = false, ShortcutKey shortcut = new ShortcutKey())
         {
-            SetCommand(index, commandName, functionPointer, new ShortcutKey(), false);
-        }
-        
-        internal static void SetCommand(int index, string commandName, NppFuncItemDelegate functionPointer, ShortcutKey shortcut)
-        {
-            SetCommand(index, commandName, functionPointer, shortcut, false);
-        }
-        
-        internal static void SetCommand(int index, string commandName, NppFuncItemDelegate functionPointer, bool checkOnInit)
-        {
-            SetCommand(index, commandName, functionPointer, new ShortcutKey(), checkOnInit);
-        }
-        
-        internal static void SetCommand(int index, string commandName, NppFuncItemDelegate functionPointer, ShortcutKey shortcut, bool checkOnInit)
-        {
-            FuncItem funcItem = new FuncItem();
-            funcItem._cmdID = index;
-            funcItem._itemName = commandName;
+            var funcItem = new FuncItem { _itemName = text };
             if (functionPointer != null)
-                funcItem._pFunc = new NppFuncItemDelegate(functionPointer);
+                funcItem._pFunc = functionPointer;
             if (shortcut._key != 0)
                 funcItem._pShKey = shortcut;
             funcItem._init2Check = checkOnInit;
-            _funcItems.Add(funcItem);
+            return _funcItems.Add(funcItem);
+        }
+
+        [Obsolete("The 'index' parameter is not used! Use 'AddMenuItem' instead!")]
+        internal static void SetCommand(int index, string commandName, NppFuncItemDelegate functionPointer)
+        {
+            AddMenuItem(commandName, functionPointer);
+        }
+
+        [Obsolete("The 'index' parameter is not used! Use 'AddMenuItem' instead!")]
+        internal static void SetCommand(int index, string commandName, NppFuncItemDelegate functionPointer, ShortcutKey shortcut)
+        {
+            AddMenuItem(commandName, functionPointer, false, shortcut);
+        }
+
+        [Obsolete("The 'index' parameter is not used! Use 'AddMenuItem' instead!")]
+        internal static void SetCommand(int index, string commandName, NppFuncItemDelegate functionPointer, bool checkOnInit)
+        {
+            AddMenuItem(commandName, functionPointer, checkOnInit);
+        }
+
+        [Obsolete("The 'index' parameter is not used! Use 'AddMenuItem' instead!")]
+        internal static void SetCommand(int index, string commandName, NppFuncItemDelegate functionPointer, ShortcutKey shortcut, bool checkOnInit)
+        {
+            AddMenuItem(commandName, functionPointer, checkOnInit, shortcut);
         }
 
         internal static IntPtr GetCurrentScintilla()
@@ -69,11 +85,10 @@ namespace CsvQuery.PluginInfrastructure
             get
             {
                 Win32.SendMessage(nppData._nppHandle, (uint)NppMsg.NPPM_GETCURRENTSCINTILLA, 0, out int curScintilla);
-                if (scintillaGateways[curScintilla] == null) 
-                    scintillaGateways[curScintilla] = new ScintillaGateway(curScintilla == 0 
-                        ? nppData._scintillaMainHandle
-                        : nppData._scintillaSecondHandle);
-                return scintillaGateways[curScintilla];
+                return scintillaGateways[curScintilla] ?? (scintillaGateways[curScintilla] = new ScintillaGateway(
+                           curScintilla == 0
+                               ? nppData._scintillaMainHandle
+                               : nppData._scintillaSecondHandle));
             }
         }
     }

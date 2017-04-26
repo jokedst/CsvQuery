@@ -38,16 +38,16 @@ namespace CsvQuery
             // { ... }
         }
 
-        internal static void CommandMenuInit()
+        public static void CommandMenuInit()
         {
-            PluginBase.SetCommand(0, "Toggle query window", ToggleQueryWindow); idMyDlg = 0;
-            PluginBase.SetCommand(0, "List parsed tables", ListSqliteTables);
-            PluginBase.SetCommand(0, "---", null);
-            PluginBase.SetCommand(0, "&Settings", Settings.ShowDialog);
-            PluginBase.SetCommand(0, "&About", AboutCsvQuery);
+            idMyDlg = PluginBase.AddMenuItem("Toggle query window", ToggleQueryWindow, true, new ShortcutKey(true, true, false, Keys.C));
+            PluginBase.AddMenuItem("List parsed tables", ListSqliteTables);
+            PluginBase.AddMenuItem("---", null);
+            PluginBase.AddMenuItem("&Settings", Settings.ShowDialog);
+            PluginBase.AddMenuItem("&About", AboutCsvQuery);
         }
 
-        internal static void SetToolBarIcon()
+        public static void SetToolBarIcon()
         {
             toolbarIcons tbIcons = new toolbarIcons();
             tbIcons.hToolbarBmp = tbBmp_cq.GetHbitmap();
@@ -57,32 +57,20 @@ namespace CsvQuery
             Marshal.FreeHGlobal(pTbIcons);
         }
 
-        internal static void PluginCleanUp()
+        public static void PluginCleanUp()
         {
             Settings.SaveToIniFile();
         }
 
-        internal static void ListSqliteTables()
+        public static void ListSqliteTables()
         {
             QueryWindowVisible(true);
             _queryWindow.ExecuteQuery("SELECT * FROM sqlite_master");
         }
 
-        internal static void AboutCsvQuery()
+        public static void AboutCsvQuery()
         {
             MessageBox.Show("Hello", "About CSV Query");
-        }
-
-        internal static void ScinTest()
-        {
-            var npp = new NotepadPPGateway();
-            var gateway = PluginBase.GetGatewayFactory()();
-            var length = gateway.GetLength();
-            var codepage = gateway.GetCodePage();
-            var bufferId = npp.GetCurrentBufferId();
-            var text = gateway.GetAllText();
-            var sciNr = PluginBase.ScintillaNumber();
-            MessageBox.Show($"Length: {length}, got: {text.Length}\nBuffer: {bufferId}, codepage: {codepage}, sciNr: {sciNr} \n{text.Substring(0, Math.Min(100, text.Length))}");
         }
 
         internal static void myMenuFunction()

@@ -62,7 +62,7 @@ namespace CsvQuery.PluginInfrastructure
 
         [DllImport("kernel32")]
         static extern void RtlMoveMemory(IntPtr Destination, IntPtr Source, int Length);
-        public void Add(FuncItem funcItem)
+        public int Add(FuncItem funcItem)
         {
             int oldSize = _funcItems.Count * _sizeFuncItem;
             _funcItems.Add(funcItem);
@@ -94,6 +94,7 @@ namespace CsvQuery.PluginInfrastructure
             else Marshal.WriteIntPtr(ptrPosNewItem, IntPtr.Zero);
 
             _nativePointer = newPointer;
+            return _funcItems.Count - 1;
         }
 
         public void RefreshItems()
