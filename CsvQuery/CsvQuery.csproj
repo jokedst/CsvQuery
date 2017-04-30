@@ -154,7 +154,15 @@
     <Compile Include="CsharpSqlite\_Custom.cs" />
     <Compile Include="Csv.cs" />
     <Compile Include="Csv\CsvAnalyzer.cs" />
+    <Compile Include="Csv\CsvExtensions.cs" />
+    <Compile Include="Csv\CsvLanguage.cs" />
     <Compile Include="Csv\CsvSettings.cs" />
+    <Compile Include="Forms\ParseSettings.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\ParseSettings.Designer.cs">
+      <DependentUpon>ParseSettings.cs</DependentUpon>
+    </Compile>
     <Compile Include="Tools\DataStorage.cs" />
     <Compile Include="PluginInfrastructure\ClikeStringArray.cs" />
     <Compile Include="PluginInfrastructure\DllExport\DllExportAttribute.cs" />
@@ -191,6 +199,9 @@
     <Compile Include="Tools\SQLiteVdbe.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Forms\ParseSettings.resx">
+      <DependentUpon>ParseSettings.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Forms\QueryWindow.resx">
       <DependentUpon>QueryWindow.cs</DependentUpon>
     </EmbeddedResource>

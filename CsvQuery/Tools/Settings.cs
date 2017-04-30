@@ -1,5 +1,6 @@
 ﻿namespace CsvQuery.Tools
 {
+    using System;
     using System.Collections.Generic;
     using System.ComponentModel;
     using System.Drawing;
@@ -7,6 +8,7 @@
     using System.Linq;
     using System.Text;
     using System.Windows.Forms;
+    using System.Reflection;
     using PluginInfrastructure;
 
     /// <summary>
@@ -38,6 +40,15 @@
         /// <param name="loadFromFile"> If false will not load anything and have default values set </param>
         public Settings(bool loadFromFile = true)
         {
+            // Set defaults
+            foreach (var propertyInfo in GetType().GetProperties())
+            {
+                var def = propertyInfo.GetCustomAttributes(typeof(DefaultValueAttribute), false).FirstOrDefault() as DefaultValueAttribute;
+                if (def != null)
+                {
+                    propertyInfo.SetValue(this, def.Value, null);
+                }
+            }
             if (loadFromFile) ReadFromIniFile();
         }
 
@@ -68,16 +79,33 @@
         /// <summary>
         /// Saves all settings to an ini-file, under "General" section
         /// </summary>
-        /// <param name="filename">File to load (default is N++ plugin config)</param>
+        /// <param name="filename">File to write to (default is N++ plugin config)</param>
         public void SaveToIniFile(string filename = null)
         {
             filename = filename ?? IniFilePath;
             var dir = Path.GetDirectoryName(filename);
             if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
-            var sb = new StringBuilder();
-            foreach (var propertyInfo in GetType().GetProperties())
-                sb.AppendFormat("{0}={1}\0", propertyInfo.Name, propertyInfo.GetValue(this, null));
-            Win32.WritePrivateProfileSection("General", sb.ToString(), filename);
+
+            // Win32.WritePrivateProfileSection (that NppPlugin uses) doesn't work well with non-ASCII characters. So we roll our own.
+            using (var fp = new StreamWriter(filename, false, Encoding.UTF8))
+            {
+                fp.WriteLine("; {0} settings file", Main.PluginName);
+
+                foreach (var section in GetType()
+                    .GetProperties()
+                    .GroupBy(x => ((CategoryAttribute) x.GetCustomAttributes(typeof(CategoryAttribute), false)
+                                      .FirstOrDefault())?.Category ?? "General"))
+                {
+                    fp.WriteLine("[{0}]", section.Key);
+                    foreach (var propertyInfo in section.OrderBy(x => x.Name))
+                    {
+                        var description = propertyInfo.GetCustomAttributes(typeof(DescriptionAttribute), false).FirstOrDefault() as DescriptionAttribute;
+                        if (description != null) fp.WriteLine("; " + description.Description);
+                        var converter = TypeDescriptor.GetConverter(propertyInfo.PropertyType);
+                        fp.WriteLine("{0}={1}", propertyInfo.Name, converter.ConvertToInvariantString(propertyInfo.GetValue(this, null)));
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -90,7 +118,7 @@
             var buffer = new byte[8 * 1024];
 
             Win32.GetPrivateProfileSection(category, buffer, buffer.Length, iniFile);
-            var tmp = Encoding.ASCII.GetString(buffer).Trim('\0').Split('\0');
+            var tmp = Encoding.UTF8.GetString(buffer).Trim('\0').Split('\0');
             return tmp.Select(x => x.Split(new[] {'='}, 2))
                 .Where(x => x.Length == 2)
                 .ToDictionary(x => x[0], x => x[1]);
@@ -152,11 +180,13 @@
 
             dialog.ShowDialog();
         }
-#endregion
 
+        /// <summary> Opens the config file directly in Notepad++ </summary>
         public void OpenFile()
         {
+            if(!File.Exists(IniFilePath)) SaveToIniFile();
             Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_DOOPEN, 0, IniFilePath);
         }
+#endregion
     }
 }

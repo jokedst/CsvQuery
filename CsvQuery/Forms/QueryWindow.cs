@@ -40,6 +40,13 @@
             var csvSettings = CsvAnalyzer.Analyze(text);
             if(csvSettings.Separator == '\0')
             {
+                var askUserDialog = new ParseSettings();
+                var userChoice = askUserDialog.ShowDialog();
+                if (userChoice == DialogResult.OK)
+                {
+                    csvSettings.Separator = askUserDialog.Controls["txbSep"].Text.FirstOrDefault();
+                    csvSettings.TextQualifier = askUserDialog.Controls["txbSep"].Text.FirstOrDefault();
+                }
                 MessageBox.Show("Could not figure out separator");
                 return;
             }

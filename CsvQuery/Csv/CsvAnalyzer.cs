@@ -35,15 +35,8 @@
                 var letterFrequency = new Dictionary<char, int>();
                 foreach (var c in line)
                 {
-                    if (!letterFrequency.ContainsKey(c)) 
-                        letterFrequency.Add(c, 1);
-                    else
-                        letterFrequency[c]++;
-
-                    if (!occurrences.ContainsKey(c))
-                        occurrences.Add(c, 1);
-                    else
-                        occurrences[c]++;
+                    letterFrequency.Increase(c);
+                    occurrences.Increase(c);
                 }
 
                 frequencies.Add(letterFrequency);
