@@ -1,10 +1,7 @@
 ﻿namespace CsvQuery
 {
-    using System;
-    using System.Diagnostics;
     using System.Drawing;
     using System.Drawing.Imaging;
-    using System.Linq;
     using System.Runtime.InteropServices;
     using System.Windows.Forms;
     using Community.CsharpSqlite;
@@ -30,7 +27,7 @@
         public static void CommandMenuInit()
         {
             MenuToggleId = PluginBase.AddMenuItem("Toggle query window", ToggleQueryWindow, true, new ShortcutKey(true, true, false, Keys.C));
-            PluginBase.AddMenuItem("Change file settings", ParseWithManualSettings);
+            PluginBase.AddMenuItem("Manual parse settings", ParseWithManualSettings);
             PluginBase.AddMenuItem("List parsed files", ListSqliteTables);
             PluginBase.AddMenuItem("---", null);
             PluginBase.AddMenuItem("&Settings", Settings.ShowDialog);
@@ -42,21 +39,23 @@
         {
             var csvSettings = new CsvSettings();
             var askUserDialog = new ParseSettings();
+            askUserDialog.Controls["MainLabel"].Text = "Manually enter values for parsing CSV\n\nUse this if detection fails";
             var userChoice = askUserDialog.ShowDialog();
             if (userChoice != DialogResult.OK)
                 return;
-            csvSettings.Separator = askUserDialog.Controls["txbSep"].Text.FirstOrDefault();
-            csvSettings.TextQualifier = askUserDialog.Controls["txbQuoteChar"].Text.FirstOrDefault();
+            csvSettings.Separator = askUserDialog.Controls["txbSep"].Text.Unescape();
+            csvSettings.TextQualifier = askUserDialog.Controls["txbQuoteChar"].Text.Unescape();
+            QueryWindowVisible(true);
+            QueryWindow.ParseBuffer(csvSettings);
         }
 
         public static void SetToolBarIcon()
         {
-            toolbarIcons tbIcons = new toolbarIcons();
-            tbIcons.hToolbarBmp = Properties.Resources.cq.GetHbitmap();
-            IntPtr pTbIcons = Marshal.AllocHGlobal(Marshal.SizeOf(tbIcons));
-            Marshal.StructureToPtr(tbIcons, pTbIcons, false);
-            Win32.SendMessage(PluginBase.nppData._nppHandle, (uint) NppMsg.NPPM_ADDTOOLBARICON, PluginBase._funcItems.Items[MenuToggleId]._cmdID, pTbIcons);
-            Marshal.FreeHGlobal(pTbIcons);
+            var icons = new toolbarIcons {hToolbarBmp = Properties.Resources.cq.GetHbitmap()};
+            var iconPointer = Marshal.AllocHGlobal(Marshal.SizeOf(icons));
+            Marshal.StructureToPtr(icons, iconPointer, false);
+            Win32.SendMessage(PluginBase.nppData._nppHandle, (uint) NppMsg.NPPM_ADDTOOLBARICON, PluginBase._funcItems.Items[MenuToggleId]._cmdID, iconPointer);
+            Marshal.FreeHGlobal(iconPointer);
         }
 
         public static void PluginCleanUp()
@@ -99,7 +98,7 @@
                     {
                         Location = new Point(13,13),
                         Size = new Size(xsize-13-13,ysize-13-13-23-6),
-                        Text = "CSV Query\r\n\r\nAllows SQL queries against CSV files.\r\n\r\nThe SQL syntax is the same as SQLite.\r\nThe table \"THIS\" represents the current file.\r\n\r\nBy jokedst",
+                        Text = "CSV Query\r\n\r\nAllows SQL queries against CSV files.\r\n\r\nThe SQL syntax is the same as SQLite.\r\nThe table \"THIS\" represents the current file.\r\n\r\nBy jokedst@gmail.com\r\nLicense: GPL v3",
                         TextAlign = ContentAlignment.MiddleCenter,
                         Font = new Font("Consolas", 8.25F)
                     }
@@ -107,6 +106,7 @@
             };
             dialog.Controls["Ok"].Click += (a, b) => dialog.Close();
 
+            // In debug mode we add two buttons to the About dialog
             if (Settings.DebugMode)
             {
                 var testbutton = new Button
@@ -118,6 +118,17 @@
                 };
                 testbutton.Click += (a, b) => TestDatabase();
                 dialog.Controls.Add(testbutton);
+
+
+                var settingsButton = new Button
+                {
+                    Text = "&Settings",
+                    Size = new Size(75, 23),
+                    Location = new Point(xsize - 75 - 13 - 81, ysize - 23 - 13),
+                    UseVisualStyleBackColor = true
+                };
+                settingsButton.Click += (a, b) => Settings.OpenFile();
+                dialog.Controls.Add(settingsButton);
             }
 
             dialog.ShowDialog();
@@ -138,9 +149,9 @@
             watch.Checkpoint("Create table 2");
             db.ExecuteNonQuery("CREATE INDEX RootStrIndex ON Root (strIndex)");
 
-            string INSERT_Command = "INSERT INTO Root VALUES (?,?,?)";
+            const string insertCommand = "INSERT INTO Root VALUES (?,?,?)";
             int i;
-            var stmt = new SQLiteVdbe(db, INSERT_Command);
+            var stmt = new SQLiteVdbe(db, insertCommand);
             long key = 1999;
             for (i = 0; i < 10000; i++)
             {
@@ -172,37 +183,36 @@
             QueryWindowVisible();
         }
 
-        internal static void QueryWindowVisible(bool? show = null)
+        public static void QueryWindowVisible(bool? show = null)
         {
             if (QueryWindow == null)
             {
                 QueryWindow = new QueryWindow();
-                Icon tbIcon;
+                Icon queryWindowIcon;
 
-                using (Bitmap newBmp = new Bitmap(16, 16))
+                using (var newBmp = new Bitmap(16, 16))
                 {
-                    Graphics g = Graphics.FromImage(newBmp);
-                    ColorMap[] colorMap = new ColorMap[1];
-                    colorMap[0] = new ColorMap();
-                    colorMap[0].OldColor = Color.Fuchsia;
-                    colorMap[0].NewColor = Color.FromKnownColor(KnownColor.ButtonFace);
-                    ImageAttributes attr = new ImageAttributes();
+                    var g = Graphics.FromImage(newBmp);
+                    ColorMap[] colorMap = { new ColorMap { OldColor = Color.Fuchsia, NewColor = Color.FromKnownColor(KnownColor.ButtonFace) } };
+                    var attr = new ImageAttributes();
                     attr.SetRemapTable(colorMap);
                     g.DrawImage(Properties.Resources.cq, new Rectangle(0, 0, 16, 16), 0, 0, 16, 16, GraphicsUnit.Pixel, attr);
-                    tbIcon = Icon.FromHandle(newBmp.GetHicon());
+                    queryWindowIcon = Icon.FromHandle(newBmp.GetHicon());
                 }
 
-                NppTbData _nppTbData = new NppTbData();
-                _nppTbData.hClient = QueryWindow.Handle;
-                _nppTbData.pszName = "CSV Query";
-                _nppTbData.dlgID = MenuToggleId;
-                _nppTbData.uMask = NppTbMsg.DWS_DF_CONT_BOTTOM | NppTbMsg.DWS_ICONTAB | NppTbMsg.DWS_ICONBAR;
-                _nppTbData.hIconTab = (uint)tbIcon.Handle;
-                _nppTbData.pszModuleName = PluginName;
-                IntPtr _ptrNppTbData = Marshal.AllocHGlobal(Marshal.SizeOf(_nppTbData));
-                Marshal.StructureToPtr(_nppTbData, _ptrNppTbData, false);
+                var queryWindowData = new NppTbData
+                {
+                    hClient = QueryWindow.Handle,
+                    pszName = "CSV Query",
+                    dlgID = MenuToggleId,
+                    uMask = NppTbMsg.DWS_DF_CONT_BOTTOM | NppTbMsg.DWS_ICONTAB | NppTbMsg.DWS_ICONBAR,
+                    hIconTab = (uint) queryWindowIcon.Handle,
+                    pszModuleName = PluginName
+                };
+                var queryWindowPointer = Marshal.AllocHGlobal(Marshal.SizeOf(queryWindowData));
+                Marshal.StructureToPtr(queryWindowData, queryWindowPointer, false);
 
-                Win32.SendMessage(PluginBase.nppData._nppHandle, (uint) NppMsg.NPPM_DMMREGASDCKDLG, 0, _ptrNppTbData);
+                Win32.SendMessage(PluginBase.nppData._nppHandle, (uint) NppMsg.NPPM_DMMREGASDCKDLG, 0, queryWindowPointer);
             }
             else
             {

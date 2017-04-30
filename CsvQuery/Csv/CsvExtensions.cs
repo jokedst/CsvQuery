@@ -1,6 +1,7 @@
 ﻿namespace CsvQuery.Csv
 {
     using System.Collections.Generic;
+    using System.Linq;
 
     static class CsvExtensions
     {
@@ -15,6 +16,12 @@
                 counts.Add(c, 1);
             else
                 counts[c]++;
+        }
+
+        public static char Unescape(this string escaped)
+        {
+            if (escaped == "\\t") return '\t';
+            return escaped.FirstOrDefault();
         }
     }
 }

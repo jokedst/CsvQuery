@@ -30,7 +30,7 @@
         {
             this.btnReparse = new System.Windows.Forms.Button();
             this.btnCancel = new System.Windows.Forms.Button();
-            this.label1 = new System.Windows.Forms.Label();
+            this.MainLabel = new System.Windows.Forms.Label();
             this.txbSep = new System.Windows.Forms.TextBox();
             this.lblSeparator = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
@@ -59,19 +59,19 @@
             this.btnCancel.Text = "&Cancel";
             this.btnCancel.UseVisualStyleBackColor = true;
             // 
-            // label1
+            // MainLabel
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(13, 13);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(251, 39);
-            this.label1.TabIndex = 2;
-            this.label1.Text = "CSV settings could not be determined automatically.\r\n\r\nPlease enter settings and " +
+            this.MainLabel.AutoSize = true;
+            this.MainLabel.Location = new System.Drawing.Point(13, 13);
+            this.MainLabel.Name = "MainLabel";
+            this.MainLabel.Size = new System.Drawing.Size(251, 39);
+            this.MainLabel.TabIndex = 2;
+            this.MainLabel.Text = "CSV settings could not be determined automatically.\r\n\r\nPlease enter settings and " +
     "try again";
             // 
             // txbSep
             // 
-            this.txbSep.Location = new System.Drawing.Point(13, 71);
+            this.txbSep.Location = new System.Drawing.Point(45, 69);
             this.txbSep.MaxLength = 2;
             this.txbSep.Name = "txbSep";
             this.txbSep.Size = new System.Drawing.Size(39, 20);
@@ -80,7 +80,7 @@
             // lblSeparator
             // 
             this.lblSeparator.AutoSize = true;
-            this.lblSeparator.Location = new System.Drawing.Point(58, 74);
+            this.lblSeparator.Location = new System.Drawing.Point(90, 72);
             this.lblSeparator.Name = "lblSeparator";
             this.lblSeparator.Size = new System.Drawing.Size(53, 13);
             this.lblSeparator.TabIndex = 4;
@@ -89,7 +89,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(58, 100);
+            this.label2.Location = new System.Drawing.Point(90, 98);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(82, 13);
             this.label2.TabIndex = 6;
@@ -97,7 +97,7 @@
             // 
             // txbQuoteChar
             // 
-            this.txbQuoteChar.Location = new System.Drawing.Point(13, 97);
+            this.txbQuoteChar.Location = new System.Drawing.Point(45, 95);
             this.txbQuoteChar.MaxLength = 1;
             this.txbQuoteChar.Name = "txbQuoteChar";
             this.txbQuoteChar.Size = new System.Drawing.Size(39, 20);
@@ -114,13 +114,13 @@
             this.Controls.Add(this.txbQuoteChar);
             this.Controls.Add(this.lblSeparator);
             this.Controls.Add(this.txbSep);
-            this.Controls.Add(this.label1);
+            this.Controls.Add(this.MainLabel);
             this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.btnReparse);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
             this.Name = "ParseSettings";
             this.ShowIcon = false;
-            this.Text = "ParseSettings";
+            this.Text = "Parse Settings";
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -130,7 +130,7 @@
 
         private System.Windows.Forms.Button btnReparse;
         private System.Windows.Forms.Button btnCancel;
-        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label MainLabel;
         private System.Windows.Forms.TextBox txbSep;
         private System.Windows.Forms.Label lblSeparator;
         private System.Windows.Forms.Label label2;
