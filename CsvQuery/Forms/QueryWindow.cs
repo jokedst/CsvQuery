@@ -6,6 +6,7 @@
     using System.Diagnostics;
     using System.Linq;
     using System.Windows.Forms;
+    using System.Windows.Forms.VisualStyles;
     using Csv;
     using PluginInfrastructure;
     using Tools;
@@ -38,17 +39,14 @@
             watch.Checkpoint("GetText");
 
             var csvSettings = CsvAnalyzer.Analyze(text);
-            if(csvSettings.Separator == '\0')
+            if (csvSettings.Separator == '\0')
             {
                 var askUserDialog = new ParseSettings();
                 var userChoice = askUserDialog.ShowDialog();
-                if (userChoice == DialogResult.OK)
-                {
-                    csvSettings.Separator = askUserDialog.Controls["txbSep"].Text.FirstOrDefault();
-                    csvSettings.TextQualifier = askUserDialog.Controls["txbSep"].Text.FirstOrDefault();
-                }
-                MessageBox.Show("Could not figure out separator");
-                return;
+                if (userChoice != DialogResult.OK)
+                    return;
+                csvSettings.Separator = askUserDialog.Controls["txbSep"].Text.FirstOrDefault();
+                csvSettings.TextQualifier = askUserDialog.Controls["txbQuoteChar"].Text.FirstOrDefault();
             }
             watch.Checkpoint("Analyze");
 
@@ -68,6 +66,17 @@
             var diagnostic = watch.LastCheckpoint("Resize");
             Trace.TraceInformation(diagnostic);
             if(Main.Settings.DebugMode) MessageBox.Show(diagnostic);
+        }
+
+        public void ParseBuffer(CsvSettings settings, IntPtr bufferId = default(IntPtr))
+        {
+            if (bufferId == default(IntPtr))
+                bufferId = NotepadPPGateway.GetCurrentBufferId();
+            
+            string text = PluginBase.CurrentScintillaGateway.GetAllText();
+            var data = settings.Parse(text);
+            DataStorage.SaveData(bufferId, data, null);
+            ExecuteQuery("SELECT * FROM THIS");
         }
 
         private void Execute(IntPtr bufferId, DiagnosticTimer watch)

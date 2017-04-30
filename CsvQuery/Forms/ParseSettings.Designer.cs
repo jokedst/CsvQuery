@@ -44,7 +44,7 @@
             this.btnReparse.Location = new System.Drawing.Point(13, 145);
             this.btnReparse.Name = "btnReparse";
             this.btnReparse.Size = new System.Drawing.Size(75, 23);
-            this.btnReparse.TabIndex = 0;
+            this.btnReparse.TabIndex = 2;
             this.btnReparse.Text = "&Try again";
             this.btnReparse.UseVisualStyleBackColor = true;
             // 
@@ -72,10 +72,10 @@
             // txbSep
             // 
             this.txbSep.Location = new System.Drawing.Point(13, 71);
-            this.txbSep.MaxLength = 1;
+            this.txbSep.MaxLength = 2;
             this.txbSep.Name = "txbSep";
             this.txbSep.Size = new System.Drawing.Size(39, 20);
-            this.txbSep.TabIndex = 3;
+            this.txbSep.TabIndex = 0;
             // 
             // lblSeparator
             // 
@@ -101,12 +101,14 @@
             this.txbQuoteChar.MaxLength = 1;
             this.txbQuoteChar.Name = "txbQuoteChar";
             this.txbQuoteChar.Size = new System.Drawing.Size(39, 20);
-            this.txbQuoteChar.TabIndex = 5;
+            this.txbQuoteChar.TabIndex = 2;
             // 
             // ParseSettings
             // 
+            this.AcceptButton = this.btnReparse;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.CancelButton = this.btnCancel;
             this.ClientSize = new System.Drawing.Size(284, 180);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.txbQuoteChar);

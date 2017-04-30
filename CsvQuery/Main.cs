@@ -4,9 +4,11 @@
     using System.Diagnostics;
     using System.Drawing;
     using System.Drawing.Imaging;
+    using System.Linq;
     using System.Runtime.InteropServices;
     using System.Windows.Forms;
     using Community.CsharpSqlite;
+    using Csv;
     using CsvQuery.PluginInfrastructure;
     using CsvQuery.Forms;
     using CsvQuery.Tools;
@@ -28,11 +30,23 @@
         public static void CommandMenuInit()
         {
             MenuToggleId = PluginBase.AddMenuItem("Toggle query window", ToggleQueryWindow, true, new ShortcutKey(true, true, false, Keys.C));
+            PluginBase.AddMenuItem("Change file settings", ParseWithManualSettings);
             PluginBase.AddMenuItem("List parsed files", ListSqliteTables);
             PluginBase.AddMenuItem("---", null);
             PluginBase.AddMenuItem("&Settings", Settings.ShowDialog);
             PluginBase.AddMenuItem("Settings file", Settings.OpenFile);
             PluginBase.AddMenuItem("&About", AboutCsvQuery);
+        }
+
+        private static void ParseWithManualSettings()
+        {
+            var csvSettings = new CsvSettings();
+            var askUserDialog = new ParseSettings();
+            var userChoice = askUserDialog.ShowDialog();
+            if (userChoice != DialogResult.OK)
+                return;
+            csvSettings.Separator = askUserDialog.Controls["txbSep"].Text.FirstOrDefault();
+            csvSettings.TextQualifier = askUserDialog.Controls["txbQuoteChar"].Text.FirstOrDefault();
         }
 
         public static void SetToolBarIcon()
