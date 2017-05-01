@@ -14,7 +14,7 @@ namespace CsvQuery.Csv
     public class CsvSettings
     {
         public char Separator { get; set; }
-        public char TextQualifier { get; set; }
+        public char TextQualifier { get; set; } = '"';
         public char CommentCharacter { get; set; }
         public List<int> FieldWidths { get; set; }
 
