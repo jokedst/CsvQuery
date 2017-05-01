@@ -5,7 +5,7 @@
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
-    public class CsvAnalyzerTests
+    public class CsvAnalyzerFacts
     {
         [TestMethod]
         public void CanFindCommaAsSeparator()

@@ -17,6 +17,13 @@
             else
                 counts[c]++;
         }
+        public static void Incr<T>(this Dictionary<T, int> counts, T c)
+        {
+            if (!counts.ContainsKey(c))
+                counts.Add(c, 1);
+            else
+                counts[c]++;
+        }
 
         public static char Unescape(this string escaped)
         {

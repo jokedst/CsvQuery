@@ -1,7 +1,9 @@
 namespace CsvQuery.Csv
 {
+    using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
 
     /// <summary>
     /// Describes how a given CSV file is encoded. Few people follo RFC4180...
@@ -11,6 +13,7 @@ namespace CsvQuery.Csv
         public char Separator { get; set; }
         public char TextQualifier { get; set; }
         public char EscapeCharacter { get; set; }
+        public char CommentCharacter { get; set; }
 
         /// <summary>
         /// Parses a big text blob into rows and columns, using the settings
@@ -19,21 +22,30 @@ namespace CsvQuery.Csv
         /// <returns>Parsed data</returns>
         public List<string[]> Parse(string text)
         {
-            var data = new List<string[]>();
-
-            var textreader = new StringReader(text);
-            string line;
-            int columnsCount = 0;
-            while ((line = textreader.ReadLine()) != null)
+            // The actual _parsing_ .NET can handle. Well, VisualBasic anyway...
+            using(var reader = new StringReader(text))
+            using (var parser = new Microsoft.VisualBasic.FileIO.TextFieldParser(reader))
             {
-                var cols = line.Split(this.Separator);
-                data.Add(cols);
+                if(CommentCharacter!=default(char))
+                    parser.CommentTokens = new[] { CommentCharacter.ToString() };
+                parser.SetDelimiters(Separator.ToString());
+                parser.HasFieldsEnclosedInQuotes = TextQualifier != default(char);
 
-                if (cols.Length > columnsCount)
-                    columnsCount = cols.Length;
+                var ret = new List<string[]>();
+                while (!parser.EndOfData)
+                {
+                    ret.Add(parser.ReadFields());
+                }
+                return ret;
             }
+        }
 
-            return data;
+        internal enum ParseState
+        {
+            WordStart,
+            InQuotes,
+            UnQuoted,
+            OutOfQuotes
         }
     }
 }
