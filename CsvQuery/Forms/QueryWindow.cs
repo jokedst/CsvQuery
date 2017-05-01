@@ -39,7 +39,7 @@
             watch.Checkpoint("GetText");
 
             var csvSettings = CsvAnalyzer.Analyze(text);
-            if (csvSettings.Separator == '\0')
+            if (csvSettings.Separator == '\0' && csvSettings.FieldWidths == null)
             {
                 var askUserDialog = new ParseSettings();
                 var userChoice = askUserDialog.ShowDialog();

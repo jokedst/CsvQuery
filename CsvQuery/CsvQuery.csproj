@@ -154,7 +154,6 @@
     <Compile Include="CsharpSqlite\where_c.cs" />
     <Compile Include="CsharpSqlite\_Custom.cs" />
     <Compile Include="Csv.cs" />
-    <Compile Include="Csv\CsvParser.cs" />
     <Compile Include="Csv\CsvAnalyzer.cs" />
     <Compile Include="Csv\CsvExtensions.cs" />
     <Compile Include="Csv\CsvLanguage.cs" />

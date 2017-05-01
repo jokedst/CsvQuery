@@ -30,13 +30,28 @@
             int lineCount = 0;
             var frequencies = new List<Dictionary<char, int>>();
             var occurrences = new Dictionary<char, int>();
+            var wordStarts = new Dictionary<int, int>();
+            var bigSpaces = new Dictionary<int, int>();
+
             while ((line = s.ReadLine()) != null)
             {
                 var letterFrequency = new Dictionary<char, int>();
+                int spaces = 0, i = 0;
                 foreach (var c in line)
                 {
                     letterFrequency.Increase(c);
                     occurrences.Increase(c);
+
+                    if (c == ' ')
+                    {
+                        if (++spaces >= 2) bigSpaces.Increase(i);
+                    }
+                    else
+                    {
+                        if (spaces >= 2) wordStarts.Increase(i);
+                        spaces = 0;
+                    }
+                    i++;
                 }
 
                 frequencies.Add(letterFrequency);
@@ -47,7 +62,7 @@
             var variances = new Dictionary<char, float>();
             foreach (var c in occurrences.Keys)
             {
-                var mean = (float)occurrences[c] / lineCount;
+                var mean = (float) occurrences[c] / lineCount;
                 float variance = 0;
                 foreach (var frequency in frequencies)
                 {
@@ -56,13 +71,31 @@
                     variance += (f - mean) * (f - mean);
                 }
                 variance /= lineCount;
-                variances.Add(c,variance);
+                variances.Add(c, variance);
             }
-            
+
             // The char with lowest variance is most likely the separator
-            var result = new CsvSettings();
-            result.Separator = GetSeparatorFromVariance(variances, occurrences, lineCount);
+            var result = new CsvSettings {Separator = GetSeparatorFromVariance(variances, occurrences, lineCount)};
+            if (result.Separator != default(char)) return result;
             
+            // Failed to detect separator. Could it be a fixed-width file?
+            var commonSpace = bigSpaces.Where(x => x.Value == lineCount).Select(x => x.Key).OrderBy(x => x);
+            var lastvalue = 0;
+            int lastStart = 0;
+            var foundfieldWidths = new List<int>();
+            foreach (var space in commonSpace)
+            {
+                if (space != lastvalue + 1)
+                {
+                    foundfieldWidths.Add(space - lastStart);
+                    lastStart = space;
+                }
+
+                lastvalue = space;
+            }
+            if (foundfieldWidths.Count < 3) return result; // unlikely fixed width
+            foundfieldWidths.Add(-1); // Last column gets "the rest"
+            result.FieldWidths = foundfieldWidths;
             return result;
         }
 

@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace CsvQuery.Csv
+﻿namespace CsvQuery.Csv
 {
     interface ICsvLanguage
     {
         void Consume(byte ch);
     }
+
     class SimpleCsvLanguage:ICsvLanguage
     {
         private bool wordStart = true;
