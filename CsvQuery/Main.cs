@@ -26,7 +26,7 @@
 
         public static void CommandMenuInit()
         {
-            MenuToggleId = PluginBase.AddMenuItem("Toggle query window", ToggleQueryWindow, true, new ShortcutKey(true, true, false, Keys.C));
+            MenuToggleId = PluginBase.AddMenuItem("Toggle query window", ToggleQueryWindow, false, new ShortcutKey(true, true, false, Keys.C));
             PluginBase.AddMenuItem("Manual parse settings", ParseWithManualSettings);
             PluginBase.AddMenuItem("List parsed files", ListSqliteTables);
             PluginBase.AddMenuItem("---", null);

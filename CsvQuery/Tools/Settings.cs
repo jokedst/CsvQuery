@@ -43,8 +43,7 @@
             // Set defaults
             foreach (var propertyInfo in GetType().GetProperties())
             {
-                var def = propertyInfo.GetCustomAttributes(typeof(DefaultValueAttribute), false).FirstOrDefault() as DefaultValueAttribute;
-                if (def != null)
+                if (propertyInfo.GetCustomAttributes(typeof(DefaultValueAttribute), false).FirstOrDefault() is DefaultValueAttribute def)
                 {
                     propertyInfo.SetValue(this, def.Value, null);
                 }
@@ -99,8 +98,8 @@
                     fp.WriteLine("[{0}]", section.Key);
                     foreach (var propertyInfo in section.OrderBy(x => x.Name))
                     {
-                        var description = propertyInfo.GetCustomAttributes(typeof(DescriptionAttribute), false).FirstOrDefault() as DescriptionAttribute;
-                        if (description != null) fp.WriteLine("; " + description.Description);
+                        if (propertyInfo.GetCustomAttributes(typeof(DescriptionAttribute), false).FirstOrDefault() is DescriptionAttribute description)
+                            fp.WriteLine("; " + description.Description);
                         var converter = TypeDescriptor.GetConverter(propertyInfo.PropertyType);
                         fp.WriteLine("{0}={1}", propertyInfo.Name, converter.ConvertToInvariantString(propertyInfo.GetValue(this, null)));
                     }

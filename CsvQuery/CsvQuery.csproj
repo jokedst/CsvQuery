@@ -156,7 +156,6 @@
     <Compile Include="Csv.cs" />
     <Compile Include="Csv\CsvAnalyzer.cs" />
     <Compile Include="Csv\CsvExtensions.cs" />
-    <Compile Include="Csv\CsvLanguage.cs" />
     <Compile Include="Csv\CsvSettings.cs" />
     <Compile Include="Forms\ParseSettings.cs">
       <SubType>Form</SubType>
