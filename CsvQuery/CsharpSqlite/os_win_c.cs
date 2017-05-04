@@ -973,7 +973,7 @@ free(pFile.zDeleteOnClose);
         nRead = id.fs.Read( pBuf, 0, amt ); // i  if( null==ReadFile(pFile->h, pBuf, amt, &nRead, 0) ){
 #endif
       }
-      catch ( Exception e )
+      catch ( Exception )
       {
 #if SQLITE_SILVERLIGHT || SQLITE_WINRT
           pFile.lastErrno = 1;

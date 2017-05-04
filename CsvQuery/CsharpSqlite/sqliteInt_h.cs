@@ -851,16 +851,10 @@ void *sqlite3_wsd_find(void *K, int L);
       public int cache_size;            /* Number of pages to use in the cache */
       public Schema Copy()
       {
-        if ( this == null )
-          return null;
-        else
-        {
-          Schema cp = (Schema)MemberwiseClone();
-          return cp;
-        }
+            return (Schema)MemberwiseClone();
       }
 
-      public void Clear()
+        public void Clear()
       {
         if ( this != null )
         {

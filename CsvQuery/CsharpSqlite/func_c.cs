@@ -447,17 +447,14 @@ namespace Community.CsharpSqlite
     ** Implementation of the upper() and lower() SQL functions.
     */
     static void upperFunc(
-    sqlite3_context context,
-    int argc,
-    sqlite3_value[] argv
+        sqlite3_context context,
+        int argc,
+        sqlite3_value[] argv
     )
     {
-      string z1;
-      string z2;
-      int i, n;
       UNUSED_PARAMETER( argc );
-      z2 = sqlite3_value_text( argv[0] );
-      n = sqlite3_value_bytes( argv[0] );
+      var z2 = sqlite3_value_text( argv[0] );
+      var n = sqlite3_value_bytes( argv[0] );
       /* Verify that the call to _bytes() does not invalidate the _text() pointer */
       //Debug.Assert( z2 == sqlite3_value_text( argv[0] ) );
       if ( z2 != null )
@@ -481,12 +478,9 @@ namespace Community.CsharpSqlite
     sqlite3_value[] argv
     )
     {
-      string z1;
-      string z2;
-      int i, n;
       UNUSED_PARAMETER( argc );
-      z2 = sqlite3_value_text( argv[0] );
-      n = sqlite3_value_bytes( argv[0] );
+      var z2 = sqlite3_value_text( argv[0] );
+      var n = sqlite3_value_bytes( argv[0] );
       /* Verify that the call to _bytes() does not invalidate the _text() pointer */
       //Debug.Assert( z2 == sqlite3_value_text( argv[0] ) );
       if ( z2 != null )

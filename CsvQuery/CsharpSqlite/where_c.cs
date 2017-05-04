@@ -5105,7 +5105,7 @@ OP_IdxLT             /* 2: (end_constraints && bRev) */
     )
     {
       int i;                     /* Loop counter */
-      int nByteWInfo;            /* Num. bytes allocated for WhereInfo struct */
+      //int nByteWInfo;            /* Num. bytes allocated for WhereInfo struct */
       int nTabList;              /* Number of elements in pTabList */
       WhereInfo pWInfo;          /* Will become the return value of this function */
       Vdbe v = pParse.pVdbe;     /* The virtual data_base engine */

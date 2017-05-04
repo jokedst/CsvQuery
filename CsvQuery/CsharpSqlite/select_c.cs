@@ -4289,7 +4289,7 @@ break;
     ** calling function needs to do that.
     */
     static SelectDest sdDummy = null;
-    static bool bDummy = false;
+    //static bool bDummy = false;
 
     static int sqlite3Select(
     Parse pParse,         /* The parser context */

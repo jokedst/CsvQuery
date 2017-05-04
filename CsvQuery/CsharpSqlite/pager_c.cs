@@ -2718,10 +2718,10 @@ static void pagerReportSize(Pager X){}
       sqlite3_file pMaster;         /* Malloc'd master-journal file descriptor */
       sqlite3_file pJournal;        /* Malloc'd child-journal file descriptor */
       //string zMasterJournal = null; /* Contents of master journal file */
-      i64 nMasterJournal;           /* Size of master journal file */
-      string zJournal;              /* Pointer to one journal within MJ file */
-      string zMasterPtr;            /* Space to hold MJ filename from a journal file */
-      int nMasterPtr;               /* Amount of space allocated to zMasterPtr[] */
+      //i64 nMasterJournal;           /* Size of master journal file */
+      //string zJournal;              /* Pointer to one journal within MJ file */
+      //string zMasterPtr;            /* Space to hold MJ filename from a journal file */
+      //int nMasterPtr;               /* Amount of space allocated to zMasterPtr[] */
 
       /* Allocate space for both the pJournal and pMaster file descriptors.
       ** If successful, open the master journal file for reading.

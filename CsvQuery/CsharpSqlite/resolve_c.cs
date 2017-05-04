@@ -629,7 +629,7 @@ break;
             bool no_such_func = false;       /* True if no such function exists */
             bool wrong_num_args = false;     /* True if wrong number of arguments */
             bool is_agg = false;             /* True if is an aggregate function */
-            int auth;                   /* Authorization to use the function */
+            //int auth;                   /* Authorization to use the function */
             int nId;                    /* Number of characters in function name */
             string zId;                 /* The function name. */
             FuncDef pDef;              /* Information about the function */

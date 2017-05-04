@@ -5885,7 +5885,7 @@ const int MAX_ROWID = i32.MaxValue;//#   define MAX_ROWID 0x7fffffff
           case OP_Program:
             {        /* jump */
               int nMem;              /* Number of memory registers for sub-program */
-              int nByte;             /* Bytes of runtime space required for sub-program */
+              ////int nByte;             /* Bytes of runtime space required for sub-program */
               Mem pRt;               /* Register to allocate runtime space */
               Mem pMem = null;       /* Used to iterate through memory cells */
               //Mem pEnd;            /* Last memory cell in new array */

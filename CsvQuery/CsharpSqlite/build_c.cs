@@ -2562,7 +2562,7 @@ exit_drop_table:
       FKey pFKey = null;
       FKey pNextTo;
       Table p = pParse.pNewTable;
-      int nByte;
+      ////int nByte;
       int i;
       int nCol;
       //string z;

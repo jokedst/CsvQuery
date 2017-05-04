@@ -3916,7 +3916,7 @@ swapMixedEndianFloat(x);
     static void sqlite3VdbeDeleteUnpackedRecord( UnpackedRecord p )
     {
 #if SQLITE_DEBUG
-      int i;
+      ////int i;
       Mem pMem;
       Debug.Assert( p != null );
       Debug.Assert( ( p.flags & UNPACKED_NEED_DESTROY ) != 0 );

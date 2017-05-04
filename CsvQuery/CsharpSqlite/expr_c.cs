@@ -1114,15 +1114,13 @@ sqlite3DbFree( db, ref p.u._zToken );
     static SrcList sqlite3SrcListDup( sqlite3 db, SrcList p, int flags )
     {
       SrcList pNew;
-      int nByte;
+      //int nByte;
       if ( p == null )
         return null;
       //nByte = sizeof(*p) + (p.nSrc>0 ? sizeof(p.a[0]) * (p.nSrc-1) : 0);
       pNew = new SrcList();//sqlite3DbMallocRaw(db, nByte );
       if ( p.nSrc > 0 )
         pNew.a = new SrcList_item[p.nSrc];
-      if ( pNew == null )
-        return null;
       pNew.nSrc = pNew.nAlloc = p.nSrc;
       for (int i = 0; i < p.nSrc; i++ )
       {

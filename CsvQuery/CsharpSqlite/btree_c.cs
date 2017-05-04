@@ -6268,7 +6268,7 @@ static void dropCell( MemPage pPage, int idx, int sz, ref int pRC )
   u32 pc;         /* Offset to cell content of cell being deleted */
   u8[] data;      /* pPage.aData */
   int ptr;        /* Used to move bytes around within data[] */
-  int endPtr;     /* End of loop */
+  ////int endPtr;     /* End of loop */
   int rc;         /* The return code */
   int hdr;        /* Beginning of the header.  0 most pages.  100 page 1 */
 

@@ -386,13 +386,13 @@ namespace Community.CsharpSqlite
     ** from this list when a transaction is committed or rolled back, or when
     ** a btree handle is closed.
     */
-    public class BtLock
-    {
-      Btree pBtree;         /* Btree handle holding this lock */
-      Pgno iTable;          /* Root page of table */
-      u8 eLock;             /* READ_LOCK or WRITE_LOCK */
-      BtLock pNext;         /* Next in BtShared.pLock list */
-    };
+    ////public class BtLock
+    ////{
+    ////  Btree pBtree;         /* Btree handle holding this lock */
+    ////  Pgno iTable;          /* Root page of table */
+    ////  u8 eLock;             /* READ_LOCK or WRITE_LOCK */
+    ////  BtLock pNext;         /* Next in BtShared.pLock list */
+    ////};
 
     /* Candidate values for BtLock.eLock */
     //#define READ_LOCK     1
