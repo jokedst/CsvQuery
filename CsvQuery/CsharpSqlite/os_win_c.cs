@@ -1502,7 +1502,7 @@ error = 1;
           newLocktype = EXCLUSIVE_LOCK;
           res = 1;
         }
-        catch ( Exception e )
+        catch (Exception)
         {
           res = 0;
         }
@@ -2778,11 +2778,10 @@ dwFlagsAndAttributes |= FileOptions.RandomAccess; // FILE_FLAG_RANDOM_ACCESS;
 #endif
 #endif
           }
-          catch ( Exception e )
+          catch ( Exception )
           {
 #if SQLITE_WINRT
               System.Threading.Tasks.Task.Delay(100).Wait();
-
 #else
               Thread.Sleep(100);
 #endif
