@@ -6,6 +6,8 @@ The data is stored in a in-memory SQLite database, so you can write SQL queries 
 
 It tries to auto-detect separators, headers and column types. If it can't it just fails - there is currently no way to tell it what separator to use.
 
+![screenshot](/Meta/Screenshot.png?raw=true "Small file with header row parsed")
+
 License
 -------
 This package as a whole is licensed under the GPL v3. See gpl-3.0.txt
