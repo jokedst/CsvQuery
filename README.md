@@ -12,7 +12,7 @@ License
 -------
 This package as a whole is licensed under the GPL v3. See gpl-3.0.txt
 
-The CsharpSqlite code is licensed under MIT license (which is apparantly GPL v3 compatible). See CsharpSqlite\License-CsharpSqlite-MIT.txt
+The CsharpSqlite code is licensed under MIT license (which is apparently GPL v3 compatible). See CsharpSqlite\License-CsharpSqlite-MIT.txt
 
 
 Planned features
@@ -26,7 +26,7 @@ Planned features
 Auto-detection
 --------------
 
-CSV Query detects the separator by calculating the variance in occurance of characters on each line, then chose the one that seems best, prefering one of comma, semicolon, pipe or tab. It's certanly not perfect, but it handles all the files I regarly work with, which is why I wrote the plugin in the first place.
+CSV Query detects the separator by calculating the variance in occurrence of characters on each line, then chose the one that seems best, preferring one of comma, semicolon, pipe or tab. It's certainly not perfect, but it handles all the files I regularly work with, which is why I wrote the plugin in the first place.
 
 If the first line is all strings and the rest of the lines have at least one numeric column, it assumes the first line is a header and use it for the column names in the database.
 
@@ -39,7 +39,7 @@ Used Libraries
 Base for making Notepad++ plugins in C#
 
 https://github.com/kbilsted/NotepadPlusPlusPluginPack.Net
-Licenced under GPL v3
+Licensed under GPL v3
 
 
 ### CSharpSQLite
