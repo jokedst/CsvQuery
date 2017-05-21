@@ -1,6 +1,8 @@
 CSV Query - Notepad++ plugin
 ============================
 
+[![Build status](https://ci.appveyor.com/api/projects/status/j1r9m77jwiyfsn4u?svg=true)](https://ci.appveyor.com/project/jokedst/csvquery)
+
 A plugin to Notepad++ to parse different types of CSV files and display them in a table.
 The data is stored in a in-memory SQLite database, so you can write SQL queries against the data.
 
