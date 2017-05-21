@@ -2,6 +2,8 @@
 
 namespace CsvQuery
 {
+    using System;
+    using System.Diagnostics;
     using System.Drawing;
     using System.Drawing.Imaging;
     using System.Runtime.InteropServices;
@@ -16,6 +18,7 @@ namespace CsvQuery
     {
         public const string PluginName = "CsvQuery";
         public static Settings Settings = new Settings();
+
         public static QueryWindow QueryWindow;
         public static int MenuToggleId = -1;
 
@@ -33,22 +36,34 @@ namespace CsvQuery
             PluginBase.AddMenuItem("List parsed files", ListSqliteTables);
             PluginBase.AddMenuItem("---", null);
             PluginBase.AddMenuItem("&Settings", Settings.ShowDialog);
-            PluginBase.AddMenuItem("Settings file", Settings.OpenFile);
+            ////PluginBase.AddMenuItem("Settings file", Settings.OpenFile);
             PluginBase.AddMenuItem("&About", AboutCsvQuery);
         }
 
         private static void ParseWithManualSettings()
         {
-            var csvSettings = new CsvSettings();
-            var askUserDialog = new ParseSettings();
-            askUserDialog.Controls["MainLabel"].Text = "Manually enter values for parsing CSV\n\nUse this if detection fails";
-            var userChoice = askUserDialog.ShowDialog();
-            if (userChoice != DialogResult.OK)
-                return;
-            csvSettings.Separator = askUserDialog.Controls["txbSep"].Text.Unescape();
-            csvSettings.TextQualifier = askUserDialog.Controls["txbQuoteChar"].Text.Unescape();
-            QueryWindowVisible(true);
-            QueryWindow.ParseBuffer(csvSettings);
+            try
+            {
+                var csvSettings = new CsvSettings();
+                var askUserDialog = new ParseSettings
+                {
+                    MainLabel = {Text = "Manually enter values for parsing CSV\n\nUse this if detection fails"},
+                    txbQuoteChar = {Text = Main.Settings.DefaultQuoteChar.ToString()},
+                    txbSep = {Text = Main.Settings.DefaultSeparator}
+                };
+                var userChoice = askUserDialog.ShowDialog();
+                if (userChoice != DialogResult.OK)
+                    return;
+
+                csvSettings.Separator = askUserDialog.txbSep.Text.Unescape();
+                csvSettings.TextQualifier = askUserDialog.txbQuoteChar.Text.Unescape();
+                QueryWindowVisible(true);
+                QueryWindow.ParseBuffer(csvSettings);
+            }
+            catch (Exception e)
+            {
+                Trace.WriteLine("Error: "+e.Message);
+            }
         }
 
         public static void SetToolBarIcon()

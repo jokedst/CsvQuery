@@ -65,12 +65,50 @@ namespace CsvQuery.Csv
             }
         }
 
-        internal enum ParseState
+        /// <summary>
+        /// Generates a CSV file from a <see cref="DataGridView"/>, using the settings
+        /// </summary>
+        /// <param name="dataGrid"> Grid containing data to create CSV from </param>
+        /// <returns> string in CSV format </returns>
+        public string Generate(DataGridView dataGrid)
         {
-            WordStart,
-            InQuotes,
-            UnQuoted,
-            OutOfQuotes
+            var results = new StringBuilder();
+
+            var first = true;
+            foreach (DataGridViewColumn column in dataGrid.Columns)
+            {
+                if (first) first = false; else results.Append(Separator);
+                results.Append(Escape(column.HeaderText));
+            }
+            results.AppendLine();
+
+            foreach (DataGridViewRow row in dataGrid.Rows)
+            {
+                first = true;
+                foreach (DataGridViewCell cell in row.Cells)
+                {
+                    if (first) first = false; else results.Append(Separator);
+                    results.Append(Escape(cell.Value.ToString()));
+                }
+                results.AppendLine();
+            }
+
+            return results.ToString();
+        }
+
+        /// <summary>
+        /// Escapes a string if it contains the separator
+        /// </summary>
+        /// <param name="text"> Text to escape </param>
+        /// <param name="always"> If true the text will always be escaped </param>
+        /// <returns> Escaped text </returns>
+        protected string Escape(string text, bool always = false)
+        {
+            if (!always && text.IndexOf(Separator) == -1)
+                return text;
+            return TextQualifier 
+                + text.Replace(TextQualifier.ToString(), TextQualifier.ToString() + TextQualifier) 
+                + TextQualifier;
         }
     }
 }

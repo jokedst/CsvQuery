@@ -243,7 +243,7 @@ namespace Community.CsharpSqlite
     {
       string z = "";
       byte[] zBLOB = null;
-      string z2;
+      //string z2;
       int len;
       int p0type;
       int p1, p2;

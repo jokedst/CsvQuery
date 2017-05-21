@@ -1,12 +1,11 @@
 ﻿using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("CsvQuery")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("Notepad++ plugin for SQL queries against CSV data")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("jokedst")]
 [assembly: AssemblyProduct("CsvQuery")]
@@ -22,15 +21,4 @@ using System.Runtime.InteropServices;
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("31492674-6fe0-485c-91f0-2e17244588ff")]
 
-// Version information for an assembly consists of the following four values:
-//
-//      Major Version
-//      Minor Version 
-//      Build Number
-//      Revision
-//
-// You can specify all the values or you can default the Build and Revision Numbers 
-// by using the '*' as shown below:
-// [assembly: AssemblyVersion("1.0.*")]
-//[assembly: AssemblyVersion("0.2.*")]
-//[assembly: AssemblyFileVersion("0.1.2.0")]
+// Version information is controlled by GitVersion

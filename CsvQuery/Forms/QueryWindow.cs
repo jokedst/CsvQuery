@@ -4,9 +4,10 @@
     using System.Collections.Generic;
     using System.Data;
     using System.Diagnostics;
+    using System.IO;
     using System.Linq;
+    using System.Text;
     using System.Windows.Forms;
-    using System.Windows.Forms.VisualStyles;
     using Csv;
     using PluginInfrastructure;
     using Tools;
@@ -19,6 +20,21 @@
         public QueryWindow()
         {
             InitializeComponent();
+
+            // Import query cache
+            if (Main.Settings.SaveQueryCache && File.Exists(PluginStorage.QueryCachePath))
+            {
+                var lines = File.ReadAllLines(PluginStorage.QueryCachePath);
+                // Arbitrary limit of 1000 cached queries. Reduces them to 900 to avoid rewrite every time
+                if (lines.Length > 1000)
+                {
+                    var newLines = new string[900];
+                    Array.Copy(lines, lines.Length - 900, newLines, 0, 900);
+                    lines = newLines;
+                    File.WriteAllLines(PluginStorage.QueryCachePath, lines);
+                }
+                txbQuery.AutoCompleteCustomSource.AddRange(lines);
+            }
         }
 
         /// <summary>
@@ -45,8 +61,8 @@
                 var userChoice = askUserDialog.ShowDialog();
                 if (userChoice != DialogResult.OK)
                     return;
-                csvSettings.Separator = askUserDialog.Controls["txbSep"].Text.FirstOrDefault();
-                csvSettings.TextQualifier = askUserDialog.Controls["txbQuoteChar"].Text.FirstOrDefault();
+                csvSettings.Separator = askUserDialog.txbSep.Text.Unescape();
+                csvSettings.TextQualifier = askUserDialog.txbQuoteChar.Text.Unescape();
             }
             watch.Checkpoint("Analyze");
 
@@ -116,7 +132,17 @@
             watch.Checkpoint("Display");
 
             // Store query in history
-            queryAutoComplete.Add(query);
+            if (!txbQuery.AutoCompleteCustomSource.Contains(query))
+            {
+                txbQuery.AutoCompleteCustomSource.Add(query);
+                if (Main.Settings.SaveQueryCache)
+                {
+                    using (var writer = File.AppendText(PluginStorage.QueryCachePath))
+                    {
+                        writer.WriteLine(query);
+                    }
+                }
+            }
         }
 
         private void btnExec_Click(object sender, EventArgs e)
@@ -137,6 +163,36 @@
             {
                 btnExec.PerformClick();
             }
+        }
+
+        private void createNewCSVToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (dataGrid.DataSource == null)
+            {
+                MessageBox.Show("No results available to convert");
+                return;
+            }
+            var settingsDialog = new ParseSettings
+            {
+                btnReparse = {Text = "&Ok"},
+                MainLabel = {Text = "How should the CSV be generated?"},
+                txbSep = {Text = Main.Settings.DefaultSeparator},
+                txbQuoteChar = {Text = Main.Settings.DefaultQuoteChar.ToString()}
+            };
+
+            if (settingsDialog.ShowDialog() == DialogResult.Cancel) return;
+
+            var settings = new CsvSettings
+            {
+                Separator = settingsDialog.txbSep.Text.Unescape(),
+                TextQualifier = settingsDialog.txbQuoteChar.Text.Unescape()
+            };
+            var csvData = settings.Generate(dataGrid);
+
+
+            // Create new tab for results
+            Win32.SendMessage(PluginBase.nppData._nppHandle, (uint) NppMsg.NPPM_MENUCOMMAND, 0, NppMenuCmd.IDM_FILE_NEW);
+            PluginBase.CurrentScintillaGateway.AddText(csvData.Length, csvData.ToString());
         }
     }
 }

@@ -6343,8 +6343,8 @@ ref int pRC         /* Read and write return code from here */
   int ins;          /* Index in data[] where new cell pointer is inserted */
   int cellOffset;   /* Address of first cell pointer in data[] */
   u8[] data;        /* The content of the whole page */
-  u8 ptr;           /* Used for moving information around in data[] */
-  u8 endPtr;        /* End of the loop */
+  //u8 ptr;           /* Used for moving information around in data[] */
+  //u8 endPtr;        /* End of the loop */
 
   int nSkip = ( iChild != 0 ? 4 : 0 );
 
@@ -6841,10 +6841,10 @@ if (false)
 // under C#; Try to reuse Memory
 
 static int balance_nonroot(
-MemPage pParent,               /* Parent page of siblings being balanced */
-int iParentIdx,                /* Index of "the page" in pParent */
-u8[] aOvflSpace,               /* page-size bytes of space for parent ovfl */
-int isRoot                     /* True if pParent is a root-page */
+    MemPage pParent,               /* Parent page of siblings being balanced */
+    int iParentIdx,                /* Index of "the page" in pParent */
+    u8[] aOvflSpace,               /* page-size bytes of space for parent ovfl */
+    int isRoot                     /* True if pParent is a root-page */
 )
 {
   MemPage[] apOld = new MemPage[NB];    /* pPage and up to two siblings */
@@ -6869,7 +6869,7 @@ int isRoot                     /* True if pParent is a root-page */
   int subtotal;                /* Subtotal of bytes in cells on one page */
   //int iSpace1 = 0;             /* First unused byte of aSpace1[] */
   int iOvflSpace = 0;          /* First unused byte of aOvflSpace[] */
-  int szScratch;               /* Size of scratch memory requested */
+  //int szScratch;               /* Size of scratch memory requested */
   int pRight;                  /* Location in parent of right-sibling pointer */
   u8[][] apCell = null;                 /* All cells begin balanced */
   //u16[] szCell;                         /* Local size of all cells in apCell[] */

@@ -22,7 +22,16 @@
         [Description("Separators that are detected automatically"), Category("General"), DefaultValue(",;|\\t")]
         public string Separators { get; set; } = ",;|\\t:";
 
-#region Inner workings
+        [Description("Saves the query cache to disk between boots"), Category("General"), DefaultValue(true)]
+        public bool SaveQueryCache { get; set; }
+
+        [Description("Default separators when generating CSV"), Category("Generation"), DefaultValue(",")]
+        public string DefaultSeparator { get; set; }
+
+        [Description("Default quote character when generating CSV"), Category("Generation"), DefaultValue('\"')]
+        public char DefaultQuoteChar { get; set; }
+
+        #region Inner workings
         private static readonly string IniFilePath;
 
         static Settings()
@@ -52,7 +61,7 @@
         }
 
         /// <summary>
-        /// Saves all settings to an ini-file, under "General" section
+        /// Reads all (existing) settings from an ini-file
         /// </summary>
         /// <param name="filename">File to write to (default is N++ plugin config)</param>
         public void ReadFromIniFile(string filename = null)
@@ -60,16 +69,24 @@
             filename = filename ?? IniFilePath;
             if (!File.Exists(filename)) return;
 
-            var loaded = GetKeys(filename, "General");
+            // Load all sections from file
+            var loaded = GetType().GetProperties()
+                .Select(x => ((CategoryAttribute) x.GetCustomAttributes(typeof(CategoryAttribute), false).FirstOrDefault())?.Category ?? "General")
+                .Distinct()
+                .ToDictionary(section => section, section => GetKeys(filename, section));
+            
+            //var loaded = GetKeys(filename, "General");
             foreach (var propertyInfo in GetType().GetProperties())
             {
+                var category = ((CategoryAttribute)propertyInfo.GetCustomAttributes(typeof(CategoryAttribute), false).FirstOrDefault())?.Category ?? "General";
                 var name = propertyInfo.Name;
-                if (loaded.ContainsKey(name) && !string.IsNullOrEmpty(loaded[name]))
+                if (loaded.ContainsKey(category) && loaded[category].ContainsKey(name) && !string.IsNullOrEmpty(loaded[category][name]))
                 {
+                    var rawString = loaded[category][name];
                     var converter = TypeDescriptor.GetConverter(propertyInfo.PropertyType);
-                    if (converter.IsValid(loaded[name]))
+                    if (converter.IsValid(rawString))
                     {
-                        propertyInfo.SetValue(this, converter.ConvertFromString(loaded[name]), null);
+                        propertyInfo.SetValue(this, converter.ConvertFromString(rawString), null);
                     }
                 }
             }
@@ -95,7 +112,7 @@
                     .GroupBy(x => ((CategoryAttribute) x.GetCustomAttributes(typeof(CategoryAttribute), false)
                                       .FirstOrDefault())?.Category ?? "General"))
                 {
-                    fp.WriteLine("[{0}]", section.Key);
+                    fp.WriteLine(Environment.NewLine + "[{0}]", section.Key);
                     foreach (var propertyInfo in section.OrderBy(x => x.Name))
                     {
                         if (propertyInfo.GetCustomAttributes(typeof(DescriptionAttribute), false).FirstOrDefault() is DescriptionAttribute description)

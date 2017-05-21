@@ -1242,9 +1242,8 @@ return null;
       }
       if ( pList.nAlloc <= pList.nExpr )
       {
-        ExprList_item a;
         int n = pList.nAlloc * 2 + 4;
-        //a = sqlite3DbRealloc(db, pList.a, n*sizeof(pList.a[0]));
+        //ExprList_item a = sqlite3DbRealloc(db, pList.a, n*sizeof(pList.a[0]));
         //if( a==0 ){
         //  goto no_mem;
         //}

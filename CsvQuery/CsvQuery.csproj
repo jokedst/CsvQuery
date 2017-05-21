@@ -155,7 +155,6 @@
     <Compile Include="CsharpSqlite\wal_h.cs" />
     <Compile Include="CsharpSqlite\where_c.cs" />
     <Compile Include="CsharpSqlite\_Custom.cs" />
-    <Compile Include="Csv.cs" />
     <Compile Include="Csv\CsvAnalyzer.cs" />
     <Compile Include="Csv\CsvExtensions.cs" />
     <Compile Include="Csv\CsvSettings.cs" />
@@ -196,6 +195,7 @@
     </Compile>
     <Compile Include="PluginInfrastructure\UnmanagedExports.cs" />
     <Compile Include="Tools\DiagnosticTimer.cs" />
+    <Compile Include="Tools\PluginStorage.cs" />
     <Compile Include="Tools\Settings.cs" />
     <Compile Include="Tools\SQLiteDatabase.cs" />
     <Compile Include="Tools\SQLiteVdbe.cs" />

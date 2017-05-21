@@ -1,5 +1,7 @@
 ﻿namespace CsvQuery.Forms
 {
+    using System.Windows.Forms;
+
     partial class QueryWindow
     {
         /// <summary>
@@ -28,26 +30,31 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.txbQuery = new System.Windows.Forms.TextBox();
             this.dataGrid = new System.Windows.Forms.DataGridView();
+            this.contextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.copyWithHeadersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
+            this.createNewCSVToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.btnAnalyze = new System.Windows.Forms.Button();
             this.btnExec = new System.Windows.Forms.Button();
-            this.queryAutoComplete = new System.Windows.Forms.AutoCompleteStringCollection();
             ((System.ComponentModel.ISupportInitialize)(this.dataGrid)).BeginInit();
+            this.contextMenuStrip.SuspendLayout();
             this.SuspendLayout();
             // 
             // txbQuery
             // 
             this.txbQuery.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.txbQuery.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+            this.txbQuery.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.CustomSource;
             this.txbQuery.Location = new System.Drawing.Point(2, 0);
             this.txbQuery.Name = "txbQuery";
             this.txbQuery.Size = new System.Drawing.Size(110, 20);
             this.txbQuery.TabIndex = 0;
             this.txbQuery.KeyDown += new System.Windows.Forms.KeyEventHandler(this.txbQuery_KeyDown);
-            this.txbQuery.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
-            this.txbQuery.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.CustomSource;
-            this.txbQuery.AutoCompleteCustomSource = queryAutoComplete;
             // 
             // dataGrid
             // 
@@ -57,12 +64,47 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.dataGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dataGrid.ContextMenuStrip = this.contextMenuStrip;
             this.dataGrid.Location = new System.Drawing.Point(13, 27);
             this.dataGrid.Name = "dataGrid";
             this.dataGrid.ReadOnly = true;
             this.dataGrid.RowHeadersVisible = false;
             this.dataGrid.Size = new System.Drawing.Size(259, 223);
             this.dataGrid.TabIndex = 1;
+            // 
+            // contextMenuStrip
+            // 
+            this.contextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.copyToolStripMenuItem,
+            this.copyWithHeadersToolStripMenuItem,
+            this.toolStripMenuItem1,
+            this.createNewCSVToolStripMenuItem});
+            this.contextMenuStrip.Name = "contextMenuStrip";
+            this.contextMenuStrip.Size = new System.Drawing.Size(173, 98);
+            // 
+            // copyToolStripMenuItem
+            // 
+            this.copyToolStripMenuItem.Name = "copyToolStripMenuItem";
+            this.copyToolStripMenuItem.Size = new System.Drawing.Size(172, 22);
+            this.copyToolStripMenuItem.Text = "&Copy";
+            // 
+            // copyWithHeadersToolStripMenuItem
+            // 
+            this.copyWithHeadersToolStripMenuItem.Name = "copyWithHeadersToolStripMenuItem";
+            this.copyWithHeadersToolStripMenuItem.Size = new System.Drawing.Size(172, 22);
+            this.copyWithHeadersToolStripMenuItem.Text = "Copy with &headers";
+            // 
+            // toolStripMenuItem1
+            // 
+            this.toolStripMenuItem1.Name = "toolStripMenuItem1";
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(169, 6);
+            // 
+            // createNewCSVToolStripMenuItem
+            // 
+            this.createNewCSVToolStripMenuItem.Name = "createNewCSVToolStripMenuItem";
+            this.createNewCSVToolStripMenuItem.Size = new System.Drawing.Size(172, 22);
+            this.createNewCSVToolStripMenuItem.Text = "Create &new CSV...";
+            this.createNewCSVToolStripMenuItem.Click += new System.EventHandler(this.createNewCSVToolStripMenuItem_Click);
             // 
             // btnAnalyze
             // 
@@ -98,6 +140,7 @@
             this.Name = "QueryWindow";
             this.Text = "QueryWindow";
             ((System.ComponentModel.ISupportInitialize)(this.dataGrid)).EndInit();
+            this.contextMenuStrip.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -109,6 +152,10 @@
         private System.Windows.Forms.DataGridView dataGrid;
         private System.Windows.Forms.Button btnAnalyze;
         private System.Windows.Forms.Button btnExec;
-        private System.Windows.Forms.AutoCompleteStringCollection queryAutoComplete;
+        private System.Windows.Forms.ContextMenuStrip contextMenuStrip;
+        private System.Windows.Forms.ToolStripMenuItem copyToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem copyWithHeadersToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem1;
+        private System.Windows.Forms.ToolStripMenuItem createNewCSVToolStripMenuItem;
     }
 }

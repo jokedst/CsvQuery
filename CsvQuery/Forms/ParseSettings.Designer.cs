@@ -35,6 +35,8 @@
             this.lblSeparator = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.txbQuoteChar = new System.Windows.Forms.TextBox();
+            this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
+            this.flowLayoutPanel1.SuspendLayout();
             this.SuspendLayout();
             // 
             // btnReparse
@@ -62,7 +64,8 @@
             // MainLabel
             // 
             this.MainLabel.AutoSize = true;
-            this.MainLabel.Location = new System.Drawing.Point(13, 13);
+            this.flowLayoutPanel1.SetFlowBreak(this.MainLabel, true);
+            this.MainLabel.Location = new System.Drawing.Point(3, 0);
             this.MainLabel.Name = "MainLabel";
             this.MainLabel.Size = new System.Drawing.Size(251, 39);
             this.MainLabel.TabIndex = 2;
@@ -71,7 +74,7 @@
             // 
             // txbSep
             // 
-            this.txbSep.Location = new System.Drawing.Point(45, 69);
+            this.txbSep.Location = new System.Drawing.Point(3, 42);
             this.txbSep.MaxLength = 2;
             this.txbSep.Name = "txbSep";
             this.txbSep.Size = new System.Drawing.Size(39, 20);
@@ -80,60 +83,76 @@
             // lblSeparator
             // 
             this.lblSeparator.AutoSize = true;
-            this.lblSeparator.Location = new System.Drawing.Point(90, 72);
+            this.flowLayoutPanel1.SetFlowBreak(this.lblSeparator, true);
+            this.lblSeparator.Location = new System.Drawing.Point(48, 39);
             this.lblSeparator.Name = "lblSeparator";
-            this.lblSeparator.Size = new System.Drawing.Size(53, 13);
+            this.lblSeparator.Padding = new System.Windows.Forms.Padding(0, 6, 0, 0);
+            this.lblSeparator.Size = new System.Drawing.Size(53, 19);
             this.lblSeparator.TabIndex = 4;
             this.lblSeparator.Text = "Separator";
             // 
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(90, 98);
+            this.flowLayoutPanel1.SetFlowBreak(this.label2, true);
+            this.label2.Location = new System.Drawing.Point(48, 65);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(82, 13);
+            this.label2.Padding = new System.Windows.Forms.Padding(0, 6, 0, 0);
+            this.label2.Size = new System.Drawing.Size(82, 19);
             this.label2.TabIndex = 6;
             this.label2.Text = "Text quote char";
             // 
             // txbQuoteChar
             // 
-            this.txbQuoteChar.Location = new System.Drawing.Point(45, 95);
+            this.txbQuoteChar.Location = new System.Drawing.Point(3, 68);
             this.txbQuoteChar.MaxLength = 1;
             this.txbQuoteChar.Name = "txbQuoteChar";
             this.txbQuoteChar.Size = new System.Drawing.Size(39, 20);
             this.txbQuoteChar.TabIndex = 2;
+            // 
+            // flowLayoutPanel1
+            // 
+            this.flowLayoutPanel1.Controls.Add(this.MainLabel);
+            this.flowLayoutPanel1.Controls.Add(this.txbSep);
+            this.flowLayoutPanel1.Controls.Add(this.lblSeparator);
+            this.flowLayoutPanel1.Controls.Add(this.txbQuoteChar);
+            this.flowLayoutPanel1.Controls.Add(this.label2);
+            this.flowLayoutPanel1.Location = new System.Drawing.Point(12, 12);
+            this.flowLayoutPanel1.Name = "flowLayoutPanel1";
+            this.flowLayoutPanel1.Size = new System.Drawing.Size(260, 127);
+            this.flowLayoutPanel1.TabIndex = 7;
             // 
             // ParseSettings
             // 
             this.AcceptButton = this.btnReparse;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.CancelButton = this.btnCancel;
             this.ClientSize = new System.Drawing.Size(284, 180);
-            this.Controls.Add(this.label2);
-            this.Controls.Add(this.txbQuoteChar);
-            this.Controls.Add(this.lblSeparator);
-            this.Controls.Add(this.txbSep);
-            this.Controls.Add(this.MainLabel);
+            this.Controls.Add(this.flowLayoutPanel1);
             this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.btnReparse);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
+            this.MinimumSize = new System.Drawing.Size(200, 100);
             this.Name = "ParseSettings";
             this.ShowIcon = false;
             this.Text = "Parse Settings";
+            this.flowLayoutPanel1.ResumeLayout(false);
+            this.flowLayoutPanel1.PerformLayout();
             this.ResumeLayout(false);
-            this.PerformLayout();
 
         }
 
         #endregion
 
-        private System.Windows.Forms.Button btnReparse;
+        internal System.Windows.Forms.Button btnReparse;
         private System.Windows.Forms.Button btnCancel;
-        private System.Windows.Forms.Label MainLabel;
-        private System.Windows.Forms.TextBox txbSep;
+        internal System.Windows.Forms.Label MainLabel;
+        internal System.Windows.Forms.TextBox txbSep;
         private System.Windows.Forms.Label lblSeparator;
         private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.TextBox txbQuoteChar;
+        internal System.Windows.Forms.TextBox txbQuoteChar;
+        private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel1;
     }
 }
