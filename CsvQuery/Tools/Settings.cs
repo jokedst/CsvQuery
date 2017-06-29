@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.ComponentModel;
+    using System.Diagnostics;
     using System.Drawing;
     using System.IO;
     using System.Linq;
@@ -31,8 +32,15 @@
         [Description("Default quote character when generating CSV"), Category("Generation"), DefaultValue('\"')]
         public char DefaultQuoteChar { get; set; }
 
+        [Description("SQL provider for data storage"), Category("SQL"), DefaultValue(DataStorageProvider.SQLite)]
+        public DataStorageProvider StorageProvider { get; set; }
+
+        [Description("For SQLite a file path or ':memory:' for in-memory database. \r\nFor MSSQL name of database in local default instance (trusted connection)"), Category("SQL"), DefaultValue(":memory:")]
+        public string Database { get; set; }
+
         #region Inner workings
         private static readonly string IniFilePath;
+        private readonly List<Tuple<Func<Settings, bool>, string[]>> _listeners = new List<Tuple<Func<Settings, bool>, string[]>>();
 
         static Settings()
         {
@@ -116,7 +124,7 @@
                     foreach (var propertyInfo in section.OrderBy(x => x.Name))
                     {
                         if (propertyInfo.GetCustomAttributes(typeof(DescriptionAttribute), false).FirstOrDefault() is DescriptionAttribute description)
-                            fp.WriteLine("; " + description.Description);
+                            fp.WriteLine("; " + description.Description.Replace(Environment.NewLine, Environment.NewLine + "; "));
                         var converter = TypeDescriptor.GetConverter(propertyInfo.PropertyType);
                         fp.WriteLine("{0}={1}", propertyInfo.Name, converter.ConvertToInvariantString(propertyInfo.GetValue(this, null)));
                     }
@@ -187,10 +195,40 @@
             dialog.Controls["Cancel"].Click += (a, b) => dialog.Close();
             dialog.Controls["Ok"].Click += (a, b) =>
             {
+                // Run listeners
+                foreach (var listener in _listeners)
+                {
+                    bool result;
+                    if (listener.Item2 == null || listener.Item2.Length == 0)
+                    {
+                        result = listener.Item1(copy);
+                    }
+                    else
+                    {
+                        foreach (var setting in listener.Item2)
+                        {
+                            var prop = GetType().GetProperty(setting);
+                            if (!prop.GetValue(this, null).Equals(prop.GetValue(copy, null)))
+                            {
+                                result = listener.Item1(copy);
+                                break;
+                            }
+                        }
+                    }
+                }
+
                 copy.SaveToIniFile();
                 // Copy all settings to this
                 foreach (var propertyInfo in GetType().GetProperties())
-                    propertyInfo.SetValue(this, propertyInfo.GetValue(copy, null), null);
+                {
+                    var oldValue = propertyInfo.GetValue(this, null);
+                    var newValue = propertyInfo.GetValue(copy, null);
+                    if (!oldValue.Equals(newValue))
+                    {
+                        Trace.TraceInformation($"Setting {propertyInfo.Name} has changed");
+                    }
+                    propertyInfo.SetValue(this, newValue , null);
+                }
                 dialog.Close();
             };
 
@@ -202,6 +240,11 @@
         {
             if(!File.Exists(IniFilePath)) SaveToIniFile();
             Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_DOOPEN, 0, IniFilePath);
+        }
+
+        public void RegisterListener(Func<Settings,bool> eventListener, params string[] settingName)
+        {
+            this._listeners.Add(Tuple.Create(eventListener, settingName));
         }
 #endregion
     }

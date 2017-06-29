@@ -23,6 +23,17 @@ namespace CsvQuery
         public static int MenuToggleId = -1;
         public static IDataStorage DataStorage = new MssqlDataStorage("Data Source=(local);Initial Catalog=CsvQuery;Trusted_Connection=True");
 
+        static Main()
+        {
+            Settings.RegisterListener(OnSqlSettingsChanged, nameof(Settings.StorageProvider), nameof(Settings.Database));
+        }
+
+        public static bool OnSqlSettingsChanged(Settings settings)
+        {
+            Trace.TraceInformation("OnSqlSettingsChanged fired");
+            return true;
+        }
+
         public static void OnNotification(ScNotification notification)
         {
             // This method is invoked whenever something is happening in notepad++. Use as:

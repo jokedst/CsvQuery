@@ -11,4 +11,10 @@ namespace CsvQuery
         List<string[]> ExecuteQueryWithColumnNames(string query);
         void ExecuteNonQuery(string query);
     }
+
+    public enum DataStorageProvider
+    {
+        SQLite,
+        MSSQL
+    }
 }

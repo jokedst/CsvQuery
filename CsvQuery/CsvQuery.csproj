@@ -156,7 +156,6 @@
     <Compile Include="CsharpSqlite\where_c.cs" />
     <Compile Include="CsharpSqlite\_Custom.cs" />
     <Compile Include="Csv\CsvAnalyzer.cs" />
-    <Compile Include="Csv\CsvExtensions.cs" />
     <Compile Include="Csv\CsvSettings.cs" />
     <Compile Include="Forms\ParseSettings.cs">
       <SubType>Form</SubType>
@@ -164,6 +163,7 @@
     <Compile Include="Forms\ParseSettings.Designer.cs">
       <DependentUpon>ParseSettings.cs</DependentUpon>
     </Compile>
+    <Compile Include="Tools\Extensions.cs" />
     <Compile Include="Tools\MssqlDataStorage.cs" />
     <Compile Include="Tools\SQLiteDataStorage.cs" />
     <Compile Include="PluginInfrastructure\ClikeStringArray.cs" />

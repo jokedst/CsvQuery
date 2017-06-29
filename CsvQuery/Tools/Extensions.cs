@@ -1,9 +1,12 @@
-﻿namespace CsvQuery.Csv
+﻿namespace CsvQuery.Tools
 {
     using System.Collections.Generic;
     using System.Linq;
 
-    static class CsvExtensions
+    /// <summary>
+    /// Mixed bag of helper extensions for this project
+    /// </summary>
+    internal static class Extensions
     {
         /// <summary>
         /// Safely increase a count (when using a dictionary to count stuff)
@@ -28,6 +31,11 @@
         {
             if (escaped == "\\t") return '\t';
             return escaped.FirstOrDefault();
+        }
+
+        public static object Valid(object oldValue, object newValue)
+        {
+            return newValue;
         }
     }
 }
