@@ -73,7 +73,7 @@
             var data = csvSettings.Parse(text);
             watch.Checkpoint("Parse");
 
-            DataStorage.SaveData(bufferId, data, null);
+            Main.DataStorage.SaveData(bufferId, data, null);
             watch.Checkpoint("Saved to DB");
 
             txbQuery.Text = "SELECT * FROM THIS";
@@ -91,20 +91,20 @@
             
             string text = PluginBase.CurrentScintillaGateway.GetAllText();
             var data = settings.Parse(text);
-            DataStorage.SaveData(bufferId, data, null);
+            Main.DataStorage.SaveData(bufferId, data, null);
             ExecuteQuery("SELECT * FROM THIS");
         }
 
         private void Execute(IntPtr bufferId, DiagnosticTimer watch)
         {
-            DataStorage.SetActiveTab(bufferId);
+            Main.DataStorage.SetActiveTab(bufferId);
             watch.Checkpoint("Switch buffer");
 
             var query = txbQuery.Text;
             List<string[]> toshow;
             try
             {
-                toshow = DataStorage.ExecuteQueryWithColumnNames(query);
+                toshow = Main.DataStorage.ExecuteQueryWithColumnNames(query);
             }
             catch (Exception)
             {

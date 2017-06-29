@@ -12,6 +12,8 @@ namespace Tests
     [TestClass]
     public class DBTests
     {
+        public IDataStorage DataStorage = new SQLiteDataStorage();
+
         private void AssertDataEqual(IList<string[]> expected, IList<string[]> actual)
         {
             Assert.AreEqual(expected.Count, actual.Count, "Not same number of rows");

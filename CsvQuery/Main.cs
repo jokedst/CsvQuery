@@ -21,6 +21,7 @@ namespace CsvQuery
 
         public static QueryWindow QueryWindow;
         public static int MenuToggleId = -1;
+        public static IDataStorage DataStorage = new MssqlDataStorage("Data Source=(local);Initial Catalog=CsvQuery;Trusted_Connection=True");
 
         public static void OnNotification(ScNotification notification)
         {

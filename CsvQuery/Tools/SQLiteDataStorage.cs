@@ -1,4 +1,6 @@
-﻿namespace CsvQuery
+﻿using System.Diagnostics;
+
+namespace CsvQuery
 {
     using System;
     using System.Collections.Generic;
@@ -7,10 +9,10 @@
     using System.Text.RegularExpressions;
     using Community.CsharpSqlite;
 
-    public static class DataStorage
+    public class SQLiteDataStorage : IDataStorage
     {
         // For now only in-memory DB, perhaps later we could have a config setting for saving to disk
-        private static readonly SQLiteDatabase Db = new SQLiteDatabase(":memory:");
+        private readonly SQLiteDatabase Db = new SQLiteDatabase(":memory:");
 
         private static readonly string[] PRAGMA_Commands =
             {
@@ -22,12 +24,11 @@
                 "PRAGMA main.cache_size = 10000"
             };
 
-        private static readonly Dictionary<IntPtr, string> CreatedTables = new Dictionary<IntPtr, string>();
+        private readonly Dictionary<IntPtr, string> _createdTables = new Dictionary<IntPtr, string>();
+        private IntPtr _currentActiveBufferId;
+        private int _lastCreatedTableName;
 
-        private static IntPtr _currentActiveBufferId;
-        private static int _lastCreatedTableName;
-
-        static DataStorage()
+        public SQLiteDataStorage()
         {
             foreach (string command in PRAGMA_Commands) Db.ExecuteNonQuery(command);
         }
@@ -36,15 +37,15 @@
         /// Set current document as active, i.e. "this" should refer to this document if it has been parsed
         /// </summary>
         /// <param name="bufferId"></param>
-        public static void SetActiveTab(IntPtr bufferId)
+        public void SetActiveTab(IntPtr bufferId)
         {
-            if (_currentActiveBufferId != bufferId && CreatedTables.ContainsKey(bufferId))
+            if (_currentActiveBufferId != bufferId && _createdTables.ContainsKey(bufferId))
             {
                 if (_currentActiveBufferId != default(IntPtr))
                 {
                     Db.ExecuteNonQuery("DROP VIEW this");
                 }
-                Db.ExecuteNonQuery("CREATE VIEW this AS SELECT * FROM " + CreatedTables[bufferId]);
+                Db.ExecuteNonQuery("CREATE VIEW this AS SELECT * FROM " + _createdTables[bufferId]);
                 _currentActiveBufferId = bufferId;
             }
         }
@@ -57,18 +58,18 @@
         /// <param name="data"></param>
         /// <param name="hasHeader"></param>
         /// <returns></returns>
-        public static string SaveData(IntPtr bufferId, List<string[]> data, bool? hasHeader)
+        public string SaveData(IntPtr bufferId, List<string[]> data, bool? hasHeader)
         {
             string tableName;
-            if (CreatedTables.ContainsKey(bufferId))
+            if (_createdTables.ContainsKey(bufferId))
             {
-                tableName = CreatedTables[bufferId];
+                tableName = _createdTables[bufferId];
                 Db.ExecuteNonQuery("DROP TABLE IF EXISTS " + tableName);
             }
             else
             {
                 tableName = "T" + ++_lastCreatedTableName;
-                CreatedTables.Add(bufferId, tableName);
+                _createdTables.Add(bufferId, tableName);
             }
 
             int columns = data[0].Length;
@@ -96,7 +97,7 @@
                     foreach (var col in cols)
                     {
                         double d;
-                        var isDouble = double.TryParse(col, out d);
+                        var isDouble = string.IsNullOrWhiteSpace(col) || double.TryParse(col, out d);
                         if (types.Count <= i) types.Add(isDouble);
                         else if (types[i] && !isDouble) types[i] = false;
                         i++;
@@ -113,7 +114,7 @@
                 var dataAllStrings = !types.Any(x => x);
                 if (!dataAllStrings) hasHeader = true;
             }
-            // Check if first row differs significantly from the rest, if so it's probably a header
+            Trace.TraceInformation($"Header row analysis: \n\tFirst row all strings:{allStrings}\n\tData columns strings: {types.Count(x=>x)}/{types.Count}\n\rHeader row: {hasHeader}");
 
             // Create SQL by string concat - look out for SQL injection! (although rather harmless since it's all your own data)
             var createQuery = new StringBuilder("CREATE TABLE " + tableName + "(");
@@ -191,7 +192,7 @@
             return tableName;
         }
 
-        public static List<string[]> ExecuteQuery(string query)
+        public List<string[]> ExecuteQuery(string query)
         {
             var result = new List<string[]>();
             var c1 = new SQLiteVdbe(Db, query);
@@ -215,7 +216,7 @@
         /// </summary>
         /// <param name="query">SQL query to execute</param>
         /// <returns>Query results</returns>
-        public static List<string[]> ExecuteQueryWithColumnNames(string query)
+        public List<string[]> ExecuteQueryWithColumnNames(string query)
         {
             var result = new List<string[]>();
             var c1 = new SQLiteVdbe(Db, query);
@@ -245,7 +246,7 @@
             return result;
         }
 
-        public static void ExecuteNonQuery(string query)
+        public void ExecuteNonQuery(string query)
         {
             Db.ExecuteNonQuery(query);
         }

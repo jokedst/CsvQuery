@@ -164,7 +164,8 @@
     <Compile Include="Forms\ParseSettings.Designer.cs">
       <DependentUpon>ParseSettings.cs</DependentUpon>
     </Compile>
-    <Compile Include="Tools\DataStorage.cs" />
+    <Compile Include="Tools\MssqlDataStorage.cs" />
+    <Compile Include="Tools\SQLiteDataStorage.cs" />
     <Compile Include="PluginInfrastructure\ClikeStringArray.cs" />
     <Compile Include="PluginInfrastructure\DllExport\DllExportAttribute.cs" />
     <Compile Include="Forms\QueryWindow.cs">
@@ -195,6 +196,7 @@
     </Compile>
     <Compile Include="PluginInfrastructure\UnmanagedExports.cs" />
     <Compile Include="Tools\DiagnosticTimer.cs" />
+    <Compile Include="Tools\IDataStorage.cs" />
     <Compile Include="Tools\PluginStorage.cs" />
     <Compile Include="Tools\Settings.cs" />
     <Compile Include="Tools\SQLiteDatabase.cs" />

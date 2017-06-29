@@ -19,6 +19,11 @@
                 counts[c]++;
         }
 
+        /// <summary>
+        /// Translates strings like "\n" to an actual newline character
+        /// </summary>
+        /// <param name="escaped">Escaped string</param>
+        /// <returns>First character of string, after unescaping</returns>
         public static char Unescape(this string escaped)
         {
             if (escaped == "\\t") return '\t';
