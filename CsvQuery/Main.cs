@@ -41,17 +41,13 @@ namespace CsvQuery
                         DataStorage = new SQLiteDataStorage(Settings.Database);
                         break;
                     case DataStorageProvider.MSSQL:
-                        var cleanString = Settings.Database.Replace(";", string.Empty);
-                        DataStorage =
-                            new MssqlDataStorage(
-                                $"Data Source=(local);Initial Catalog={cleanString};Trusted_Connection=True");
+                        DataStorage = new MssqlDataStorage(Settings.Database);
                         break;
                 }
             }
             catch (Exception e)
             {
-                var msg =
-                    $"Error configuring the {Settings.StorageProvider} database '{Settings.Database}': {e.Message}";
+                var msg = $"Error configuring the {Settings.StorageProvider} database '{Settings.Database}': {e.Message}";
                 Trace.TraceError(msg + Environment.NewLine + e.StackTrace);
                 MessageBox.Show(msg, "Error");
                 return false;

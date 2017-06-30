@@ -86,8 +86,7 @@ namespace CsvQuery
                     // Save to headerTypes
                     foreach (var col in cols)
                     {
-                        double d;
-                        var isDouble = double.TryParse(col, out d);
+                        var isDouble = double.TryParse(col, out double d);
                         headerTypes.Add(isDouble);
                         if (isDouble) allStrings = false;
                     }

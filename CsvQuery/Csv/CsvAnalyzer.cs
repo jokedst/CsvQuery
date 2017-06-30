@@ -1,4 +1,8 @@
-﻿namespace CsvQuery.Csv
+﻿using System;
+using System.Data.SqlTypes;
+using System.Diagnostics;
+
+namespace CsvQuery.Csv
 {
     using System.Collections.Generic;
     using System.IO;
@@ -184,6 +188,133 @@
             
             // Ok, I have no idea
             return '\0';
+        }
+
+        public static CsvColumnTypes DetectColumnTypes(List<string[]> data, bool? hasHeader)
+        {
+            return new CsvColumnTypes(data, hasHeader);
+        }
+    }
+
+    public class CsvColumnTypes
+    {
+        public bool HasHeader { get; set; }
+        public List<CsvColumnType> Columns { get; set; }
+        
+
+        public CsvColumnTypes(List<string[]> data, bool? hasHeader)
+        {
+            Columns = new List<CsvColumnType>();
+            var headerTypes = new List<CsvColumnType>();
+            var rowLengths = new Dictionary<int, int>();
+            var columns = data[0].Length;
+            bool first = true, allStrings = true;
+            foreach (var cols in data)
+            {
+                rowLengths.Increase(cols.Length);
+                if (first && (!hasHeader.HasValue || hasHeader.Value))
+                {
+                    // Save to headerTypes
+                    foreach (var col in cols)
+                    {
+                        var headerType = new CsvColumnType(col);
+                        headerTypes.Add(headerType);
+                        if (headerType.DataType != ColumnType.String) allStrings = false;
+                    }
+                }
+                else
+                {
+                    // Save to Columns
+                    int i = 0;
+                    foreach (var col in cols)
+                    {
+                        var columnType = new CsvColumnType(col);
+                        if (Columns.Count <= i) Columns.Add(columnType);
+                        else Columns[i].Update(columnType);
+                        i++;
+                    }
+                }
+
+                if (first)
+                    first = false;
+            }
+
+            // If the first row is all strings, but the data rows have numbers, it's probably a header
+            HasHeader = hasHeader ?? allStrings && Columns.Any(x => x.DataType != ColumnType.String);
+            Trace.TraceInformation($"Header row analysis: User set={hasHeader.HasValue}, First row all strings:{allStrings}\n\tData columns strings: {Columns.Count(x => x.DataType == ColumnType.String)}/{Columns.Count}\n\rHeader row: {HasHeader}");
+
+            if (!hasHeader.HasValue && HasHeader == false)
+            {
+                // We _detected_ that the file has no headers, so the headerTypes needs to be merged into the other types
+                for (int c = 0; c < headerTypes.Count; c++)
+                {
+                    if (Columns.Count <= c) Columns.Add(headerTypes[c]);
+                    else Columns[c].Update(headerTypes[c]);
+                }
+            }
+
+            if (rowLengths.Count > 1)
+            {
+                Trace.TraceWarning("Column count mismatch:" + string.Join(",", rowLengths.Select(p => $"{p.Value} rows had {p.Key} columns")));
+            }
+        }
+
+        public class CsvColumnType
+        {
+            public ColumnType DataType;
+            public int Size;
+            public bool Nullable;
+
+            /// <summary>
+            /// Detect data type from string
+            /// </summary>
+            /// <param name="csvText"></param>
+            public CsvColumnType(string csvText)
+            {
+                if (string.IsNullOrWhiteSpace(csvText))
+                {
+                    DataType = ColumnType.Empty;
+                    Nullable = true;
+                    return;
+                }
+                Size = csvText.Length;
+                if (long.TryParse(csvText, out long iout))
+                {
+                    if (!Main.Settings.ConvertInitialZerosToNumber && csvText.StartsWith("0")
+                        || Main.Settings.MaxIntegerStringLength < csvText.Length)
+                        DataType = ColumnType.String;
+                    else
+                        DataType = ColumnType.Integer;
+                }
+                else if (double.TryParse(csvText, out double d))
+                    DataType = ColumnType.Real;
+                else
+                    DataType = ColumnType.String;
+            }
+
+            /// <summary>
+            /// Updates a type with a new value - it becomes the most generic of the two
+            /// </summary>
+            /// <param name="csvType"></param>
+            public void Update(string csvType)
+            {
+                Update(new CsvColumnType(csvType));
+            }
+
+            public void Update(CsvColumnType csvType)
+            {
+                DataType = csvType.DataType > DataType ? csvType.DataType : DataType;
+                Size = Math.Max(Size, csvType.Size);
+                Nullable = Nullable || csvType.Nullable;
+            }
+        }
+
+        public enum ColumnType
+        {
+            Empty=0,
+            Integer=1,
+            Real=2,
+            String=4
         }
     }
 }

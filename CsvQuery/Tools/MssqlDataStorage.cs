@@ -19,10 +19,13 @@ namespace CsvQuery
         private readonly Dictionary<IntPtr, string> _createdTables = new Dictionary<IntPtr, string>();
         private int _lastCreatedTableName;
 
-        public MssqlDataStorage(string connectionString)
+        public MssqlDataStorage(string database)
         {
-            _connectionString = connectionString;
-            
+            Trace.TraceInformation($"Creating MssqlDataStorage for db {database}");
+            database = database.Replace(";", string.Empty);
+            _connectionString = $"Data Source=(local);Initial Catalog={database};Trusted_Connection=True";
+            // Test connection
+            ExecuteNonQuery("BEGIN tran;CREATE TABLE [bnfkwencvwrjk]([X] int NULL);ROLLBACK tran");
         }
 
         public void SetActiveTab(IntPtr bufferId)
