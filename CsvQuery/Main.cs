@@ -21,16 +21,41 @@ namespace CsvQuery
 
         public static QueryWindow QueryWindow;
         public static int MenuToggleId = -1;
-        public static IDataStorage DataStorage = new MssqlDataStorage("Data Source=(local);Initial Catalog=CsvQuery;Trusted_Connection=True");
+        public static IDataStorage DataStorage;
 
         static Main()
         {
+            OnSqlSettingsChanged(Settings);
             Settings.RegisterListener(OnSqlSettingsChanged, nameof(Settings.StorageProvider), nameof(Settings.Database));
         }
 
         public static bool OnSqlSettingsChanged(Settings settings)
         {
             Trace.TraceInformation("OnSqlSettingsChanged fired");
+            try
+            {
+
+                switch (Settings.StorageProvider)
+                {
+                    case DataStorageProvider.SQLite:
+                        DataStorage = new SQLiteDataStorage(Settings.Database);
+                        break;
+                    case DataStorageProvider.MSSQL:
+                        var cleanString = Settings.Database.Replace(";", string.Empty);
+                        DataStorage =
+                            new MssqlDataStorage(
+                                $"Data Source=(local);Initial Catalog={cleanString};Trusted_Connection=True");
+                        break;
+                }
+            }
+            catch (Exception e)
+            {
+                var msg =
+                    $"Error configuring the {Settings.StorageProvider} database '{Settings.Database}': {e.Message}";
+                Trace.TraceError(msg + Environment.NewLine + e.StackTrace);
+                MessageBox.Show(msg, "Error");
+                return false;
+            }
             return true;
         }
 

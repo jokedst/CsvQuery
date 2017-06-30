@@ -12,7 +12,7 @@ namespace CsvQuery
     public class SQLiteDataStorage : IDataStorage
     {
         // For now only in-memory DB, perhaps later we could have a config setting for saving to disk
-        private readonly SQLiteDatabase Db = new SQLiteDatabase(":memory:");
+        private readonly SQLiteDatabase Db;
 
         private static readonly string[] PRAGMA_Commands =
             {
@@ -28,9 +28,11 @@ namespace CsvQuery
         private IntPtr _currentActiveBufferId;
         private int _lastCreatedTableName;
 
-        public SQLiteDataStorage()
+        public SQLiteDataStorage(string database = ":memory:")
         {
-            foreach (string command in PRAGMA_Commands) Db.ExecuteNonQuery(command);
+            Db = new SQLiteDatabase(database);
+            foreach (string command in PRAGMA_Commands)
+                Db.ExecuteNonQuery(command);
         }
 
         /// <summary>
