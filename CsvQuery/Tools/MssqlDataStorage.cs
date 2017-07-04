@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Community.CsharpSqlite;
+using CsvQuery.Csv;
 
 namespace CsvQuery
 {
@@ -56,57 +57,14 @@ namespace CsvQuery
                 _createdTables.Add(bufferId, tableName);
             }
 
-            int columns = data[0].Length;
-            // Figure out column types. For now just double/string
-            var types = new List<bool>();
-            var headerTypes = new List<bool>();
-            bool first = true, allStrings = true;
-            foreach (var cols in data)
-            {
-                if (first && (!hasHeader.HasValue || hasHeader.Value))
-                {
-                    // Save to headerTypes
-                    foreach (var col in cols)
-                    {
-                        double d;
-                        var isDouble = double.TryParse(col, out d);
-                        headerTypes.Add(isDouble);
-                        if (isDouble) allStrings = false;
-                    }
-                }
-                else
-                {
-                    // Save to types
-                    int i = 0;
-                    foreach (var col in cols)
-                    {
-                        double d;
-                        var isDouble = string.IsNullOrWhiteSpace(col) || double.TryParse(col, out d);
-                        if (types.Count <= i) types.Add(isDouble);
-                        else if (types[i] && !isDouble) types[i] = false;
-                        i++;
-                    }
-                }
-
-                if (first)
-                    first = false;
-            }
-
-            // If the first row is all strings, but the data rows have numbers, it's probably a header
-            if (!hasHeader.HasValue && allStrings)
-            {
-                var dataAllStrings = !types.Any(x => x);
-                if (!dataAllStrings) hasHeader = true;
-            }
-            if (!hasHeader.HasValue) hasHeader = false;
-            Trace.TraceInformation($"Header row analysis: \n\tFirst row all strings:{allStrings}\n\tData columns strings: {types.Count(x => x)}/{types.Count}\n\rHeader row: {hasHeader}");
+            var columnTypes = CsvAnalyzer.DetectColumnTypes(data, hasHeader);
 
             // Create SQL by string concat - look out for SQL injection! (although rather harmless since it's all your own data)
             var createQuery = new StringBuilder("CREATE TABLE " + tableName + "(");
             var colnames = new List<string>();
-            if (hasHeader ?? false)
+            bool first = true;
+            if (columnTypes.HasHeader)
             {
-                first = true;
                 int i = 0;
                 foreach (var colName in data[0])
                 {
@@ -131,7 +89,6 @@ namespace CsvQuery
             else
             {
                 // Just create Col1, Col2, Col3 etc
-                first = true;
                 for (int index = 0; index < data[0].Length; index++)
                 {
                     if (first) first = false;
@@ -148,7 +105,7 @@ namespace CsvQuery
                 // Convert to datatable
                 var table = new DataTable();
                 table.Columns.AddRange(colnames.Select(r => new DataColumn(r)).ToArray());
-                var datalist = hasHeader.Value ? data.Skip(1) : data;
+                var datalist = columnTypes.HasHeader ? data.Skip(1) : data;
                 int i = 0;
                 foreach (var row in datalist)
                 {
