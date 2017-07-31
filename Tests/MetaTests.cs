@@ -23,7 +23,7 @@ namespace Tests
             }
             Console.WriteLine();
 
-            Assert.AreEqual("1.0.3.0", fields[14].GetValue(null));
+            Assert.AreEqual("1.1.0.0", fields[14].GetValue(null));
         }
     }
 }
