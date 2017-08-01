@@ -9,10 +9,11 @@ namespace Tests
     [TestClass]
     public class MetaTests
     {
+        // Ensure GitVersion sets the DLL version
         [TestMethod]
         public void GitVersion()
         {
-            var assembly = Assembly.GetExecutingAssembly();
+            var assembly = Assembly.GetAssembly(typeof(CsvQuery.Csv.CsvAnalyzer));
             var assemblyName = assembly.GetName().Name;
             var gitVersionInformationType = assembly.GetType(assemblyName + ".GitVersionInformation");
             var fields = gitVersionInformationType.GetFields();
@@ -23,7 +24,9 @@ namespace Tests
             }
             Console.WriteLine();
 
-            Assert.AreEqual("1.1.0.0", fields[14].GetValue(null));
+            var dllVersion = assembly.GetName().Version;
+            var gitVersion = gitVersionInformationType.GetField("SemVer").GetValue(null);
+            Assert.AreEqual(gitVersion, $"{dllVersion.Major}.{dllVersion.Minor}.{dllVersion.Revision}");
         }
     }
 }
