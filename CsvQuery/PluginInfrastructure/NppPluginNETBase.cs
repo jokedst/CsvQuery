@@ -91,5 +91,18 @@ namespace CsvQuery.PluginInfrastructure
                                : nppData._scintillaSecondHandle));
             }
         }
+
+        public static int GetDefaultForegroundColor()
+        {
+
+            var ret = Win32.SendMessage(nppData._nppHandle, (uint)NppMsg.NPPM_GETEDITORDEFAULTFOREGROUNDCOLOR, 0, 0);
+            return (int)ret;
+        }
+
+        public static int GetDefaultBackgroundColor()
+        {
+            var ret = Win32.SendMessage(nppData._nppHandle, (uint)NppMsg.NPPM_GETEDITORDEFAULTBACKGROUNDCOLOR, 0, 0);
+            return (int)ret;
+        }
     }
 }

@@ -4,9 +4,9 @@
     using System.Collections.Generic;
     using System.Data;
     using System.Diagnostics;
+    using System.Drawing;
     using System.IO;
     using System.Linq;
-    using System.Text;
     using System.Windows.Forms;
     using Csv;
     using PluginInfrastructure;
@@ -34,6 +34,51 @@
                     File.WriteAllLines(PluginStorage.QueryCachePath, lines);
                 }
                 txbQuery.AutoCompleteCustomSource.AddRange(lines);
+            }
+
+            if(Main.Settings.UseNppStyling)
+                ApplyStyling(true);
+
+
+            Main.Settings.RegisterListener(settings => { ApplyStyling(settings.UseNppStyling); return true; }, nameof(Settings.UseNppStyling));
+        }
+
+        /// <summary>
+        /// Applies NPP colors to window
+        /// </summary>
+        private void ApplyStyling(bool active)
+        {
+            if (active)
+            {
+                // Get NPP colors 
+                var bg = PluginBase.GetDefaultBackgroundColor();
+                var backgroundColor = Color.FromArgb(bg & 0xff, (bg >> 8) & 0xff, (bg >> 16) & 0xff);
+                var fg = PluginBase.GetDefaultForegroundColor();
+                var foreColor = Color.FromArgb(fg & 0xff, (fg >> 8) & 0xff, (fg >> 16) & 0xff);
+                Trace.TraceInformation($"FG {fg}={foreColor}, BG {bg}={backgroundColor}");
+
+                //var invertedBackground = StyleHelper.HSVToRGB(backgroundColor.GetHue() / 360.0, backgroundColor.GetSaturation(), backgroundColor.GetBrightness());
+                this.BackColor = backgroundColor;
+                dataGrid.BackColor = backgroundColor;
+                dataGrid.BackgroundColor = backgroundColor;
+                dataGrid.ForeColor = foreColor;
+                dataGrid.ColumnHeadersDefaultCellStyle.BackColor = backgroundColor;
+                dataGrid.ColumnHeadersDefaultCellStyle.ForeColor = foreColor;
+                dataGrid.EnableHeadersVisualStyles = false;
+
+                txbQuery.BackColor = backgroundColor;
+                txbQuery.ForeColor = foreColor;
+
+                btnAnalyze.ForeColor = foreColor;
+                btnAnalyze.BackColor = backgroundColor;
+                btnExec.ForeColor = foreColor;
+                btnExec.BackColor = backgroundColor;
+
+                dataGrid.DefaultCellStyle.BackColor = backgroundColor;
+            }
+            else
+            {
+                // TODO: Disable styling
             }
         }
 
@@ -126,7 +171,7 @@
                 table.Rows.Add(row);
             }
             watch.Checkpoint("Create DataTable");
-
+            
             dataGrid.DataSource = table;
             dataGrid.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.DisplayedCells);
             watch.Checkpoint("Display");

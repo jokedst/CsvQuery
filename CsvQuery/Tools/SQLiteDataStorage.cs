@@ -9,11 +9,9 @@ namespace CsvQuery
     using System.Text.RegularExpressions;
     using Community.CsharpSqlite;
 
-    public class SQLiteDataStorage : IDataStorage
+    public class SQLiteDataStorage : DataStorageBase
     {
-        // For now only in-memory DB, perhaps later we could have a config setting for saving to disk
         private readonly SQLiteDatabase Db;
-
         private static readonly string[] PRAGMA_Commands =
             {
                 "PRAGMA synchronous =  OFF",
@@ -24,32 +22,11 @@ namespace CsvQuery
                 "PRAGMA main.cache_size = 10000"
             };
 
-        private readonly Dictionary<IntPtr, string> _createdTables = new Dictionary<IntPtr, string>();
-        private IntPtr _currentActiveBufferId;
-        private int _lastCreatedTableName;
-
         public SQLiteDataStorage(string database = ":memory:")
         {
             Db = new SQLiteDatabase(database);
             foreach (string command in PRAGMA_Commands)
                 Db.ExecuteNonQuery(command);
-        }
-
-        /// <summary>
-        /// Set current document as active, i.e. "this" should refer to this document if it has been parsed
-        /// </summary>
-        /// <param name="bufferId"></param>
-        public void SetActiveTab(IntPtr bufferId)
-        {
-            if (_currentActiveBufferId != bufferId && _createdTables.ContainsKey(bufferId))
-            {
-                if (_currentActiveBufferId != default(IntPtr))
-                {
-                    Db.ExecuteNonQuery("DROP VIEW this");
-                }
-                Db.ExecuteNonQuery("CREATE VIEW this AS SELECT * FROM " + _createdTables[bufferId]);
-                _currentActiveBufferId = bufferId;
-            }
         }
 
         /// <summary>
@@ -60,19 +37,9 @@ namespace CsvQuery
         /// <param name="data"></param>
         /// <param name="hasHeader"></param>
         /// <returns></returns>
-        public string SaveData(IntPtr bufferId, List<string[]> data, bool? hasHeader)
+        public override string SaveData(IntPtr bufferId, List<string[]> data, bool? hasHeader)
         {
-            string tableName;
-            if (_createdTables.ContainsKey(bufferId))
-            {
-                tableName = _createdTables[bufferId];
-                Db.ExecuteNonQuery("DROP TABLE IF EXISTS " + tableName);
-            }
-            else
-            {
-                tableName = "T" + ++_lastCreatedTableName;
-                _createdTables.Add(bufferId, tableName);
-            }
+            string tableName = GetOrAllocateTableName(bufferId);
 
             int columns = data[0].Length;
             // Figure out column types. For now just double/string
@@ -193,31 +160,13 @@ namespace CsvQuery
             return tableName;
         }
 
-        public List<string[]> ExecuteQuery(string query)
-        {
-            var result = new List<string[]>();
-            var c1 = new SQLiteVdbe(Db, query);
-            while (c1.ExecuteStep() != Sqlite3.SQLITE_DONE)
-            {
-                var columns = c1.ResultColumnCount();
-                var data = new List<string>();
-                for (int i = 0; i < columns; i++)
-                {
-                    data.Add(c1.Result_Text(i));
-                }
-                result.Add(data.ToArray());
-            }
-
-            c1.Close();
-            return result;
-        }
-
         /// <summary>
         /// Executes the query. The first row in the results will be the column names
         /// </summary>
         /// <param name="query">SQL query to execute</param>
+        /// <param name="includeColumnNames"> If true first row in results are the clumn names</param>
         /// <returns>Query results</returns>
-        public List<string[]> ExecuteQueryWithColumnNames(string query)
+        protected override List<string[]> ExecuteQuery(string query, bool includeColumnNames)
         {
             var result = new List<string[]>();
             var c1 = new SQLiteVdbe(Db, query);
@@ -233,21 +182,21 @@ namespace CsvQuery
                 result.Add(data.ToArray());
             }
 
-            if(c1.LastResult != 0){}
-
-
-            var columnNames = new List<string>();
-            for (int i = 0; i < columns; i++)
+            if (includeColumnNames)
             {
-                columnNames.Add(c1.ColumnName(i));
+                var columnNames = new List<string>();
+                for (int i = 0; i < columns; i++)
+                {
+                    columnNames.Add(c1.ColumnName(i));
+                }
+                result.Insert(0, columnNames.ToArray());
             }
-            result.Insert(0, columnNames.ToArray());
 
             c1.Close();
             return result;
         }
 
-        public void ExecuteNonQuery(string query)
+        public override void ExecuteNonQuery(string query)
         {
             Db.ExecuteNonQuery(query);
         }

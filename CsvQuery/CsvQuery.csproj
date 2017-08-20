@@ -163,6 +163,8 @@
     <Compile Include="Forms\ParseSettings.Designer.cs">
       <DependentUpon>ParseSettings.cs</DependentUpon>
     </Compile>
+    <Compile Include="Tools\DataStorageBase.cs" />
+    <Compile Include="Tools\dfd.cs" />
     <Compile Include="Tools\Extensions.cs" />
     <Compile Include="Tools\MssqlDataStorage.cs" />
     <Compile Include="Tools\SQLiteDataStorage.cs" />
@@ -217,6 +219,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="CsharpSqlite\License-CsharpSqlite-MIT.txt" />
+    <Content Include="Properties\CsvQueryIcon.ico" />
     <Content Include="Properties\CSVQueryIcon.png" />
     <None Include="License.txt" />
     <None Include="gpl-3.0.txt" />

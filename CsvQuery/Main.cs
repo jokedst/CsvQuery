@@ -34,7 +34,6 @@ namespace CsvQuery
             Trace.TraceInformation("OnSqlSettingsChanged fired");
             try
             {
-
                 switch (Settings.StorageProvider)
                 {
                     case DataStorageProvider.SQLite:

@@ -15,7 +15,7 @@
     /// <summary>
     /// Manages application settings
     /// </summary>
-    public class Settings
+    public class Settings : SettingsBase
     {
         [Description("In debugmode extra diagnostics are output"), Category("General"), DefaultValue(false)]
         public bool DebugMode { get; set; }
@@ -44,11 +44,16 @@
         [Description("Maximum length of a numeric string before it's considered a string instead"), Category("General"), DefaultValue(10)]
         public int MaxIntegerStringLength { get; set; }
 
-        #region Inner workings
+        [Description("Use colors from Notepad++ theme"), Category("General"), DefaultValue(false)]
+        public bool UseNppStyling { get; set; }
+    }
+	
+	public class SettingsBase
+	{
         private static readonly string IniFilePath;
         private readonly List<Tuple<Func<Settings, bool>, string[]>> _listeners = new List<Tuple<Func<Settings, bool>, string[]>>();
 
-        static Settings()
+        static SettingsBase()
         {
             // Figure out default N++ config file path
             var sbIniFilePath = new StringBuilder(Win32.MAX_PATH);
@@ -61,7 +66,7 @@
         /// By default loads settings from the default N++ config folder
         /// </summary>
         /// <param name="loadFromFile"> If false will not load anything and have default values set </param>
-        public Settings(bool loadFromFile = true)
+        public SettingsBase(bool loadFromFile = true)
         {
             // Set defaults
             foreach (var propertyInfo in GetType().GetProperties())
@@ -161,12 +166,15 @@
         {
             // We bind a copy of this object and only apply it after they click "Ok"
             var copy = (Settings) MemberwiseClone();
+           
             var dialog = new Form
             {
                 Text = "Settings",
                 ClientSize = new Size(300, 300),
                 MinimumSize = new Size(250, 250),
                 ShowIcon = false,
+                AutoScaleMode = AutoScaleMode.Font,
+                AutoScaleDimensions = new SizeF(6F,13F),
                 Controls =
                 {
                     new Button
@@ -193,6 +201,8 @@
                         Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right,
                         Location = new Point(13, 13),
                         Size = new Size(300 - 13 - 13, 300 - 55),
+                        AutoScaleMode = AutoScaleMode.Font,
+                        AutoScaleDimensions = new SizeF(6F,13F),
                         SelectedObject = copy
                     }
                 }
@@ -248,10 +258,14 @@
             Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_DOOPEN, 0, IniFilePath);
         }
 
+        /// <summary>
+        /// Register an event listener for when given properties change
+        /// </summary>
+        /// <param name="eventListener"></param>
+        /// <param name="settingName"> List of settings to watch. If none the event is fired on any change </param>
         public void RegisterListener(Func<Settings,bool> eventListener, params string[] settingName)
         {
             this._listeners.Add(Tuple.Create(eventListener, settingName));
         }
-#endregion
     }
 }
