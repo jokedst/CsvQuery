@@ -7,6 +7,7 @@
     using System.Drawing;
     using System.IO;
     using System.Linq;
+    using System.Threading.Tasks;
     using System.Windows.Forms;
     using Csv;
     using PluginInfrastructure;
@@ -232,12 +233,31 @@
                 Separator = settingsDialog.txbSep.Text.Unescape(),
                 TextQualifier = settingsDialog.txbQuoteChar.Text.Unescape()
             };
-            var csvData = settings.Generate(dataGrid);
 
+            var watch = new DiagnosticTimer();
+            try
+            {
+                // Create new tab for results
+                Win32.SendMessage(PluginBase.nppData._nppHandle, (uint) NppMsg.NPPM_MENUCOMMAND, 0, NppMenuCmd.IDM_FILE_NEW);
+                watch.Checkpoint("New document created");
 
-            // Create new tab for results
-            Win32.SendMessage(PluginBase.nppData._nppHandle, (uint) NppMsg.NPPM_MENUCOMMAND, 0, NppMenuCmd.IDM_FILE_NEW);
-            PluginBase.CurrentScintillaGateway.AddText(csvData.Length, csvData.ToString());
+                using (var stream = new BlockingStream(10))
+                {
+                    var producer = Task.Factory.StartNew(s =>
+                    {
+                        settings.GenerateToStream(dataGrid, (Stream) s);
+                        ((BlockingStream) s).CompleteWriting(); 
+                    }, stream);
+                    PluginBase.CurrentScintillaGateway.AddText(stream);
+                    Trace.TraceInformation("CSV generation: producer status = " + producer.Status);
+                    producer.Wait();
+                }
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceInformation("CSV gen: Exception: " + ex.GetType().Name + " - " + ex.Message);
+            }
+            Trace.TraceInformation(watch.LastCheckpoint("CSV Done"));
         }
     }
 }

@@ -2,6 +2,7 @@ namespace CsvQuery.Csv
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.IO;
     using System.Linq;
     using System.Text;
@@ -94,6 +95,44 @@ namespace CsvQuery.Csv
             }
 
             return results.ToString();
+        }
+
+        /// <summary>
+        /// Generates a CSV file from a <see cref="DataGridView"/>, using the settings
+        /// </summary>
+        /// <param name="dataGrid"> Grid containing data to create CSV from </param>
+        /// <param name="output"> Stream to write (UTF8) to </param>
+        /// <returns> string in CSV format </returns>
+        public void GenerateToStream(DataGridView dataGrid, Stream output)
+        {
+            if(!output.CanWrite)
+                throw new ArgumentException("Stream is not writeable", nameof(output));
+
+            using (var tw = new StreamWriter(output, Encoding.UTF8, 8096, true))
+            {
+                var first = true;
+                foreach (DataGridViewColumn column in dataGrid.Columns)
+                {
+                    if (first) first = false;
+                    else tw.Write(Separator);
+                    tw.Write(Escape(column.HeaderText));
+                }
+                tw.WriteLine();
+                Trace.TraceInformation("CSV Generated header");
+
+                foreach (DataGridViewRow row in dataGrid.Rows)
+                {
+                    first = true;
+                    foreach (DataGridViewCell cell in row.Cells)
+                    {
+                        if (first) first = false;
+                        else tw.Write(Separator);
+                        tw.Write(Escape(cell.Value.ToString()));
+                    }
+                    tw.WriteLine();
+                }
+            }
+            Trace.TraceInformation("CSV Generation done");
         }
 
         /// <summary>
