@@ -2,6 +2,7 @@ namespace CsvQuery.Csv
 {
     using System;
     using System.Collections.Generic;
+    using System.Data;
     using System.Diagnostics;
     using System.IO;
     using System.Linq;
@@ -108,14 +109,14 @@ namespace CsvQuery.Csv
             if(!output.CanWrite)
                 throw new ArgumentException("Stream is not writeable", nameof(output));
 
-            using (var tw = new StreamWriter(output, Encoding.UTF8, 8096, true))
+            using (var tw = new StreamWriter(output, Encoding.UTF8, 1024*8, true))
             {
                 var first = true;
                 foreach (DataGridViewColumn column in dataGrid.Columns)
                 {
                     if (first) first = false;
                     else tw.Write(Separator);
-                    tw.Write(Escape(column.HeaderText));
+                    Escape(tw, column.HeaderText);
                 }
                 tw.WriteLine();
                 Trace.TraceInformation("CSV Generated header");
@@ -127,7 +128,43 @@ namespace CsvQuery.Csv
                     {
                         if (first) first = false;
                         else tw.Write(Separator);
-                        tw.Write(Escape(cell.Value.ToString()));
+
+                        var cellValue = cell.Value;
+                        Escape(tw, cellValue.ToString());
+                    }
+                    tw.WriteLine();
+                }
+            }
+            Trace.TraceInformation("CSV Generation done");
+        }
+
+
+        public void GenerateToStream(DataTable dataTable, Stream output)
+        {
+            if (!output.CanWrite)
+                throw new ArgumentException("Stream is not writeable", nameof(output));
+
+            using (var tw = new StreamWriter(output, Encoding.UTF8, 1024 * 8, true))
+            {
+                var first = true;
+                foreach (DataColumn column in dataTable.Columns)
+                {
+                    if (first) first = false;
+                    else tw.Write(Separator);
+                    Escape(tw, column.ColumnName);
+                }
+                tw.WriteLine();
+                Trace.TraceInformation("CSV Generated header");
+
+                foreach (DataRow row in dataTable.Rows)
+                {
+                    first = true;
+                    foreach (object cell in row.ItemArray)
+                    {
+                        if (first) first = false;
+                        else tw.Write(Separator);
+                        
+                        Escape(tw, cell.ToString());
                     }
                     tw.WriteLine();
                 }
@@ -145,9 +182,21 @@ namespace CsvQuery.Csv
         {
             if (!always && text.IndexOf(Separator) == -1)
                 return text;
-            return TextQualifier 
-                + text.Replace(TextQualifier.ToString(), TextQualifier.ToString() + TextQualifier) 
-                + TextQualifier;
+            return TextQualifier
+                   + text.Replace(TextQualifier.ToString(), TextQualifier.ToString() + TextQualifier)
+                   + TextQualifier;
+        }
+
+        protected void Escape(StreamWriter writer, string text)
+        {
+            if (text.IndexOf(Separator) == -1)
+                writer.Write(text);
+            else
+            {
+                writer.Write(TextQualifier);
+                writer.Write(text);
+                writer.Write(TextQualifier);
+            }
         }
     }
 }

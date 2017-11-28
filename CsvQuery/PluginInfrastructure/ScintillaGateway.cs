@@ -100,13 +100,14 @@ namespace CsvQuery.PluginInfrastructure
 
         public unsafe void AddText(Stream utf8TextStream)
         {
+            byte[] buffer = new byte[1024 * 8 * 2];
+            int blockCount = 0, totalRead = 0;
+            var startTime = Stopwatch.GetTimestamp();
+            var beganRead = startTime;
+            long readWait = 0, sendWait = 0, beganSend;
             try
             {
-                int read, blockCount = 0, totalRead =0;
-                byte[] buffer = new byte[1024*8*32];
-                var startTime = Stopwatch.GetTimestamp();
-                var beganRead = startTime;
-                long readWait = 0, sendWait = 0, beganSend;
+                int read;
                 while ((read = utf8TextStream.Read(buffer, 0, buffer.Length)) > 0)
                 {
                     beganSend = Stopwatch.GetTimestamp();
@@ -122,12 +123,13 @@ namespace CsvQuery.PluginInfrastructure
                     blockCount++;
                     totalRead += read;
                 }
-                Trace.TraceInformation($"Scintilla.AddText leaving. Blocks={blockCount}, bytes={totalRead}, avg={(blockCount == 0 ? 0 : totalRead / (double)blockCount):#.#}");
+                Trace.TraceInformation(
+                    $"Scintilla.AddText leaving. Blocks={blockCount}, bytes={totalRead}, avg={(blockCount == 0 ? 0 : totalRead / (double) blockCount):#.#}");
                 Trace.TraceInformation($"Scintilla.AddText WAITS: read={readWait}, send={sendWait}");
             }
             catch (Exception e)
             {
-                Trace.TraceInformation("Scintilla.AddText Exception: "+e.Message);
+                Trace.TraceInformation("Scintilla.AddText Exception: " + e.Message);
                 throw;
             }
         }

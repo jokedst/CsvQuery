@@ -118,7 +118,7 @@
             StartSomething(() => Analyze(silent));
         }
 
-        private Task Analyze(bool silent)
+        private void Analyze(bool silent)
         {
             var watch = new DiagnosticTimer();
             var bufferId = NotepadPPGateway.GetCurrentBufferId();
@@ -132,31 +132,14 @@
                 this.UiThread(() => askUserDialog.ShowDialog());
                 var userChoice = askUserDialog.DialogResult;
                 if (userChoice != DialogResult.OK)
-                    return Task.CompletedTask;
+                    return;
                 csvSettings.Separator = askUserDialog.txbSep.Text.Unescape();
                 csvSettings.TextQualifier = askUserDialog.txbQuoteChar.Text.Unescape();
             }
             watch.Checkpoint("Analyze");
 
             Parse(csvSettings, watch, text, bufferId);
-            return Task.CompletedTask;
-            //dataGrid.DataSource = null;
-            //dataGrid.Rows.Clear();
-            //dataGrid.Columns.Clear();
-
-            var data = csvSettings.Parse(text);
-            watch.Checkpoint("Parse");
-
-            Main.DataStorage.SaveData(bufferId, data, null);
-            watch.Checkpoint("Saved to DB");
-            this.UiThread(() => txbQuery.Text = "SELECT * FROM THIS");
-            Execute(bufferId, watch);
-
-            var diagnostic = watch.LastCheckpoint("Resize");
-            Trace.TraceInformation(diagnostic);
-            if(Main.Settings.DebugMode)
-                this.Message(diagnostic);
-            return Task.CompletedTask;
+            return;
         }
 
         private void Parse(CsvSettings csvSettings, DiagnosticTimer watch, string text, IntPtr bufferId)
@@ -290,19 +273,25 @@
             try
             {
                 // Create new tab for results
-                Win32.SendMessage(PluginBase.nppData._nppHandle, (uint) NppMsg.NPPM_MENUCOMMAND, 0, NppMenuCmd.IDM_FILE_NEW);
+                Win32.SendMessage(PluginBase.nppData._nppHandle, (uint) NppMsg.NPPM_MENUCOMMAND, 0,
+                    NppMenuCmd.IDM_FILE_NEW);
                 watch.Checkpoint("New document created");
 
                 using (var stream = new BlockingStream(10))
                 {
                     var producer = Task.Factory.StartNew(s =>
                     {
-                        settings.GenerateToStream(dataGrid, (Stream) s);
-                        ((BlockingStream) s).CompleteWriting(); 
+                        settings.GenerateToStream(dataGrid.DataSource as DataTable, (Stream) s);
+                        ((BlockingStream) s).CompleteWriting();
                     }, stream);
-                    PluginBase.CurrentScintillaGateway.AddText(stream);
-                    Trace.TraceInformation("CSV generation: producer status = " + producer.Status);
+
+                    var consumer = Task.Factory.StartNew(s =>
+                    {
+                        PluginBase.CurrentScintillaGateway.AddText((Stream) s);
+                    }, stream);
+
                     producer.Wait();
+                    consumer.Wait();
                 }
             }
             catch (Exception ex)

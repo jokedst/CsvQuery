@@ -46,7 +46,7 @@
             this.btnReparse.Location = new System.Drawing.Point(13, 145);
             this.btnReparse.Name = "btnReparse";
             this.btnReparse.Size = new System.Drawing.Size(75, 23);
-            this.btnReparse.TabIndex = 2;
+            this.btnReparse.TabIndex = 1;
             this.btnReparse.Text = "&Try again";
             this.btnReparse.UseVisualStyleBackColor = true;
             // 
@@ -57,7 +57,7 @@
             this.btnCancel.Location = new System.Drawing.Point(197, 145);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
-            this.btnCancel.TabIndex = 1;
+            this.btnCancel.TabIndex = 2;
             this.btnCancel.Text = "&Cancel";
             this.btnCancel.UseVisualStyleBackColor = true;
             // 
