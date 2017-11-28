@@ -40,7 +40,6 @@
             if(Main.Settings.UseNppStyling)
                 ApplyStyling(true);
 
-
             Main.Settings.RegisterListener(settings => { ApplyStyling(settings.UseNppStyling); return true; }, nameof(Settings.UseNppStyling));
         }
 
@@ -80,6 +79,7 @@
             else
             {
                 // TODO: Disable styling
+                dataGrid.EnableHeadersVisualStyles = true;
             }
         }
 
@@ -95,6 +95,31 @@
 
         private void btnAnalyze_Click(object sender, EventArgs e)
         {
+            StartAnalysis(false);
+        }
+
+        private Task _worker = Task.CompletedTask;
+
+        private void StartSomething(Action someAction)
+        {
+            var busy = false;
+            lock (_worker)
+            {
+                if (_worker.IsCompleted)
+                    _worker = Task.Factory.StartNew(someAction);
+                else busy = true;
+            }
+            if (busy)
+                this.Message("CSV Query is busy", "Error");
+        }
+
+        public void StartAnalysis(bool silent)
+        {
+            StartSomething(() => Analyze(silent));
+        }
+
+        private Task Analyze(bool silent)
+        {
             var watch = new DiagnosticTimer();
             var bufferId = NotepadPPGateway.GetCurrentBufferId();
             string text = PluginBase.CurrentScintillaGateway.GetAllText();
@@ -104,41 +129,61 @@
             if (csvSettings.Separator == '\0' && csvSettings.FieldWidths == null)
             {
                 var askUserDialog = new ParseSettings();
-                var userChoice = askUserDialog.ShowDialog();
+                this.UiThread(() => askUserDialog.ShowDialog());
+                var userChoice = askUserDialog.DialogResult;
                 if (userChoice != DialogResult.OK)
-                    return;
+                    return Task.CompletedTask;
                 csvSettings.Separator = askUserDialog.txbSep.Text.Unescape();
                 csvSettings.TextQualifier = askUserDialog.txbQuoteChar.Text.Unescape();
             }
             watch.Checkpoint("Analyze");
 
-            dataGrid.DataSource = null;
-            dataGrid.Rows.Clear();
-            dataGrid.Columns.Clear();
+            Parse(csvSettings, watch, text, bufferId);
+            return Task.CompletedTask;
+            //dataGrid.DataSource = null;
+            //dataGrid.Rows.Clear();
+            //dataGrid.Columns.Clear();
 
             var data = csvSettings.Parse(text);
             watch.Checkpoint("Parse");
 
             Main.DataStorage.SaveData(bufferId, data, null);
             watch.Checkpoint("Saved to DB");
-
-            txbQuery.Text = "SELECT * FROM THIS";
+            this.UiThread(() => txbQuery.Text = "SELECT * FROM THIS");
             Execute(bufferId, watch);
 
             var diagnostic = watch.LastCheckpoint("Resize");
             Trace.TraceInformation(diagnostic);
-            if(Main.Settings.DebugMode) MessageBox.Show(diagnostic);
+            if(Main.Settings.DebugMode)
+                this.Message(diagnostic);
+            return Task.CompletedTask;
         }
 
-        public void ParseBuffer(CsvSettings settings, IntPtr bufferId = default(IntPtr))
+        private void Parse(CsvSettings csvSettings, DiagnosticTimer watch, string text, IntPtr bufferId)
         {
-            if (bufferId == default(IntPtr))
-                bufferId = NotepadPPGateway.GetCurrentBufferId();
-            
-            string text = PluginBase.CurrentScintillaGateway.GetAllText();
-            var data = settings.Parse(text);
+            var data = csvSettings.Parse(text);
+            watch.Checkpoint("Parse");
+
             Main.DataStorage.SaveData(bufferId, data, null);
-            ExecuteQuery("SELECT * FROM THIS");
+            watch.Checkpoint("Saved to DB");
+            this.UiThread(() => txbQuery.Text = "SELECT * FROM THIS");
+            Execute(bufferId, watch);
+
+            var diagnostic = watch.LastCheckpoint("Resize");
+            Trace.TraceInformation(diagnostic);
+            if (Main.Settings.DebugMode)
+                this.Message(diagnostic);
+        }
+
+        private void Parse(CsvSettings csvSettings) 
+            => Parse(csvSettings, 
+                     new DiagnosticTimer(), 
+                     PluginBase.CurrentScintillaGateway.GetAllText(), 
+                     NotepadPPGateway.GetCurrentBufferId());
+
+        public void StartParse(CsvSettings settings)
+        {
+            StartSomething(()=>Parse(settings));
         }
 
         private void Execute(IntPtr bufferId, DiagnosticTimer watch)
@@ -154,7 +199,7 @@
             }
             catch (Exception)
             {
-                MessageBox.Show("Could not execute query", "Error in query");
+                this.Message("Could not execute query", "Error in query");
                 return;
             }
             watch.Checkpoint("Execute query");
@@ -173,14 +218,17 @@
             }
             watch.Checkpoint("Create DataTable");
             
-            dataGrid.DataSource = table;
-            dataGrid.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.DisplayedCells);
+            this.UiThread(() =>
+            {
+                dataGrid.DataSource = table;
+                dataGrid.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.DisplayedCells);
+            });
             watch.Checkpoint("Display");
 
             // Store query in history
             if (!txbQuery.AutoCompleteCustomSource.Contains(query))
             {
-                txbQuery.AutoCompleteCustomSource.Add(query);
+                this.UiThread(() => txbQuery.AutoCompleteCustomSource.Add(query));
                 if (Main.Settings.SaveQueryCache)
                 {
                     using (var writer = File.AppendText(PluginStorage.QueryCachePath))
@@ -193,14 +241,18 @@
 
         private void btnExec_Click(object sender, EventArgs e)
         {
-            var watch = new DiagnosticTimer();
-            var bufferId = Win32.SendMessage(PluginBase.nppData._nppHandle,(uint) NppMsg.NPPM_GETCURRENTBUFFERID, 0, 0);
-           
-            Execute(bufferId, watch);
+            StartSomething(() =>
+            {
+                var watch = new DiagnosticTimer();
+                var bufferId = Win32.SendMessage(PluginBase.nppData._nppHandle, (uint) NppMsg.NPPM_GETCURRENTBUFFERID, 0, 0);
 
-            var diagnosticMessage = watch.LastCheckpoint("Save query in history");
-            Trace.TraceInformation(diagnosticMessage);
-            if (Main.Settings.DebugMode) MessageBox.Show(diagnosticMessage);
+                Execute(bufferId, watch);
+
+                var diagnosticMessage = watch.LastCheckpoint("Save query in history");
+                Trace.TraceInformation(diagnosticMessage);
+                if (Main.Settings.DebugMode)
+                    this.Message(diagnosticMessage);
+            });
         }
 
         private void txbQuery_KeyDown(object sender, KeyEventArgs e)

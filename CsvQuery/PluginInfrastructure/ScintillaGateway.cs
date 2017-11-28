@@ -102,19 +102,28 @@ namespace CsvQuery.PluginInfrastructure
         {
             try
             {
-                int read, blockCount = 0;
-                byte[] buffer = new byte[8096];
+                int read, blockCount = 0, totalRead =0;
+                byte[] buffer = new byte[1024*8*32];
+                var startTime = Stopwatch.GetTimestamp();
+                var beganRead = startTime;
+                long readWait = 0, sendWait = 0, beganSend;
                 while ((read = utf8TextStream.Read(buffer, 0, buffer.Length)) > 0)
                 {
+                    beganSend = Stopwatch.GetTimestamp();
+                    readWait += beganSend - beganRead;
                     fixed (byte* textPtr = buffer)
                     {
-                        Trace.TraceInformation("Scintilla.AddText block read. Size=" + read);
+                        //Trace.TraceInformation("Scintilla.AddText block read. Size=" + read);
                         IntPtr res = Win32.SendMessage(scintilla, SciMsg.SCI_ADDTEXT, read, (IntPtr) textPtr);
-                        Trace.TraceInformation("Scintilla.AddText SCI_ADDTEXT sent. return=" + res);
+                        //Trace.TraceInformation("Scintilla.AddText SCI_ADDTEXT sent. return=" + res);
                     }
+                    beganRead = Stopwatch.GetTimestamp();
+                    sendWait += beganRead - beganSend;
                     blockCount++;
+                    totalRead += read;
                 }
-                Trace.TraceInformation("Scintilla.AddText leaving. Blocks=" + blockCount);
+                Trace.TraceInformation($"Scintilla.AddText leaving. Blocks={blockCount}, bytes={totalRead}, avg={(blockCount == 0 ? 0 : totalRead / (double)blockCount):#.#}");
+                Trace.TraceInformation($"Scintilla.AddText WAITS: read={readWait}, send={sendWait}");
             }
             catch (Exception e)
             {

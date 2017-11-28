@@ -7,6 +7,7 @@ namespace CsvQuery
     using System.Drawing;
     using System.Drawing.Imaging;
     using System.Runtime.InteropServices;
+    using System.Threading.Tasks;
     using System.Windows.Forms;
     using Community.CsharpSqlite;
     using Csv;
@@ -90,7 +91,7 @@ namespace CsvQuery
                 csvSettings.Separator = askUserDialog.txbSep.Text.Unescape();
                 csvSettings.TextQualifier = askUserDialog.txbQuoteChar.Text.Unescape();
                 QueryWindowVisible(true);
-                QueryWindow.ParseBuffer(csvSettings);
+                QueryWindow.StartParse(csvSettings);
             }
             catch (Exception e)
             {
@@ -265,6 +266,9 @@ namespace CsvQuery
                 Marshal.StructureToPtr(queryWindowData, queryWindowPointer, false);
 
                 Win32.SendMessage(PluginBase.nppData._nppHandle, (uint) NppMsg.NPPM_DMMREGASDCKDLG, 0, queryWindowPointer);
+
+                // Analyze current file
+                QueryWindow.StartAnalysis(true);
             }
             else
             {

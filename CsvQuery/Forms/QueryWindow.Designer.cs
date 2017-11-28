@@ -53,7 +53,7 @@
             this.txbQuery.Location = new System.Drawing.Point(4, 0);
             this.txbQuery.Margin = new System.Windows.Forms.Padding(6);
             this.txbQuery.Name = "txbQuery";
-            this.txbQuery.Size = new System.Drawing.Size(216, 31);
+            this.txbQuery.Size = new System.Drawing.Size(216, 38);
             this.txbQuery.TabIndex = 0;
             this.txbQuery.KeyDown += new System.Windows.Forms.KeyEventHandler(this.txbQuery_KeyDown);
             // 

@@ -1,7 +1,9 @@
 ﻿namespace CsvQuery.Tools
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Windows.Forms;
 
     /// <summary>
     /// Mixed bag of helper extensions for this project
@@ -29,13 +31,37 @@
         /// <returns>First character of string, after unescaping</returns>
         public static char Unescape(this string escaped)
         {
-            if (escaped == "\\t") return '\t';
+            if (escaped == "\\t")
+                return '\t';
             return escaped.FirstOrDefault();
         }
 
-        public static object Valid(object oldValue, object newValue)
+        /// <summary>
+        /// Run something on the main thread of the control, e.g. UI updates
+        /// </summary>
+        public static void UiThread(this Control control, Action code)
         {
-            return newValue;
+            if (control.InvokeRequired)
+                control.Invoke(code);
+            else
+                code.Invoke();
         }
+
+        /// <summary>
+        /// Display a message in a message box on the main thread
+        /// </summary>
+        /// <param name="control"></param>
+        /// <param name="message"> The text to display </param>
+        public static void Message(this Control control, string message)
+            => UiThread(control, () => MessageBox.Show(message));
+
+        /// <summary>
+        /// Display a message in a message box on the main thread
+        /// </summary>
+        /// <param name="control"></param>
+        /// <param name="message"> The text to display </param>
+        /// <param name="title"> Text to show in the title bar of the message box </param>
+        public static void Message(this Control control, string message, string title)
+            => UiThread(control, () => MessageBox.Show(message, title));
     }
 }
