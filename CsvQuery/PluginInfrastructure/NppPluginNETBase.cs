@@ -3,6 +3,8 @@ using System;
 
 namespace CsvQuery.PluginInfrastructure
 {
+    using System.Drawing;
+
     class PluginBase
     {
         internal static NppData nppData;
@@ -83,14 +85,16 @@ namespace CsvQuery.PluginInfrastructure
             }
         }
 
-        public static int GetDefaultForegroundColor()
+        public static Color GetDefaultForegroundColor()
         {
-            return (int)Win32.SendMessage(nppData._nppHandle, (uint)NppMsg.NPPM_GETEDITORDEFAULTFOREGROUNDCOLOR, 0, 0);
+            var rawColor = (int)Win32.SendMessage(nppData._nppHandle, (uint)NppMsg.NPPM_GETEDITORDEFAULTFOREGROUNDCOLOR, 0, 0);
+            return Color.FromArgb(rawColor & 0xff, (rawColor >> 8) & 0xff, (rawColor >> 16) & 0xff);
         }
 
-        public static int GetDefaultBackgroundColor()
+        public static Color GetDefaultBackgroundColor()
         {
-            return (int)Win32.SendMessage(nppData._nppHandle, (uint)NppMsg.NPPM_GETEDITORDEFAULTBACKGROUNDCOLOR, 0, 0);
+            var rawColor = (int)Win32.SendMessage(nppData._nppHandle, (uint)NppMsg.NPPM_GETEDITORDEFAULTBACKGROUNDCOLOR, 0, 0);
+            return Color.FromArgb(rawColor & 0xff, (rawColor >> 8) & 0xff, (rawColor >> 16) & 0xff);
         }
     }
 }

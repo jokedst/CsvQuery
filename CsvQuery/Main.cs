@@ -14,6 +14,7 @@ namespace CsvQuery
     using CsvQuery.PluginInfrastructure;
     using CsvQuery.Forms;
     using CsvQuery.Tools;
+    using Properties;
 
     internal class Main
     {
@@ -49,17 +50,17 @@ namespace CsvQuery
             {
                 var msg = $"Error configuring the {settings.StorageProvider} database '{settings.Database}': {e.Message}\nFalling back to in-memory SQLite";
                 Trace.TraceError(msg + Environment.NewLine + e.StackTrace);
-                MessageBox.Show(msg, "Error");
+                MessageBox.Show(msg, Resources.Title_CSV_Query_Error);
                 DataStorage = new SQLiteDataStorage();
             }
         }
 
         private static void OnValidateChanges(object sender, SettingsChangedEventArgs e)
         {
-            Trace.TraceInformation("Main.OnSettingsChanged fired");
+            Trace.TraceInformation("Main.OnValidateChanges fired");
             if (!e.Changed.Contains(nameof(Settings.StorageProvider)) && !e.Changed.Contains(nameof(Settings.Database)))
                 return;
-            Trace.TraceInformation("Main.OnSettingsChanged relevant!");
+            Trace.TraceInformation($"Main.OnValidateChanges relevant! type={e.NewSettings.StorageProvider}, db={e.NewSettings.Database}");
             try
             {
                 IDataStorage newStorage;
@@ -78,18 +79,26 @@ namespace CsvQuery
             }
             catch (Exception ex)
             {
-                var msg = $"Error configuring the {e.NewSettings.StorageProvider} database '{e.NewSettings.Database}': {ex.Message}";
+                var msg = $"Error validating the {e.NewSettings.StorageProvider} database '{e.NewSettings.Database}': {ex.Message}";
                 Trace.TraceError(msg + Environment.NewLine + ex.StackTrace);
-                MessageBox.Show(msg, "Error");
+                MessageBox.Show(msg, Resources.Title_CSV_Query_Error);
                 e.Cancel = true;
             }
         }
 
         public static void OnNotification(ScNotification notification)
         {
+            if (notification.Header.EventType == NppEventType.NPPN_WORDSTYLESUPDATED)
+            {
+                if (QueryWindow != null && Settings.UseNppStyling)
+                {
+                    QueryWindow.ApplyStyling(true);
+                }
+            }
             // This method is invoked whenever something is happening in notepad++. Use as:
             // if (notification.Header.Code == (uint)NppMsg.NPPN_xxx) {...}
             // (or SciMsg.SCNxxx)
+            Trace.TraceInformation($"Npp notification received: {notification.Header.EventType}");
         }
 
         public static void CommandMenuInit()

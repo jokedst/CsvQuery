@@ -11,13 +11,19 @@
     using System.Windows.Forms;
     using Csv;
     using PluginInfrastructure;
+    using Properties;
     using Tools;
 
     /// <summary>
-    /// The query window that whos the current query and the results in a grid
+    ///     The query window that whos the current query and the results in a grid
     /// </summary>
     public partial class QueryWindow : Form
     {
+        /// <summary> Background worker </summary>
+        private Task _worker = Task.CompletedTask;
+
+        private Color[] _winColors = null;
+
         public QueryWindow()
         {
             InitializeComponent();
@@ -37,16 +43,15 @@
                 txbQuery.AutoCompleteCustomSource.AddRange(lines);
             }
 
-            if(Main.Settings.UseNppStyling)
+            if (Main.Settings.UseNppStyling)
                 ApplyStyling(true);
-
-            //Main.Settings.RegisterListener(settings => { ApplyStyling(settings.UseNppStyling); return true; }, nameof(Settings.UseNppStyling));
+            
             Main.Settings.SettingsChanged += OnSettingsChanged;
         }
 
         private void OnSettingsChanged(object sender, SettingsChangedEventArgs e)
         {
-            if(!e.Changed.Contains(nameof(Settings.UseNppStyling)))
+            if (!e.Changed.Contains(nameof(Settings.UseNppStyling)))
                 return;
             ApplyStyling(e.NewSettings.UseNppStyling);
         }
@@ -54,45 +59,70 @@
         /// <summary>
         /// Applies NPP colors to window
         /// </summary>
-        private void ApplyStyling(bool active)
+        public void ApplyStyling(bool active)
         {
+            if (_winColors == null)
+                _winColors = new[] {dataGrid.ForeColor, dataGrid.BackgroundColor, dataGrid.BackColor};
             if (active)
             {
                 // Get NPP colors 
-                var bg = PluginBase.GetDefaultBackgroundColor();
-                var backgroundColor = Color.FromArgb(bg & 0xff, (bg >> 8) & 0xff, (bg >> 16) & 0xff);
-                var fg = PluginBase.GetDefaultForegroundColor();
-                var foreColor = Color.FromArgb(fg & 0xff, (fg >> 8) & 0xff, (fg >> 16) & 0xff);
-                Trace.TraceInformation($"FG {fg}={foreColor}, BG {bg}={backgroundColor}");
+                var backgroundColor = PluginBase.GetDefaultBackgroundColor();
+                var foreColor = PluginBase.GetDefaultForegroundColor();
+                var inBetween = Color.FromArgb((foreColor.R + backgroundColor.R*3) / 4, (foreColor.G + backgroundColor.G*3) / 4, (foreColor.B + backgroundColor.B*3) / 4);
+                Trace.TraceInformation($"FG {foreColor}, BG {backgroundColor}, inBetween {inBetween}");
 
-                //var invertedBackground = StyleHelper.HSVToRGB(backgroundColor.GetHue() / 360.0, backgroundColor.GetSaturation(), backgroundColor.GetBrightness());
-                this.BackColor = backgroundColor;
-                dataGrid.BackColor = backgroundColor;
-                dataGrid.BackgroundColor = backgroundColor;
-                dataGrid.ForeColor = foreColor;
-                dataGrid.ColumnHeadersDefaultCellStyle.BackColor = backgroundColor;
-                dataGrid.ColumnHeadersDefaultCellStyle.ForeColor = foreColor;
+                ApplyColors(foreColor, backgroundColor, inBetween);
                 dataGrid.EnableHeadersVisualStyles = false;
+                ////var invertedBackground = StyleHelper.HSVToRGB(backgroundColor.GetHue() / 360.0, backgroundColor.GetSaturation(), backgroundColor.GetBrightness());
+                //BackColor = backgroundColor;
+                //dataGrid.BackColor = backgroundColor;
+                //dataGrid.BackgroundColor = backgroundColor;
+                //dataGrid.ForeColor = foreColor;
+                //dataGrid.ColumnHeadersDefaultCellStyle.BackColor = backgroundColor;
+                //dataGrid.ColumnHeadersDefaultCellStyle.ForeColor = foreColor;
+                //dataGrid.EnableHeadersVisualStyles = false;
 
-                txbQuery.BackColor = backgroundColor;
-                txbQuery.ForeColor = foreColor;
+                //txbQuery.BackColor = backgroundColor;
+                //txbQuery.ForeColor = foreColor;
 
-                btnAnalyze.ForeColor = foreColor;
-                btnAnalyze.BackColor = backgroundColor;
-                btnExec.ForeColor = foreColor;
-                btnExec.BackColor = backgroundColor;
+                //btnAnalyze.ForeColor = foreColor;
+                //btnAnalyze.BackColor = backgroundColor;
+                //btnExec.ForeColor = foreColor;
+                //btnExec.BackColor = backgroundColor;
 
-                dataGrid.DefaultCellStyle.BackColor = backgroundColor;
+                //dataGrid.DefaultCellStyle.BackColor = backgroundColor;
             }
             else
             {
-                // TODO: Disable styling
+                // Disable styling
+                ApplyColors(_winColors[0], _winColors[2], _winColors[1]);
                 dataGrid.EnableHeadersVisualStyles = true;
             }
         }
 
+        private void ApplyColors(Color foreColor, Color backgroundColor, Color inBetween)
+        {
+            BackColor = backgroundColor;
+            dataGrid.BackColor = backgroundColor;
+            dataGrid.BackgroundColor = inBetween;
+            dataGrid.ForeColor = foreColor;
+            dataGrid.ColumnHeadersDefaultCellStyle.BackColor = backgroundColor;
+            dataGrid.ColumnHeadersDefaultCellStyle.ForeColor = foreColor;
+            dataGrid.EnableHeadersVisualStyles = false;
+
+            txbQuery.BackColor = backgroundColor;
+            txbQuery.ForeColor = foreColor;
+
+            btnAnalyze.ForeColor = foreColor;
+            btnAnalyze.BackColor = backgroundColor;
+            btnExec.ForeColor = foreColor;
+            btnExec.BackColor = backgroundColor;
+
+            dataGrid.DefaultCellStyle.BackColor = backgroundColor;
+        }
+
         /// <summary>
-        /// Executes given query and shows the result in this window
+        ///     Executes given query and shows the result in this window
         /// </summary>
         /// <param name="query"> SQL query to run </param>
         public void ExecuteQuery(string query)
@@ -106,8 +136,6 @@
             StartAnalysis(false);
         }
 
-        private Task _worker = Task.CompletedTask;
-
         private void StartSomething(Action someAction)
         {
             void SafeAction()
@@ -120,7 +148,7 @@
                 catch (Exception e)
                 {
                     Trace.TraceError("CSV Action failed: {0}", e.Message);
-                    this.Message("Error when executing an action: " + e.Message, "CSV Query Error");
+                    this.Message("Error when executing an action: " + e.Message, Resources.Title_CSV_Query_Error);
                 }
                 finally
                 {
@@ -136,7 +164,7 @@
                 else busy = true;
             }
             if (busy)
-                this.Message("CSV Query is busy", "Error");
+                this.Message("CSV Query is busy", Resources.Title_CSV_Query_Error);
         }
 
         public void StartAnalysis(bool silent)
@@ -148,7 +176,7 @@
         {
             var watch = new DiagnosticTimer();
             var bufferId = NotepadPPGateway.GetCurrentBufferId();
-            string text = PluginBase.CurrentScintillaGateway.GetAllText();
+            var text = PluginBase.CurrentScintillaGateway.GetAllText();
             watch.Checkpoint("GetText");
 
             var csvSettings = CsvAnalyzer.Analyze(text);
@@ -165,7 +193,6 @@
             watch.Checkpoint("Analyze");
 
             Parse(csvSettings, watch, text, bufferId);
-            return;
         }
 
         private void Parse(CsvSettings csvSettings, DiagnosticTimer watch, string text, IntPtr bufferId)
@@ -184,15 +211,17 @@
                 this.Message(diagnostic);
         }
 
-        private void Parse(CsvSettings csvSettings) 
-            => Parse(csvSettings, 
-                     new DiagnosticTimer(), 
-                     PluginBase.CurrentScintillaGateway.GetAllText(), 
-                     NotepadPPGateway.GetCurrentBufferId());
+        private void Parse(CsvSettings csvSettings)
+        {
+            Parse(csvSettings,
+                new DiagnosticTimer(),
+                PluginBase.CurrentScintillaGateway.GetAllText(),
+                NotepadPPGateway.GetCurrentBufferId());
+        }
 
         public void StartParse(CsvSettings settings)
         {
-            StartSomething(()=>Parse(settings));
+            StartSomething(() => Parse(settings));
         }
 
         private void Execute(IntPtr bufferId, DiagnosticTimer watch)
@@ -208,7 +237,7 @@
             }
             catch (Exception)
             {
-                this.Message("Could not execute query", "Error in query");
+                this.Message("Could not execute query", Resources.Title_CSV_Query_Error);
                 return;
             }
             watch.Checkpoint("Execute query");
@@ -216,17 +245,13 @@
             var table = new DataTable();
             // Create columns
             foreach (var s in toshow[0])
-            {
                 table.Columns.Add(s);
-            }
 
             // Insert rows
             foreach (var row in toshow.Skip(1))
-            {
                 table.Rows.Add(row);
-            }
             watch.Checkpoint("Create DataTable");
-            
+
             this.UiThread(() =>
             {
                 dataGrid.DataSource = table;
@@ -239,12 +264,10 @@
             {
                 this.UiThread(() => txbQuery.AutoCompleteCustomSource.Add(query));
                 if (Main.Settings.SaveQueryCache)
-                {
                     using (var writer = File.AppendText(PluginStorage.QueryCachePath))
                     {
                         writer.WriteLine(query);
                     }
-                }
             }
         }
 
@@ -267,9 +290,7 @@
         private void txbQuery_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Return)
-            {
                 btnExec.PerformClick();
-            }
         }
 
         private void createNewCSVToolStripMenuItem_Click(object sender, EventArgs e)
@@ -311,10 +332,8 @@
                         ((BlockingStream) s).CompleteWriting();
                     }, stream);
 
-                    var consumer = Task.Factory.StartNew(s =>
-                    {
-                        PluginBase.CurrentScintillaGateway.AddText((Stream) s);
-                    }, stream);
+                    var consumer = Task.Factory.StartNew(
+                        s => { PluginBase.CurrentScintillaGateway.AddText((Stream) s); }, stream);
 
                     producer.Wait();
                     consumer.Wait();

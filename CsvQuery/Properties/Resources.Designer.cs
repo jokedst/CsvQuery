@@ -69,5 +69,14 @@ namespace CsvQuery.Properties {
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to CSV Query Error.
+        /// </summary>
+        internal static string Title_CSV_Query_Error {
+            get {
+                return ResourceManager.GetString("Title_CSV_Query_Error", resourceCulture);
+            }
+        }
     }
 }
