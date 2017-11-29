@@ -40,7 +40,15 @@
             if(Main.Settings.UseNppStyling)
                 ApplyStyling(true);
 
-            Main.Settings.RegisterListener(settings => { ApplyStyling(settings.UseNppStyling); return true; }, nameof(Settings.UseNppStyling));
+            //Main.Settings.RegisterListener(settings => { ApplyStyling(settings.UseNppStyling); return true; }, nameof(Settings.UseNppStyling));
+            Main.Settings.SettingsChanged += OnSettingsChanged;
+        }
+
+        private void OnSettingsChanged(object sender, SettingsChangedEventArgs e)
+        {
+            if(!e.Changed.Contains(nameof(Settings.UseNppStyling)))
+                return;
+            ApplyStyling(e.NewSettings.UseNppStyling);
         }
 
         /// <summary>
@@ -102,11 +110,29 @@
 
         private void StartSomething(Action someAction)
         {
+            void SafeAction()
+            {
+                this.UiThread(() => Enabled = false);
+                try
+                {
+                    someAction();
+                }
+                catch (Exception e)
+                {
+                    Trace.TraceError("CSV Action failed: {0}", e.Message);
+                    this.Message("Error when executing an action: " + e.Message, "CSV Query Error");
+                }
+                finally
+                {
+                    this.UiThread(() => Enabled = true);
+                }
+            }
+
             var busy = false;
             lock (_worker)
             {
                 if (_worker.IsCompleted)
-                    _worker = Task.Factory.StartNew(someAction);
+                    _worker = Task.Factory.StartNew(SafeAction);
                 else busy = true;
             }
             if (busy)
@@ -227,7 +253,7 @@
             StartSomething(() =>
             {
                 var watch = new DiagnosticTimer();
-                var bufferId = Win32.SendMessage(PluginBase.nppData._nppHandle, (uint) NppMsg.NPPM_GETCURRENTBUFFERID, 0, 0);
+                var bufferId = NotepadPPGateway.GetCurrentBufferId();
 
                 Execute(bufferId, watch);
 

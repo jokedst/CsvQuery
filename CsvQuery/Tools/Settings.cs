@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
     using System.ComponentModel;
     using System.Diagnostics;
     using System.Drawing;
@@ -47,11 +48,57 @@
         [Description("Use colors from Notepad++ theme"), Category("General"), DefaultValue(false)]
         public bool UseNppStyling { get; set; }
     }
-	
-	public class SettingsBase
+
+    public class SettingsChangedEventArgs : CancelEventArgs
+    {
+        public SettingsChangedEventArgs(Settings oldSettings, Settings newSettings)
+        {
+            OldSettings = oldSettings;
+            NewSettings = newSettings;
+            Changed = new HashSet<string>();
+            foreach (var propertyInfo in typeof(Settings).GetProperties())
+            {
+                var oldValue = propertyInfo.GetValue(oldSettings, null);
+                var newValue = propertyInfo.GetValue(newSettings, null);
+                if (!oldValue.Equals(newValue))
+                {
+                    Trace.TraceInformation($"Setting {propertyInfo.Name} has changed");
+                    Changed.Add(propertyInfo.Name);
+                }
+            }
+        }
+
+        public HashSet<string> Changed { get; }
+        public Settings OldSettings { get; }
+        public Settings NewSettings { get; }
+    }
+
+
+    public class SettingsBase
 	{
         private static readonly string IniFilePath;
-        private readonly List<Tuple<Func<Settings, bool>, string[]>> _listeners = new List<Tuple<Func<Settings, bool>, string[]>>();
+
+	    /// <summary> Delegate for update events </summary>
+	    public delegate void RepositoryEventHandler(object sender, SettingsChangedEventArgs e);
+
+	    /// <summary> Raised before settings has been changed, allowing listeners to cancel the change </summary>
+	    public event RepositoryEventHandler ValidateChanges;
+
+	    /// <summary> Raised after a setting has been changed </summary>
+	    public event RepositoryEventHandler SettingsChanged;
+
+        /// <summary> Overridable event logic </summary>
+        protected virtual void OnSettingsChanged(object sender, SettingsChangedEventArgs e)
+	    {
+	        SettingsChanged?.Invoke(sender, e);
+	    }
+
+	    /// <summary> Overridable event logic </summary>
+        protected virtual bool OnValidateChanges(object sender, SettingsChangedEventArgs e)
+	    {
+	        ValidateChanges?.Invoke(sender, e);
+            return !e.Cancel;
+	    }
 
         static SettingsBase()
         {
@@ -211,39 +258,28 @@
             dialog.Controls["Cancel"].Click += (a, b) => dialog.Close();
             dialog.Controls["Ok"].Click += (a, b) =>
             {
-                // Run listeners
-                foreach (var listener in _listeners)
+                var changesEventArgs = new SettingsChangedEventArgs(copy, (Settings) this);
+                if (!changesEventArgs.Changed.Any())
                 {
-                    bool result;
-                    if (listener.Item2 == null || listener.Item2.Length == 0)
-                    {
-                        result = listener.Item1(copy);
-                    }
-                    else
-                    {
-                        foreach (var setting in listener.Item2)
-                        {
-                            var prop = GetType().GetProperty(setting);
-                            if (!prop.GetValue(this, null).Equals(prop.GetValue(copy, null)))
-                            {
-                                result = listener.Item1(copy);
-                                break;
-                            }
-                        }
-                    }
+                    dialog.Close();
+                    return;
                 }
+                var acceptable = OnValidateChanges(dialog, changesEventArgs);
+                if (!acceptable)
+                {
+                    dialog.Close();
+                    return;
+                }
+                OnSettingsChanged(dialog, changesEventArgs);
 
                 copy.SaveToIniFile();
-                // Copy all settings to this
+                // Copy all changed settings to this
                 foreach (var propertyInfo in GetType().GetProperties())
                 {
                     var oldValue = propertyInfo.GetValue(this, null);
                     var newValue = propertyInfo.GetValue(copy, null);
                     if (!oldValue.Equals(newValue))
-                    {
-                        Trace.TraceInformation($"Setting {propertyInfo.Name} has changed");
-                    }
-                    propertyInfo.SetValue(this, newValue , null);
+                        propertyInfo.SetValue(this, newValue, null);
                 }
                 dialog.Close();
             };
@@ -257,15 +293,5 @@
             if(!File.Exists(IniFilePath)) SaveToIniFile();
             Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_DOOPEN, 0, IniFilePath);
         }
-
-        /// <summary>
-        /// Register an event listener for when given properties change
-        /// </summary>
-        /// <param name="eventListener"></param>
-        /// <param name="settingName"> List of settings to watch. If none the event is fired on any change </param>
-        public void RegisterListener(Func<Settings,bool> eventListener, params string[] settingName)
-        {
-            this._listeners.Add(Tuple.Create(eventListener, settingName));
-        }
-    }
+	}
 }

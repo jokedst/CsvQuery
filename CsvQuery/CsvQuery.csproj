@@ -167,6 +167,7 @@
     <Compile Include="Forms\ParseSettings.Designer.cs">
       <DependentUpon>ParseSettings.cs</DependentUpon>
     </Compile>
+    <Compile Include="PluginInfrastructure\NppEventType.cs" />
     <Compile Include="Tools\BlockingStream.cs" />
     <Compile Include="Tools\DataStorageBase.cs" />
     <Compile Include="Tools\dfd.cs" />

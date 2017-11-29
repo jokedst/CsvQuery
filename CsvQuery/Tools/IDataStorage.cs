@@ -10,6 +10,7 @@ namespace CsvQuery
         List<string[]> ExecuteQuery(string query);
         List<string[]> ExecuteQueryWithColumnNames(string query);
         void ExecuteNonQuery(string query);
+        void TestConnection();
     }
 
     public enum DataStorageProvider

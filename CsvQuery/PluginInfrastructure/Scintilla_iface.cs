@@ -31,13 +31,32 @@ namespace CsvQuery.PluginInfrastructure
         /// <summary>
         /// The SCN_* notification Code
         /// </summary>
-        public uint Code;       
+        public uint Code;
+    }
+
+    // Jokedst alternative header
+    public struct NppNotificationHeader
+    {
+        /// <summary>
+        /// environment specific window handle/pointer
+        /// </summary>
+        public IntPtr WindowPointer;
+
+        /// <summary>
+        /// BufferId of document this event relates to
+        /// </summary>
+        public IntPtr BufferId;
+
+        /// <summary>
+        /// The SCN_* notification Code
+        /// </summary>
+        public NppEventType EventType;
     }
 
     [StructLayout(LayoutKind.Sequential)]
     public struct ScNotification
     {
-        public ScNotificationHeader Header;
+        public NppNotificationHeader Header;
         private int position;               /* SCN_STYLENEEDED, SCN_DOUBLECLICK, SCN_MODIFIED, SCN_MARGINCLICK, SCN_NEEDSHOWN, SCN_DWELLSTART, SCN_DWELLEND, SCN_CALLTIPCLICK, SCN_HOTSPOTCLICK, SCN_HOTSPOTDOUBLECLICK, SCN_HOTSPOTRELEASECLICK, SCN_INDICATORCLICK, SCN_INDICATORRELEASE, SCN_USERLISTSELECTION, SCN_AUTOCSELECTION */
         public int character;               /* SCN_CHARADDED, SCN_KEY, SCN_AUTOCCOMPLETE, SCN_AUTOCSELECTION, SCN_USERLISTSELECTION */
         public int Mmodifiers;              /* SCN_KEY, SCN_DOUBLECLICK, SCN_HOTSPOTCLICK, SCN_HOTSPOTDOUBLECLICK, SCN_HOTSPOTRELEASECLICK, SCN_INDICATORCLICK, SCN_INDICATORRELEASE */

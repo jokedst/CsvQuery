@@ -23,10 +23,15 @@ namespace CsvQuery
         public MssqlDataStorage(string database)
         {
             Trace.TraceInformation($"Creating MssqlDataStorage for db {database}");
-            database = database.Replace(";", string.Empty);
-            _connectionString = $"Data Source=(local);Initial Catalog={database};Trusted_Connection=True";
-            // Test connection
-            ExecuteNonQuery("BEGIN tran;CREATE TABLE [bnfkwencvwrjk]([X] int NULL);ROLLBACK tran");
+
+            var builder = new SqlConnectionStringBuilder
+            {
+                DataSource = "(local)",
+                InitialCatalog = database,
+                IntegratedSecurity = true
+            };
+            _connectionString = builder.ConnectionString;
+
         }
 
         public void SetActiveTab(IntPtr bufferId)
@@ -219,6 +224,12 @@ namespace CsvQuery
                     command.ExecuteNonQuery();
                 }
             }
+        }
+
+        public void TestConnection()
+        {
+            // Test connection
+            ExecuteNonQuery("BEGIN tran;CREATE TABLE [bnfkwencvwrjk]([X] int NULL);ROLLBACK tran");
         }
     }
 }

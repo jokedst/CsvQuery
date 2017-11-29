@@ -11,7 +11,6 @@ namespace CsvQuery.PluginInfrastructure
 
         /// <summary>
         /// Adds an entry in the Notepad++ Plugin menu.
-        /// 
         /// </summary>
         /// <param name="text"></param>
         /// <param name="functionPointer"></param>
@@ -60,19 +59,11 @@ namespace CsvQuery.PluginInfrastructure
             return (curScintilla == 0) ? nppData._scintillaMainHandle : nppData._scintillaSecondHandle;
         }
 
-
         static readonly Func<IScintillaGateway> gatewayFactory = () => new ScintillaGateway(GetCurrentScintilla());
 
         public static Func<IScintillaGateway> GetGatewayFactory()
         {
             return gatewayFactory;
-        }
-
-        // Just for debugging
-        public static int ScintillaNumber()
-        {
-            Win32.SendMessage(nppData._nppHandle, (uint)NppMsg.NPPM_GETCURRENTSCINTILLA, 0, out int curScintilla);
-            return curScintilla;
         }
 
         /// <summary> Get gateway to currently active scintilla  </summary>
@@ -94,15 +85,12 @@ namespace CsvQuery.PluginInfrastructure
 
         public static int GetDefaultForegroundColor()
         {
-
-            var ret = Win32.SendMessage(nppData._nppHandle, (uint)NppMsg.NPPM_GETEDITORDEFAULTFOREGROUNDCOLOR, 0, 0);
-            return (int)ret;
+            return (int)Win32.SendMessage(nppData._nppHandle, (uint)NppMsg.NPPM_GETEDITORDEFAULTFOREGROUNDCOLOR, 0, 0);
         }
 
         public static int GetDefaultBackgroundColor()
         {
-            var ret = Win32.SendMessage(nppData._nppHandle, (uint)NppMsg.NPPM_GETEDITORDEFAULTBACKGROUNDCOLOR, 0, 0);
-            return (int)ret;
+            return (int)Win32.SendMessage(nppData._nppHandle, (uint)NppMsg.NPPM_GETEDITORDEFAULTBACKGROUNDCOLOR, 0, 0);
         }
     }
 }

@@ -25,6 +25,10 @@ namespace CsvQuery
         public List<string[]> ExecuteQuery(string query) => ExecuteQuery(query, false);
         public List<string[]> ExecuteQueryWithColumnNames(string query) => ExecuteQuery(query, true);
         public abstract void ExecuteNonQuery(string query);
+        public void TestConnection()
+        {
+            ExecuteNonQuery("SELECT 2*3");
+        }
 
         protected abstract List<string[]> ExecuteQuery(string query, bool includeColumnNames);
 

@@ -26,33 +26,63 @@ namespace CsvQuery
 
         static Main()
         {
-            OnSqlSettingsChanged(Settings);
-            Settings.RegisterListener(OnSqlSettingsChanged, nameof(Settings.StorageProvider), nameof(Settings.Database));
+            CreateDataStorage(Settings);
+            Settings.ValidateChanges += OnValidateChanges;
+            Settings.SettingsChanged += (sender, args) => CreateDataStorage(args.NewSettings);
         }
-
-        public static bool OnSqlSettingsChanged(Settings settings)
+        
+        private static void CreateDataStorage(Settings settings)
         {
-            Trace.TraceInformation("OnSqlSettingsChanged fired");
             try
             {
-                switch (Settings.StorageProvider)
+                switch (settings.StorageProvider)
                 {
                     case DataStorageProvider.SQLite:
-                        DataStorage = new SQLiteDataStorage(Settings.Database);
+                        DataStorage = new SQLiteDataStorage(settings.Database);
                         break;
                     case DataStorageProvider.MSSQL:
-                        DataStorage = new MssqlDataStorage(Settings.Database);
+                        DataStorage = new MssqlDataStorage(settings.Database);
                         break;
                 }
             }
             catch (Exception e)
             {
-                var msg = $"Error configuring the {Settings.StorageProvider} database '{Settings.Database}': {e.Message}";
+                var msg = $"Error configuring the {settings.StorageProvider} database '{settings.Database}': {e.Message}\nFalling back to in-memory SQLite";
                 Trace.TraceError(msg + Environment.NewLine + e.StackTrace);
                 MessageBox.Show(msg, "Error");
-                return false;
+                DataStorage = new SQLiteDataStorage();
             }
-            return true;
+        }
+
+        private static void OnValidateChanges(object sender, SettingsChangedEventArgs e)
+        {
+            Trace.TraceInformation("Main.OnSettingsChanged fired");
+            if (!e.Changed.Contains(nameof(Settings.StorageProvider)) && !e.Changed.Contains(nameof(Settings.Database)))
+                return;
+            Trace.TraceInformation("Main.OnSettingsChanged relevant!");
+            try
+            {
+                IDataStorage newStorage;
+                switch (e.NewSettings.StorageProvider)
+                {
+                    case DataStorageProvider.SQLite:
+                        newStorage = new SQLiteDataStorage(e.NewSettings.Database);
+                        break;
+                    case DataStorageProvider.MSSQL:
+                        newStorage = new MssqlDataStorage(e.NewSettings.Database);
+                        break;
+                    default:
+                        throw new Exception("Unknown enum value "+ Settings.StorageProvider);
+                }
+                newStorage.TestConnection();
+            }
+            catch (Exception ex)
+            {
+                var msg = $"Error configuring the {e.NewSettings.StorageProvider} database '{e.NewSettings.Database}': {ex.Message}";
+                Trace.TraceError(msg + Environment.NewLine + ex.StackTrace);
+                MessageBox.Show(msg, "Error");
+                e.Cancel = true;
+            }
         }
 
         public static void OnNotification(ScNotification notification)
