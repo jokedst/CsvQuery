@@ -53,14 +53,13 @@ namespace CsvQuery
             if (_createdTables.ContainsKey(bufferId))
             {
                 tableName = _createdTables[bufferId];
-                ExecuteNonQuery("DROP TABLE IF EXISTS " + tableName);
             }
             else
             {
                 tableName = "T" + ++_lastCreatedTableName;
-                ExecuteNonQuery("DROP TABLE IF EXISTS " + tableName);
                 _createdTables.Add(bufferId, tableName);
             }
+            ExecuteNonQuery($"IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '{tableName}' AND TABLE_SCHEMA = 'dbo') DROP TABLE dbo.{tableName}");
 
             var columnTypes = CsvAnalyzer.DetectColumnTypes(data, hasHeader);
 

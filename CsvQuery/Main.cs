@@ -98,7 +98,7 @@ namespace CsvQuery
             // This method is invoked whenever something is happening in notepad++. Use as:
             // if (notification.Header.Code == (uint)NppMsg.NPPN_xxx) {...}
             // (or SciMsg.SCNxxx)
-            Trace.TraceInformation($"Npp notification received: {notification.Header.EventType}");
+            //Trace.TraceInformation($"Npp notification received: {notification.Header.EventType}");
         }
 
         public static void CommandMenuInit()
@@ -108,7 +108,6 @@ namespace CsvQuery
             PluginBase.AddMenuItem("List parsed files", ListSqliteTables);
             PluginBase.AddMenuItem("---", null);
             PluginBase.AddMenuItem("&Settings", Settings.ShowDialog);
-            ////PluginBase.AddMenuItem("Settings file", Settings.OpenFile);
             PluginBase.AddMenuItem("&About", AboutCsvQuery);
         }
 
