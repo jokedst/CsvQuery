@@ -69,28 +69,9 @@
                 var backgroundColor = PluginBase.GetDefaultBackgroundColor();
                 var foreColor = PluginBase.GetDefaultForegroundColor();
                 var inBetween = Color.FromArgb((foreColor.R + backgroundColor.R*3) / 4, (foreColor.G + backgroundColor.G*3) / 4, (foreColor.B + backgroundColor.B*3) / 4);
-                Trace.TraceInformation($"FG {foreColor}, BG {backgroundColor}, inBetween {inBetween}");
 
                 ApplyColors(foreColor, backgroundColor, inBetween);
                 dataGrid.EnableHeadersVisualStyles = false;
-                ////var invertedBackground = StyleHelper.HSVToRGB(backgroundColor.GetHue() / 360.0, backgroundColor.GetSaturation(), backgroundColor.GetBrightness());
-                //BackColor = backgroundColor;
-                //dataGrid.BackColor = backgroundColor;
-                //dataGrid.BackgroundColor = backgroundColor;
-                //dataGrid.ForeColor = foreColor;
-                //dataGrid.ColumnHeadersDefaultCellStyle.BackColor = backgroundColor;
-                //dataGrid.ColumnHeadersDefaultCellStyle.ForeColor = foreColor;
-                //dataGrid.EnableHeadersVisualStyles = false;
-
-                //txbQuery.BackColor = backgroundColor;
-                //txbQuery.ForeColor = foreColor;
-
-                //btnAnalyze.ForeColor = foreColor;
-                //btnAnalyze.BackColor = backgroundColor;
-                //btnExec.ForeColor = foreColor;
-                //btnExec.BackColor = backgroundColor;
-
-                //dataGrid.DefaultCellStyle.BackColor = backgroundColor;
             }
             else
             {
@@ -102,6 +83,7 @@
 
         private void ApplyColors(Color foreColor, Color backgroundColor, Color inBetween)
         {
+            Trace.TraceInformation($"FG {foreColor}, BG {backgroundColor}, inBetween {inBetween}");
             BackColor = backgroundColor;
             dataGrid.BackColor = backgroundColor;
             dataGrid.BackgroundColor = inBetween;
@@ -138,9 +120,10 @@
 
         private void StartSomething(Action someAction)
         {
+            this.UiThread(() => UiEnabled(false));
+
             void SafeAction()
             {
-                this.UiThread(() => Enabled = false);
                 try
                 {
                     someAction();
@@ -152,7 +135,7 @@
                 }
                 finally
                 {
-                    this.UiThread(() => Enabled = true);
+                    this.UiThread(() => UiEnabled(true));
                 }
             }
 
@@ -164,7 +147,17 @@
                 else busy = true;
             }
             if (busy)
+            {
                 this.Message("CSV Query is busy", Resources.Title_CSV_Query_Error);
+                this.UiThread(() => UiEnabled(true));
+            }
+        }
+
+        private void UiEnabled(bool enabled)
+        {
+            txbQuery.Enabled = enabled;
+            btnAnalyze.Enabled = enabled;
+            btnExec.Enabled = enabled;
         }
 
         public void StartAnalysis(bool silent)
@@ -182,6 +175,8 @@
             var csvSettings = CsvAnalyzer.Analyze(text);
             if (csvSettings.Separator == '\0' && csvSettings.FieldWidths == null)
             {
+                if (silent) return;
+
                 var askUserDialog = new ParseSettings();
                 this.UiThread(() => askUserDialog.ShowDialog());
                 var userChoice = askUserDialog.DialogResult;
@@ -211,17 +206,12 @@
                 this.Message(diagnostic);
         }
 
-        private void Parse(CsvSettings csvSettings)
-        {
-            Parse(csvSettings,
-                new DiagnosticTimer(),
-                PluginBase.CurrentScintillaGateway.GetAllText(),
-                NotepadPPGateway.GetCurrentBufferId());
-        }
-
         public void StartParse(CsvSettings settings)
         {
-            StartSomething(() => Parse(settings));
+            StartSomething(() => Parse(settings,
+                new DiagnosticTimer(),
+                PluginBase.CurrentScintillaGateway.GetAllText(),
+                NotepadPPGateway.GetCurrentBufferId()));
         }
 
         private void Execute(IntPtr bufferId, DiagnosticTimer watch)
