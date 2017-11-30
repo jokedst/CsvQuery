@@ -235,7 +235,10 @@
             var table = new DataTable();
             // Create columns
             foreach (var s in toshow[0])
-                table.Columns.Add(s);
+            {
+                // Column names in a DataGridView can't contain commas it seems
+                table.Columns.Add(s.Replace(",", string.Empty));
+            }
 
             // Insert rows
             foreach (var row in toshow.Skip(1))
