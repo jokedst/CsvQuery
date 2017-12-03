@@ -196,8 +196,15 @@
             watch.Checkpoint("Parse");
 
             var columnTypes = CsvAnalyzer.DetectColumnTypes(data, null);
-
-            Main.DataStorage.SaveData(bufferId, data, columnTypes);
+            try
+            {
+                Main.DataStorage.SaveData(bufferId, data, columnTypes);
+            }
+            catch (Exception ex)
+            {
+                this.ErrorMessage("Error when saving data to database:\n" + ex.Message);
+                return;
+            }
             watch.Checkpoint("Saved to DB");
             this.UiThread(() => txbQuery.Text = "SELECT * FROM THIS");
             Execute(bufferId, watch);

@@ -5,6 +5,7 @@
     using System.Linq;
     using System.Text;
     using System.Windows.Forms;
+    using Properties;
 
     /// <summary>
     /// Mixed bag of helper extensions for this project
@@ -54,7 +55,7 @@
         /// <param name="control"></param>
         /// <param name="message"> The text to display </param>
         public static void Message(this Control control, string message)
-            => UiThread(control, () => MessageBox.Show(message));
+            => UiThread(control, () => MessageBox.Show(message, Resources.Title_MessagBox));
 
         /// <summary>
         /// Display a message in a message box on the main thread
@@ -64,6 +65,12 @@
         /// <param name="title"> Text to show in the title bar of the message box </param>
         public static void Message(this Control control, string message, string title)
             => UiThread(control, () => MessageBox.Show(message, title));
+
+        /// <summary>
+        /// Displays an error message in a message box on the main thread
+        /// </summary>
+        public static void ErrorMessage(this Control control, string message)
+            => UiThread(control, () => MessageBox.Show(message, Resources.Title_CSV_Query_Error));
 
         public static string CommonPrefix(string a, string b)
         {

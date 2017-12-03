@@ -124,4 +124,7 @@
   <data name="Title_CSV_Query_Error" xml:space="preserve">
     <value>CSV Query Error</value>
   </data>
+  <data name="Title_MessagBox" xml:space="preserve">
+    <value>CSV Query</value>
+  </data>
 </root>

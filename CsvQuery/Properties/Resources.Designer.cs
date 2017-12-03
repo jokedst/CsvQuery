@@ -78,5 +78,14 @@ namespace CsvQuery.Properties {
                 return ResourceManager.GetString("Title_CSV_Query_Error", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to CSV Query.
+        /// </summary>
+        internal static string Title_MessagBox {
+            get {
+                return ResourceManager.GetString("Title_MessagBox", resourceCulture);
+            }
+        }
     }
 }

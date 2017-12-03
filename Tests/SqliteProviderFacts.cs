@@ -64,6 +64,23 @@
     {
         public abstract IDataStorage DataStorage { get; }
 
+        protected List<string[]> FourRowsThreeColumnsWithHeader = new List<string[]>
+            {
+                new[] {"hej", "du", "där"},
+                new[] {"1", "2", "3"},
+                new[] {"2", "12", "14"},
+                new[] {"3", "12", "13"},
+                new[] {"4", "2", "3"}
+            };
+        protected List<string[]> FiveRowsFourColumnsWithNoHeader = new List<string[]>
+        {
+            new[] {"first","1", "2", "3"},
+            new[] {"second","2", "12", "14"},
+            new[] {"third","3", "12", "13"},
+            new[] {"fourth","4", "3.14", "3"},
+            new[] {"fifth","5", "2", "3"}
+        };
+
         [TestMethod]
         public void SaveToDbAndReadItBack()
         {
@@ -339,6 +356,21 @@
 
             //AssertDataEqual(data.Skip(1).ToList(), result.Skip(1).ToList());
             Assert.AreEqual("ArtGrp", result[0][0], "whitelisting not working");
+        }
+
+        public void CanOverwriteExistingTable()
+        {
+            DataStorage.SaveData(new IntPtr(77), FourRowsThreeColumnsWithHeader, new CsvColumnTypes(FourRowsThreeColumnsWithHeader, null));
+
+            var result = DataStorage.ExecuteQuery("SELECT * FROM this", false);
+            Assert.AreEqual(4, result.Count);
+            Assert.IsTrue(result.TrueForAll(x => x.Length == 3));
+
+            DataStorage.SaveData(new IntPtr(77), FiveRowsFourColumnsWithNoHeader, new CsvColumnTypes(FiveRowsFourColumnsWithNoHeader, null));
+
+            result = DataStorage.ExecuteQuery("SELECT * FROM this", false);
+            Assert.AreEqual(5, result.Count);
+            Assert.IsTrue(result.TrueForAll(x => x.Length == 4));
         }
     }
 }

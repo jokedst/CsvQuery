@@ -13,12 +13,9 @@ namespace CsvQuery
     using System.Collections.Generic;
     using System.Data.SqlClient;
 
-    public class MssqlDataStorage : IDataStorage
+    public class MssqlDataStorage : DataStorageBase
     {
         private readonly string _connectionString;
-        private IntPtr _currentActiveBufferId;
-        private readonly Dictionary<IntPtr, string> _createdTables = new Dictionary<IntPtr, string>();
-        private int _lastCreatedTableName;
 
         public MssqlDataStorage(string database)
         {
@@ -31,164 +28,68 @@ namespace CsvQuery
                 IntegratedSecurity = true
             };
             _connectionString = builder.ConnectionString;
-
         }
 
-        public void SetActiveTab(IntPtr bufferId)
+        public override string SaveData(IntPtr bufferId, List<string[]> data, CsvColumnTypes columnTypes)
         {
-            if (_currentActiveBufferId != bufferId && _createdTables.ContainsKey(bufferId))
-            {
-                ExecuteNonQuery(QueryDropViewThisIfExists);
-                ExecuteNonQuery("CREATE VIEW this AS SELECT * FROM " + _createdTables[bufferId]);
-                _currentActiveBufferId = bufferId;
-            }
-        }
-
-        public string SaveData(IntPtr bufferId, List<string[]> data, CsvColumnTypes columnTypes)
-        {
-            string tableName;
-            if (_createdTables.ContainsKey(bufferId))
-            {
-                tableName = _createdTables[bufferId];
-            }
-            else
-            {
-                tableName = "T" + ++_lastCreatedTableName;
-                _createdTables.Add(bufferId, tableName);
-            }
-            ExecuteNonQuery($"IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '{tableName}' AND TABLE_SCHEMA = 'dbo') DROP TABLE dbo.{tableName}");
-
-            //var columnTypes = CsvAnalyzer.DetectColumnTypes(data, hasHeader);
+            string tableName = GetOrAllocateTableName(bufferId);
 
             // Create SQL by string concat - look out for SQL injection! (although rather harmless since it's all your own data)
-            //var createQuery = new StringBuilder("CREATE TABLE [" + tableName + "] (");
-
-            //bool first = true;
-            //foreach (var column in columnTypes.ColumnNames)
-            //{
-            //    if (first) first = false;
-            //    else createQuery.Append(", ");
-            //    createQuery.AppendFormat("[{0}] CHAR", column);
-            //}
-
-            //createQuery.Append(")");
-
-
-            var createQuery = new StringBuilder("CREATE TABLE " + tableName + "(");
-            var colnames = new List<string>();
+            var createQuery = new StringBuilder("CREATE TABLE [" + tableName + "] (");
             bool first = true;
-            if (columnTypes.HasHeader)
+            foreach (var column in columnTypes.ColumnNames)
             {
-                int i = 0;
-                foreach (var colName in data[0])
-                {
-                    var columnNameClean = Regex.Replace(colName, @"[^\w_]", "");
-                    //if(Sqlite3.yy)
-                    if (string.IsNullOrEmpty(columnNameClean)) columnNameClean = "Col" + i;
-                    if (colnames.Contains(columnNameClean))
-                    {
-                        var c = 2;
-                        var fixedName = columnNameClean + c;
-                        while (colnames.Contains(fixedName))
-                            fixedName = columnNameClean + ++c;
-                        columnNameClean = fixedName;
-                    }
-                    if (first) first = false;
-                    else createQuery.Append(", ");
-                    colnames.Add(columnNameClean);
-                    createQuery.AppendFormat("[{0}] NVARCHAR(MAX)", columnNameClean);
-                    i++;
-                }
+                if (first) first = false;
+                else createQuery.Append(", ");
+                createQuery.AppendFormat("[{0}] NVARCHAR(MAX)", column);
             }
-            else
-            {
-                // Just create Col1, Col2, Col3 etc
-                for (int index = 0; index < data[0].Length; index++)
-                {
-                    if (first) first = false;
-                    else createQuery.Append(", ");
-                    createQuery.AppendFormat("{0} NVARCHAR(MAX)", "Col" + index);
-                    colnames.Add("Col" + index);
-                }
-            }
+
             createQuery.Append(")");
             ExecuteNonQuery(createQuery.ToString());
 
-            try
+            // Convert to datatable
+            var table = new DataTable();
+            table.Columns.AddRange(columnTypes.ColumnNames.Select(r => new DataColumn(r)).ToArray());
+            var datalist = columnTypes.HasHeader ? data.Skip(1) : data;
+            int i = 0;
+            foreach (var row in datalist)
             {
-                // Convert to datatable
-                var table = new DataTable();
-                table.Columns.AddRange(colnames.Select(r => new DataColumn(r)).ToArray());
-                var datalist = columnTypes.HasHeader ? data.Skip(1) : data;
-                int i = 0;
-                foreach (var row in datalist)
+                i++;
+                if (row.Length != columnTypes.ColumnNames.Count)
                 {
-                    i++;
-                    if (row.Length != colnames.Count)
-                    {
-                        Trace.TraceInformation($"Row {i} has {row.Length} columns, but should have {colnames.Count}");
-                    }
-                    var objects = row.Cast<object>().ToArray();
-                    table.Rows.Add(objects);
+                    Trace.TraceInformation($"Row {i} has {row.Length} columns, but should have {columnTypes.ColumnNames.Count}");
                 }
-                Trace.TraceInformation($"Converted {table.Rows.Count} to data table");
-
-                using (var connection = new SqlConnection(_connectionString))
-                {
-                    connection.Open();
-                    SqlTransaction transaction = connection.BeginTransaction();
-
-                    using (var bulkCopy = new SqlBulkCopy(connection, SqlBulkCopyOptions.Default, transaction))
-                    {
-                        bulkCopy.BatchSize = 100;
-                        bulkCopy.DestinationTableName = tableName;
-                        try
-                        {
-                            bulkCopy.WriteToServer(table);
-                        }
-                        catch (Exception)
-                        {
-                            transaction.Rollback();
-                            connection.Close();
-                        }
-                    }
-
-                    transaction.Commit();
-                }
+                var objects = row.Cast<object>().ToArray();
+                table.Rows.Add(objects);
             }
-            catch (Exception e)
+            Trace.TraceInformation($"Converted {table.Rows.Count} to data table");
+
+            using (var connection = new SqlConnection(_connectionString))
             {
-                MessageBox.Show(e.Message, "Error when writing to database");
+                connection.Open();
+                SqlTransaction transaction = connection.BeginTransaction();
+
+                using (var bulkCopy = new SqlBulkCopy(connection, SqlBulkCopyOptions.Default, transaction))
+                {
+                    bulkCopy.BatchSize = 100;
+                    bulkCopy.DestinationTableName = tableName;
+                    try
+                    {
+                        bulkCopy.WriteToServer(table);
+                    }
+                    catch (Exception)
+                    {
+                        transaction.Rollback();
+                        connection.Close();
+                    }
+                }
+
+                transaction.Commit();
             }
             return tableName;
         }
-        /*
-        public List<string[]> ExecuteQuery(string query)
-        {
-            var result = new List<string[]>();
-            using (var con = new SqlConnection(_connectionString))
-            {
-                Trace.TraceInformation($"MSSQL ExecuteQuery '{query}'");
-                con.Open();
-                using (var command = new SqlCommand(query, con))
-                using (var reader = command.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        var columns = reader.FieldCount;
-                        var data = new List<string>();
-                        for (int i = 0; i < columns; i++)
-                        {
-                            data.Add(reader.GetString(i));
-                        }
-                        result.Add(data.ToArray());
-                    }
-                }
-            }
-            return result;
-        }*/
 
-        public List<string[]> ExecuteQuery(string query, bool includeColumnNames)
+        public override List<string[]> ExecuteQuery(string query, bool includeColumnNames)
         {
             var result = new List<string[]>();
             using (var con = new SqlConnection(_connectionString))
@@ -198,34 +99,33 @@ namespace CsvQuery
                 using (var command = new SqlCommand(query, con))
                 using (var reader = command.ExecuteReader())
                 {
-                    bool first= includeColumnNames;
                     while (reader.Read())
                     {
                         var columns = reader.FieldCount;
-                        if (first)
+                        if (includeColumnNames)
                         {
-                            var cols = new List<string>();
+                            var cols = new string[columns];
                             for (int i = 0; i < columns; i++)
                             {
-                                cols.Add(reader.GetName(i));
+                                cols[i] = reader.GetName(i);
                             }
-                            result.Add(cols.ToArray());
-                            first = false;
+                            result.Add(cols);
+                            includeColumnNames = false;
                         }
 
-                        var data = new List<string>();
+                        var data = new string[columns];
                         for (int i = 0; i < columns; i++)
                         {
-                            data.Add(reader.IsDBNull(i) ? null : reader.GetString(i));
+                            data[i] = reader.IsDBNull(i) ? null : reader.GetString(i);
                         }
-                        result.Add(data.ToArray());
+                        result.Add(data);
                     }
                 }
             }
             return result;
         }
 
-        public void ExecuteNonQuery(string query)
+        public override void ExecuteNonQuery(string query)
         {
             using (var con = new SqlConnection(_connectionString))
             {
@@ -238,14 +138,14 @@ namespace CsvQuery
             }
         }
 
-        public void TestConnection()
+        public override void TestConnection()
         {
-            // Test connection
+            // Test connection and permission to create tables
             ExecuteNonQuery("BEGIN tran;CREATE TABLE [bnfkwencvwrjk]([X] int NULL);ROLLBACK tran");
         }
 
-        public string QueryDropTableIfExists => "IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '{0}' AND TABLE_SCHEMA = 'dbo') DROP TABLE dbo.[{0}]";
+        public override string QueryDropTableIfExists => "IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '{0}' AND TABLE_SCHEMA = 'dbo') DROP TABLE dbo.[{0}]";
 
-        public string QueryDropViewThisIfExists => "IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'this' AND TABLE_SCHEMA = 'dbo' AND TABLE_TYPE='VIEW') DROP VIEW dbo.this";
+        public override string QueryDropViewThisIfExists => "IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'this' AND TABLE_SCHEMA = 'dbo' AND TABLE_TYPE='VIEW') DROP VIEW dbo.this";
     }
 }
