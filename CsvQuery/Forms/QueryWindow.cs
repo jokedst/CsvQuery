@@ -195,7 +195,9 @@
             var data = csvSettings.Parse(text);
             watch.Checkpoint("Parse");
 
-            Main.DataStorage.SaveData(bufferId, data, null);
+            var columnTypes = CsvAnalyzer.DetectColumnTypes(data, null);
+
+            Main.DataStorage.SaveData(bufferId, data, columnTypes);
             watch.Checkpoint("Saved to DB");
             this.UiThread(() => txbQuery.Text = "SELECT * FROM THIS");
             Execute(bufferId, watch);
@@ -223,7 +225,7 @@
             List<string[]> toshow;
             try
             {
-                toshow = Main.DataStorage.ExecuteQueryWithColumnNames(query);
+                toshow = Main.DataStorage.ExecuteQuery(query, true);
             }
             catch (Exception)
             {
@@ -231,6 +233,12 @@
                 return;
             }
             watch.Checkpoint("Execute query");
+
+            if (toshow == null || toshow.Count==0)
+            {
+                this.Message("Query returned no data", Resources.Title_CSV_Query_Error);
+                return;
+            }
 
             var table = new DataTable();
             // Create columns

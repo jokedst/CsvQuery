@@ -8,7 +8,7 @@
     /// <summary>
     /// Benchmarking timer that allows several checkpoints to be set in the code
     /// </summary>
-    internal class DiagnosticTimer
+    public class DiagnosticTimer
     {
         private readonly Stopwatch _stopwatch = Stopwatch.StartNew();
         private readonly List<Tuple<string, long>> _checkpoints = new List<Tuple<string, long>>();

@@ -2,106 +2,74 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Globalization;
     using System.IO;
     using System.Linq;
-    using System.Text;
+    using CsvQuery.Csv;
+    using CsvQuery.Tools;
 
     public enum CsvColumnType
     {
-        Integer=0,
+        Integer = 0,
         ShortString,
         LongString,
         Char,
         Date,
         DateAndTime,
-        Decimal=6
-    } 
+        Decimal = 6
+    }
 
-    class Program
+    /// <summary>
+    ///     CsvGen - a CSV generator
+    /// </summary>
+    internal class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
+            if (Param.Flag('P'))
+            {
+                PerformanceTest();
+                return;
+            }
             var r = new Random();
-            var rowsToCreate = 100000;
-            var columns = 10;
-            var filename = @"bigCsv.csv";
+            var rowsToCreate = Param.Get('n', 100000);
+            var columns = Param.Get('c', 10);
+            var filename = Param.FirstOr($"random{rowsToCreate}x{columns}.csv");
 
-                var columnTypes = Enumerable.Range(0, columns).Select(x => x < 7 ? x : r.Next(7)).Cast<CsvColumnType>()
-                    .ToList();
-            using (var fs = new StreamWriter (filename))
+            var columnTypes = Enumerable.Range(0, columns).Select(x => x < 7 ? x : r.Next(7)).Cast<CsvColumnType>()
+                .ToList();
+            using (var fs = new StreamWriter(filename))
             {
                 // Headers
                 foreach (var str in columnTypes.Select(x => r.RandomString(5) + x.ToString()).Interspace(","))
-                {
                     fs.Write(str);
-                }
                 fs.WriteLine();
 
                 // Rows
-                for (int l = 0; l < rowsToCreate; l++)
+                for (var l = 0; l < rowsToCreate; l++)
                 {
                     foreach (var str in columnTypes.Select(x => r.GenColumn(x)).Interspace(","))
-                    {
                         fs.Write(str);
-                    }
                     fs.WriteLine();
                 }
             }
         }
 
-    }
-
-    public static class Helpers
-    {
-            const string Alphabet = "abcdefghijklmnopqrstuvwxyz";
-
-        public static IEnumerable<T> Interspace<T>(this IEnumerable<T> enumerable, T separator)
+        static void PerformanceTest()
         {
-            var first = true;
-            foreach (var item in enumerable)
+            var timer = new DiagnosticTimer();
+            var data = new List<string[]>();
+
+            var row = new[] { "12,34", "string", "321.23" };
+            for (int i = 0; i < 2000000; i++)
             {
-                if (first) first = false;
-                else yield return separator;
-
-                yield return item;
+                data.Add(row);
             }
-        }
+            timer.Checkpoint("data creation");
 
-        public static string RandomString(this Random r, int length)
-        {
-            var chars = new char[length];
-            for (int i = 0; i < length; i++)
-            {
-                chars[i] = Alphabet[r.Next(Alphabet.Length)];
-            }
-            chars[0] = char.ToUpperInvariant(chars[0]);
-            return new string(chars);
-        }
-
-        public static char Char(this Random r) => Alphabet[r.Next(Alphabet.Length)];
-
-        public static string GenColumn(this Random r, CsvColumnType type)
-        {
-            switch (type)
-            {
-                case CsvColumnType.Integer:
-                    return r.Next().ToString();
-                case CsvColumnType.ShortString:
-                    return r.RandomString(1 + r.Next(4));
-                case CsvColumnType.LongString:
-                    return r.RandomString(20 + r.Next(10));
-                case CsvColumnType.Char:
-                  return  r.Char().ToString();
-                case CsvColumnType.Date:
-                    return DateTime.Today.AddDays(r.Next(10000) - 5000).ToShortDateString();
-                case CsvColumnType.DateAndTime:
-                    return DateTime.Now.AddSeconds(-1 * r.Next(60 * 60 * 24 * 365 * 4)).ToString();
-                case CsvColumnType.Decimal:
-                    return (r.NextDouble() * (double) 1000).ToString(CultureInfo.InvariantCulture);
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(type), type, null);
-            }
+            var result = new CsvColumnTypes(data, null);
+            Console.WriteLine(timer.LastCheckpoint("Anlyzed"));
+            Console.WriteLine(result);
+            Console.WriteLine("Column 1: " + result.Columns[0].DataType.ToString());
         }
     }
 }

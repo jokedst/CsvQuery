@@ -159,7 +159,10 @@
     <Compile Include="CsharpSqlite\wal_h.cs" />
     <Compile Include="CsharpSqlite\where_c.cs" />
     <Compile Include="CsharpSqlite\_Custom.cs" />
+    <Compile Include="Csv\ColumnType.cs" />
     <Compile Include="Csv\CsvAnalyzer.cs" />
+    <Compile Include="Csv\CsvColumnAnalyzer.cs" />
+    <Compile Include="Csv\CsvColumnTypes.cs" />
     <Compile Include="Csv\CsvSettings.cs" />
     <Compile Include="Forms\ParseSettings.cs">
       <SubType>Form</SubType>

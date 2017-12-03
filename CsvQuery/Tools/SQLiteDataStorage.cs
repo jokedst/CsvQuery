@@ -8,6 +8,7 @@ namespace CsvQuery
     using System.Text;
     using System.Text.RegularExpressions;
     using Community.CsharpSqlite;
+    using Csv;
 
     public class SQLiteDataStorage : DataStorageBase
     {
@@ -37,105 +38,35 @@ namespace CsvQuery
         /// <param name="data"></param>
         /// <param name="hasHeader"></param>
         /// <returns></returns>
-        public override string SaveData(IntPtr bufferId, List<string[]> data, bool? hasHeader)
+        public override string SaveData(IntPtr bufferId, List<string[]> data, CsvColumnTypes columnTypes)
         {
             string tableName = GetOrAllocateTableName(bufferId);
-
-            int columns = data[0].Length;
-            // Figure out column types. For now just double/string
-            var types = new List<bool>();
-            var headerTypes = new List<bool>();
-            bool first = true, allStrings = true;
-            foreach (var cols in data)
-            {
-                if (first && (!hasHeader.HasValue || hasHeader.Value))
-                {
-                    // Save to headerTypes
-                    foreach (var col in cols)
-                    {
-                        var isDouble = double.TryParse(col, out double d);
-                        headerTypes.Add(isDouble);
-                        if (isDouble) allStrings = false;
-                    }
-                }
-                else
-                {
-                    // Save to types
-                    int i = 0;
-                    foreach (var col in cols)
-                    {
-                        double d;
-                        var isDouble = string.IsNullOrWhiteSpace(col) || double.TryParse(col, out d);
-                        if (types.Count <= i) types.Add(isDouble);
-                        else if (types[i] && !isDouble) types[i] = false;
-                        i++;
-                    }
-                }
-
-                if (first)
-                    first = false;
-            }
-
-            // If the first row is all strings, but the data rows have numbers, it's probably a header
-            if (!hasHeader.HasValue && allStrings)
-            {
-                var dataAllStrings = !types.Any(x => x);
-                if (!dataAllStrings) hasHeader = true;
-            }
-            Trace.TraceInformation($"Header row analysis: \n\tFirst row all strings:{allStrings}\n\tData columns strings: {types.Count(x=>x)}/{types.Count}\n\rHeader row: {hasHeader}");
-
+            
             // Create SQL by string concat - look out for SQL injection! (although rather harmless since it's all your own data)
-            var createQuery = new StringBuilder("CREATE TABLE " + tableName + "(");
-            if (hasHeader ?? false)
+            var createQuery = new StringBuilder("CREATE TABLE [" + tableName + "] (");
+
+            bool first=true;
+            foreach (var column in columnTypes.ColumnNames)
             {
-                var colnames = new List<string>();
-                first = true;
-                int i = 0;
-                foreach (var colName in data[0])
-                {
-                    var columnNameClean = Regex.Replace(colName, @"[^\w_]", "");
-                    //if(Sqlite3.yy)
-                    if (string.IsNullOrEmpty(columnNameClean)) columnNameClean = "Col" + i;
-                    if (colnames.Contains(columnNameClean))
-                    {
-                        var c = 2;
-                        var fixedName = columnNameClean + c;
-                        while (colnames.Contains(fixedName))
-                            fixedName = columnNameClean + ++c;
-                        columnNameClean = fixedName;
-                    }
-                    if (first) first = false;
-                    else createQuery.Append(", ");
-                    colnames.Add(columnNameClean);
-                    createQuery.AppendFormat("[{0}] CHAR", columnNameClean);
-                    i++;
-                }
+                if (first) first = false;
+                else createQuery.Append(", ");
+                createQuery.AppendFormat("[{0}] CHAR", column);
             }
-            else
-            {
-                // Just create Col1, Col2, Col3 etc
-                first = true;
-                for (int index = 0; index < data[0].Length; index++)
-                {
-                    if (first) first = false;
-                    else createQuery.Append(", ");
-                    createQuery.AppendFormat("{0} CHAR", "Col" + index);
-                }
-            }
+           
             createQuery.Append(")");
-            Db.ExecuteNonQuery("BEGIN EXCLUSIVE");
-            Db.ExecuteNonQuery(createQuery.ToString());
-            Db.ExecuteNonQuery("END");
+            ExecuteNonQuery("BEGIN EXCLUSIVE");
+            ExecuteNonQuery(createQuery.ToString());
+            ExecuteNonQuery("END");
 
 
             var insertQuery = new StringBuilder("INSERT INTO ");
             insertQuery.Append(tableName);
             insertQuery.Append(" VALUES (?");
-            for (int i = 1; i < columns; i++)
+            for (int i = 1; i < columnTypes.Columns.Count; i++)
                 insertQuery.Append(",?");
             insertQuery.Append(")");
 
-            Db.ExecuteNonQuery("BEGIN EXCLUSIVE");
+            ExecuteNonQuery("BEGIN EXCLUSIVE");
             var stmt = new SQLiteVdbe(Db, insertQuery.ToString());
             first = true;
             foreach (var stringse in data)
@@ -143,7 +74,7 @@ namespace CsvQuery
                 if (first)
                 {
                     first = false;
-                    if(hasHeader ?? false)
+                    if(columnTypes.HasHeader)
                         continue;
                 }
                 stmt.Reset();
@@ -155,19 +86,20 @@ namespace CsvQuery
                 stmt.ExecuteStep();
             }
             stmt.Close();
-            Db.ExecuteNonQuery("END");
+            ExecuteNonQuery("END");
 
             return tableName;
         }
-
+        
         /// <summary>
         /// Executes the query. The first row in the results will be the column names
         /// </summary>
         /// <param name="query">SQL query to execute</param>
         /// <param name="includeColumnNames"> If true first row in results are the clumn names</param>
         /// <returns>Query results</returns>
-        protected override List<string[]> ExecuteQuery(string query, bool includeColumnNames)
+        public override List<string[]> ExecuteQuery(string query, bool includeColumnNames)
         {
+            Trace.TraceInformation($"SQLite ExecuteQuery '{query}'");
             var result = new List<string[]>();
             var c1 = new SQLiteVdbe(Db, query);
             int columns = 0;
@@ -198,7 +130,11 @@ namespace CsvQuery
 
         public override void ExecuteNonQuery(string query)
         {
+            Trace.TraceInformation($"SQLite ExecuteNonQuery '{query}'");
             Db.ExecuteNonQuery(query);
         }
+
+        public override string QueryDropTableIfExists => "DROP TABLE IF EXISTS [{0}]";
+        public override string QueryDropViewThisIfExists => "DROP VIEW IF EXISTS [this]";
     }
 }

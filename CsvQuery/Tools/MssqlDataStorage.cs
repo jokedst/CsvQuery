@@ -38,16 +38,13 @@ namespace CsvQuery
         {
             if (_currentActiveBufferId != bufferId && _createdTables.ContainsKey(bufferId))
             {
-                if (_currentActiveBufferId != default(IntPtr))
-                {
-                    ExecuteNonQuery("DROP VIEW this");
-                }
+                ExecuteNonQuery(QueryDropViewThisIfExists);
                 ExecuteNonQuery("CREATE VIEW this AS SELECT * FROM " + _createdTables[bufferId]);
                 _currentActiveBufferId = bufferId;
             }
         }
 
-        public string SaveData(IntPtr bufferId, List<string[]> data, bool? hasHeader)
+        public string SaveData(IntPtr bufferId, List<string[]> data, CsvColumnTypes columnTypes)
         {
             string tableName;
             if (_createdTables.ContainsKey(bufferId))
@@ -61,9 +58,22 @@ namespace CsvQuery
             }
             ExecuteNonQuery($"IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '{tableName}' AND TABLE_SCHEMA = 'dbo') DROP TABLE dbo.{tableName}");
 
-            var columnTypes = CsvAnalyzer.DetectColumnTypes(data, hasHeader);
+            //var columnTypes = CsvAnalyzer.DetectColumnTypes(data, hasHeader);
 
             // Create SQL by string concat - look out for SQL injection! (although rather harmless since it's all your own data)
+            //var createQuery = new StringBuilder("CREATE TABLE [" + tableName + "] (");
+
+            //bool first = true;
+            //foreach (var column in columnTypes.ColumnNames)
+            //{
+            //    if (first) first = false;
+            //    else createQuery.Append(", ");
+            //    createQuery.AppendFormat("[{0}] CHAR", column);
+            //}
+
+            //createQuery.Append(")");
+
+
             var createQuery = new StringBuilder("CREATE TABLE " + tableName + "(");
             var colnames = new List<string>();
             bool first = true;
@@ -152,12 +162,13 @@ namespace CsvQuery
             }
             return tableName;
         }
-
+        /*
         public List<string[]> ExecuteQuery(string query)
         {
             var result = new List<string[]>();
             using (var con = new SqlConnection(_connectionString))
             {
+                Trace.TraceInformation($"MSSQL ExecuteQuery '{query}'");
                 con.Open();
                 using (var command = new SqlCommand(query, con))
                 using (var reader = command.ExecuteReader())
@@ -175,18 +186,19 @@ namespace CsvQuery
                 }
             }
             return result;
-        }
+        }*/
 
-        public List<string[]> ExecuteQueryWithColumnNames(string query)
+        public List<string[]> ExecuteQuery(string query, bool includeColumnNames)
         {
             var result = new List<string[]>();
             using (var con = new SqlConnection(_connectionString))
             {
+                Trace.TraceInformation($"MSSQL ExecuteQueryWithColumnNames '{query}'");
                 con.Open();
                 using (var command = new SqlCommand(query, con))
                 using (var reader = command.ExecuteReader())
                 {
-                    bool first=true;
+                    bool first= includeColumnNames;
                     while (reader.Read())
                     {
                         var columns = reader.FieldCount;
@@ -204,7 +216,7 @@ namespace CsvQuery
                         var data = new List<string>();
                         for (int i = 0; i < columns; i++)
                         {
-                            data.Add(reader.GetString(i));
+                            data.Add(reader.IsDBNull(i) ? null : reader.GetString(i));
                         }
                         result.Add(data.ToArray());
                     }
@@ -220,6 +232,7 @@ namespace CsvQuery
                 con.Open();
                 using (var command = new SqlCommand(query, con))
                 {
+                    Trace.TraceInformation($"MSSQL ExecuteNonQuery '{query}'");
                     command.ExecuteNonQuery();
                 }
             }
@@ -230,5 +243,9 @@ namespace CsvQuery
             // Test connection
             ExecuteNonQuery("BEGIN tran;CREATE TABLE [bnfkwencvwrjk]([X] int NULL);ROLLBACK tran");
         }
+
+        public string QueryDropTableIfExists => "IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '{0}' AND TABLE_SCHEMA = 'dbo') DROP TABLE dbo.[{0}]";
+
+        public string QueryDropViewThisIfExists => "IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'this' AND TABLE_SCHEMA = 'dbo' AND TABLE_TYPE='VIEW') DROP VIEW dbo.this";
     }
 }

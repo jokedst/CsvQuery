@@ -15,10 +15,22 @@ namespace CsvQuery.Csv
     /// </summary>
     public class CsvSettings
     {
+        /// <summary> Shorthand reference to comma-separated CSV </summary>
+        public static readonly CsvSettings Comma = new CsvSettings(',');
+        /// <summary> Shorthand reference to semicolon-separated CSV </summary>
+        public static readonly CsvSettings Semicolon = new CsvSettings(';');
+
         public char Separator { get; set; }
         public char TextQualifier { get; set; } = '"';
         public char CommentCharacter { get; set; }
         public List<int> FieldWidths { get; set; }
+
+        public CsvSettings() {}
+
+        public CsvSettings(char separator)
+        {
+            this.Separator = separator;
+        }
 
         /// <summary>
         /// Parses a big text blob into rows and columns, using the settings
@@ -71,74 +83,8 @@ namespace CsvQuery.Csv
         /// Generates a CSV file from a <see cref="DataGridView"/>, using the settings
         /// </summary>
         /// <param name="dataGrid"> Grid containing data to create CSV from </param>
-        /// <returns> string in CSV format </returns>
-        public string Generate(DataGridView dataGrid)
-        {
-            var results = new StringBuilder();
-
-            var first = true;
-            foreach (DataGridViewColumn column in dataGrid.Columns)
-            {
-                if (first) first = false; else results.Append(Separator);
-                results.Append(Escape(column.HeaderText));
-            }
-            results.AppendLine();
-
-            foreach (DataGridViewRow row in dataGrid.Rows)
-            {
-                first = true;
-                foreach (DataGridViewCell cell in row.Cells)
-                {
-                    if (first) first = false; else results.Append(Separator);
-                    results.Append(Escape(cell.Value.ToString()));
-                }
-                results.AppendLine();
-            }
-
-            return results.ToString();
-        }
-
-        /// <summary>
-        /// Generates a CSV file from a <see cref="DataGridView"/>, using the settings
-        /// </summary>
-        /// <param name="dataGrid"> Grid containing data to create CSV from </param>
         /// <param name="output"> Stream to write (UTF8) to </param>
         /// <returns> string in CSV format </returns>
-        public void GenerateToStream(DataGridView dataGrid, Stream output)
-        {
-            if(!output.CanWrite)
-                throw new ArgumentException("Stream is not writeable", nameof(output));
-
-            using (var tw = new StreamWriter(output, Encoding.UTF8, 1024*8, true))
-            {
-                var first = true;
-                foreach (DataGridViewColumn column in dataGrid.Columns)
-                {
-                    if (first) first = false;
-                    else tw.Write(Separator);
-                    Escape(tw, column.HeaderText);
-                }
-                tw.WriteLine();
-                Trace.TraceInformation("CSV Generated header");
-
-                foreach (DataGridViewRow row in dataGrid.Rows)
-                {
-                    first = true;
-                    foreach (DataGridViewCell cell in row.Cells)
-                    {
-                        if (first) first = false;
-                        else tw.Write(Separator);
-
-                        var cellValue = cell.Value;
-                        Escape(tw, cellValue.ToString());
-                    }
-                    tw.WriteLine();
-                }
-            }
-            Trace.TraceInformation("CSV Generation done");
-        }
-
-
         public void GenerateToStream(DataTable dataTable, Stream output)
         {
             if (!output.CanWrite)
@@ -187,6 +133,11 @@ namespace CsvQuery.Csv
                    + TextQualifier;
         }
 
+        /// <summary>
+        /// Escapes a string if it contains the separator
+        /// </summary>
+        /// <param name="writer"><see cref="StreamWriter"/> text will be written to</param>
+        /// <param name="text"> Text to escape </param>
         protected void Escape(StreamWriter writer, string text)
         {
             if (text.IndexOf(Separator) == -1)
