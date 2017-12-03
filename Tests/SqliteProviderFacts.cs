@@ -62,6 +62,13 @@
 
     public abstract class DataStorageFacts : TestBaseClass
     {
+
+        [TestInitialize]
+        public void InitializeDataStorageFacts()
+        {
+            ((DataStorageBase) DataStorage).SetLastCreatedTableName(TestCount);
+        }
+
         public abstract IDataStorage DataStorage { get; }
 
         protected List<string[]> FourRowsThreeColumnsWithHeader = new List<string[]>
@@ -190,6 +197,31 @@
 
             Assert.AreEqual(5, result.Count);
             Assert.IsTrue(result.TrueForAll(x => x.Length == 4));
+        }
+
+        [TestMethod]
+        public void CanHandleNoHeaderDetectionWithDifferentRowLengths()
+        {
+            var data = new List<string[]>
+            {
+                new[] {"5", "7", "34"},
+                new[] {"1", "2", "3", "12.2"},
+                new[] {"2", "12", "14"},
+                new[] {"3", "12", "13"},
+                new[] {"4", "2", "3"}
+            };
+
+            var columnTypes = new CsvColumnTypes(data, null);
+            DataStorage.SaveData(new IntPtr(11), data, columnTypes);
+            DataStorage.SetActiveTab(new IntPtr(11));
+
+            var result = DataStorage.ExecuteQuery("SELECT * FROM this", true);
+
+            Assert.AreEqual(6, result.Count);
+            Assert.AreEqual(result[0][3], "Col4");
+            Assert.IsNull(result[1][3]);
+            Assert.IsNotNull(result[2][3]);
+            Assert.IsNull(result[3][3]);
         }
 
         [TestMethod]

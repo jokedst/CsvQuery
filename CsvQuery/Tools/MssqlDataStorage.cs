@@ -37,11 +37,54 @@ namespace CsvQuery
             // Create SQL by string concat - look out for SQL injection! (although rather harmless since it's all your own data)
             var createQuery = new StringBuilder("CREATE TABLE [" + tableName + "] (");
             bool first = true;
-            foreach (var column in columnTypes.ColumnNames)
+            foreach (var column in columnTypes.Columns)
             {
                 if (first) first = false;
                 else createQuery.Append(", ");
-                createQuery.AppendFormat("[{0}] NVARCHAR(MAX)", column);
+
+                if (Main.Settings.GuessDbColumnTypes)
+                {
+                    createQuery.Append('[').Append(column.Name).Append("] ");
+
+                    switch (column.DataType)
+                    {
+                        case ColumnType.Empty:
+                            createQuery.Append("bit");
+                            break;
+                        case ColumnType.Integer:
+                            if (column.MinInteger >= 0)
+                            {
+                                if (column.MaxInteger <= 1)
+                                {
+                                    createQuery.Append("bit");
+                                    break;
+                                }
+                                if (column.MaxInteger < 256)
+                                {
+                                    createQuery.Append("tinyint");
+                                    break;
+                                }
+                            }
+                            if (column.MinInteger >= -32768 && column.MaxInteger <= 32767)
+                                createQuery.Append("tinyint");
+                            else if (column.MinInteger >= -2147483648 && column.MaxInteger <= 2147483647)
+                                createQuery.Append("int");
+                            else
+                                createQuery.Append("bigint");
+                            break;
+                        case ColumnType.Decimal:
+                            createQuery.Append("float");
+                            break;
+                        case ColumnType.String:
+                            createQuery.Append("NVARCHAR(").Append(column.MaxSize).Append(")");
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
+                    createQuery.Append(column.Nullable ? " NULL" : " NOT NULL");
+                }
+                else
+                    createQuery.AppendFormat("[{0}] NVARCHAR(MAX)", column.Name);
             }
 
             createQuery.Append(")");
@@ -49,15 +92,15 @@ namespace CsvQuery
 
             // Convert to datatable
             var table = new DataTable();
-            table.Columns.AddRange(columnTypes.ColumnNames.Select(r => new DataColumn(r)).ToArray());
+            table.Columns.AddRange(columnTypes.Columns.Select(r => new DataColumn(r.Name)).ToArray());
             var datalist = columnTypes.HasHeader ? data.Skip(1) : data;
             int i = 0;
             foreach (var row in datalist)
             {
                 i++;
-                if (row.Length != columnTypes.ColumnNames.Count)
+                if (row.Length != columnTypes.Columns.Count)
                 {
-                    Trace.TraceInformation($"Row {i} has {row.Length} columns, but should have {columnTypes.ColumnNames.Count}");
+                    Trace.TraceInformation($"Row {i} has {row.Length} columns, but should have {columnTypes.Columns.Count}");
                 }
                 var objects = row.Cast<object>().ToArray();
                 table.Rows.Add(objects);
@@ -116,7 +159,8 @@ namespace CsvQuery
                         var data = new string[columns];
                         for (int i = 0; i < columns; i++)
                         {
-                            data[i] = reader.IsDBNull(i) ? null : reader.GetString(i);
+                            //data[i] = reader.IsDBNull(i) ? null : reader.GetString(i);
+                            data[i] = reader.IsDBNull(i) ? null : reader.GetValue(i).ToString();
                         }
                         result.Add(data);
                     }

@@ -11,7 +11,6 @@
     {
         public bool HasHeader { get; set; }
         public List<CsvColumnAnalyzer> Columns { get; set; }
-        public List<string> ColumnNames { get; }
 
         public CsvColumnTypes(List<string[]> data, bool? hasHeader)
         {
@@ -43,15 +42,21 @@
                 }
             }
 
+            // If some columns only got values sometimes, add empty to them to represent the other lines
+            var valuesAnalyzed = Columns[0].ValuesAnalyzed;
+            foreach (var column in Columns.Skip(1))
+            {
+                if(column.ValuesAnalyzed < valuesAnalyzed)
+                    column.Update(string.Empty);
+            } 
+
             // If the header has more columns than the data, create empty columns
-            if (headerTypes.Count > Columns.Count)
-                Columns.AddRange(Enumerable.Repeat(new CsvColumnAnalyzer(string.Empty),
-                    headerTypes.Count - Columns.Count));
+            while (headerTypes.Count > Columns.Count)
+                Columns.Add(new CsvColumnAnalyzer(string.Empty));
 
             // If the header has fewer columns than the data, add empty columns just for the header analysis
-            if (headerTypes.Count < Columns.Count)
-                headerTypes.AddRange(Enumerable.Repeat(new CsvColumnAnalyzer(string.Empty),
-                    Columns.Count - headerTypes.Count));
+            while (headerTypes.Count < Columns.Count)
+                headerTypes.Add(new CsvColumnAnalyzer(string.Empty));
 
             // If any column first row is significantly different from the rest of the rows, it has a header
             HasHeader = hasHeader ?? Columns.Zip(headerTypes, (row, header) => row.IsSignificantlyDifferent(header))
@@ -70,30 +75,33 @@
             // Generate column names
             if (HasHeader)
             {
-                ColumnNames=new List<string>();
-                var i = 1;
-                foreach (var headerType in headerTypes)
+                var usedNames = new List<string>();
+                for (var columnIndex = 0; columnIndex < headerTypes.Count; columnIndex++)
                 {
-
+                    var headerType = headerTypes[columnIndex];
                     var columnNameClean = Regex.Replace(headerType.CreationString, @"[^\w_]", "");
-                    //if(Sqlite3.yy)
-                    if (string.IsNullOrEmpty(columnNameClean)) columnNameClean = "Col" + i;
-                    if (ColumnNames.Contains(columnNameClean))
+
+                    if (string.IsNullOrEmpty(columnNameClean)) columnNameClean = $"Col{columnIndex + 1}";
+                    if (usedNames.Contains(columnNameClean))
                     {
                         var c = 2;
                         var fixedName = columnNameClean + c;
-                        while (ColumnNames.Contains(fixedName))
+                        while (usedNames.Contains(fixedName))
                             fixedName = columnNameClean + ++c;
                         columnNameClean = fixedName;
                     }
-                    ColumnNames.Add(columnNameClean);
-                    i++;
+                    usedNames.Add(columnNameClean);
+                    Columns[columnIndex].Name = columnNameClean;
                 }
             }
             else
             {
                 // Just create Col1, Col2, Col3 etc
-                ColumnNames = Enumerable.Range(1, Columns.Count).Select(i => "Col" + i).ToList();
+                var i = 1;
+                foreach (var column in Columns)
+                {
+                    column.Name = "Col" + i++;
+                }
             }
 
             if (rowLengths.Count > 1)

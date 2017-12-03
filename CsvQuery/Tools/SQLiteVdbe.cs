@@ -154,6 +154,7 @@ namespace Community.CsharpSqlite
             return Sqlite3.sqlite3_column_text(vm, index);
         }
 
+
         /// <summary>
         /// Returns Count of Result Rows
         /// </summary>

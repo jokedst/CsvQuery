@@ -42,11 +42,14 @@ namespace CsvQuery.Csv
         public ColumnType DataType;
         public DecimalTypes DecimalType = DecimalTypes.Any;
         public int MinSize;
+        public int MaxSize;
         public bool Nullable;
         public string Prefix;
-        public int Size;
         public string Suffix;
         public int ValuesAnalyzed = 1;
+        public long MinInteger;
+        public long MaxInteger;
+        public string Name { get; set; }
 #if HISTOGRAM
         public Dictionary<string, int> DistinctCounts;
 #elif COMMONONLY
@@ -75,7 +78,7 @@ namespace CsvQuery.Csv
                 Nullable = true;
                 return;
             }
-            MinSize = Size = csvText.Length;
+            MinSize = MaxSize = csvText.Length;
 
             // TryParse is the bottleneck in this code, so only use when necessary
             if (updatedType <= ColumnType.Integer && long.TryParse(csvText, out var iout))
@@ -83,7 +86,10 @@ namespace CsvQuery.Csv
                     || Main.Settings.MaxIntegerStringLength < csvText.Length)
                     DataType = ColumnType.String;
                 else
+                {
                     DataType = ColumnType.Integer;
+                    MinInteger = MaxInteger = iout;
+                }
             else if (updatedType<=ColumnType.Decimal && IsDecimal(csvText, updatedDecimalType))
                 DataType = ColumnType.Decimal;
             else
@@ -131,19 +137,27 @@ namespace CsvQuery.Csv
             var csvTypeNullable = string.IsNullOrEmpty(csvText);
             if (!csvTypeNullable)
             {
-                if (DataType <= ColumnType.Integer && long.TryParse(csvText, out _))
+                if (DataType <= ColumnType.Integer && long.TryParse(csvText, out var iout))
                     if (!Main.Settings.ConvertInitialZerosToNumber && csvText.StartsWith("0") && csvText.Length > 1
                         || Main.Settings.MaxIntegerStringLength < csvText.Length)
                         DataType = ColumnType.String;
+                    else if (DataType == ColumnType.Integer)
+                    {
+                        MinInteger = Math.Min(MinInteger, iout);
+                        MaxInteger = Math.Max(MaxInteger, iout);
+                    }
                     else
+                    {
+                        MinInteger = MaxInteger = iout;
                         DataType = ColumnType.Integer;
+                    }
                 else if (DataType <= ColumnType.Decimal && IsDecimal(csvText, DecimalType))
                     DataType = ColumnType.Decimal;
                 else
                     DataType = ColumnType.String;
             }
             
-            Size = Math.Max(Size, csvText.Length);
+            MaxSize = Math.Max(MaxSize, csvText.Length);
             MinSize = Math.Min(MinSize, csvText.Length);
             Nullable = Nullable || csvTypeNullable;
 
@@ -181,7 +195,7 @@ namespace CsvQuery.Csv
         public void Update(CsvColumnAnalyzer csvType)
         {
             DataType = csvType.DataType > DataType ? csvType.DataType : DataType;
-            Size = Math.Max(Size, csvType.Size);
+            MaxSize = Math.Max(MaxSize, csvType.MaxSize);
             MinSize = Math.Min(MinSize, csvType.MinSize);
             Nullable = Nullable || csvType.Nullable;
 
@@ -191,7 +205,11 @@ namespace CsvQuery.Csv
             DecimalType &= csvType.DecimalType;
             if (DataType == ColumnType.Decimal && DecimalType == DecimalTypes.None)
                 DataType = ColumnType.String;
-
+            if (DataType == ColumnType.Integer && csvType.DataType == ColumnType.Integer)
+            {
+                if (csvType.MaxInteger > MaxInteger) MaxInteger = csvType.MaxInteger;
+                if (csvType.MinInteger < MinInteger) MinInteger = csvType.MinInteger;
+            }
 #if HISTOGRAM
             DistinctCounts = DistinctCounts ?? new Dictionary<string, int>(10) {{CreationString, 1}};
             if (csvType.DistinctCounts != null)
@@ -226,7 +244,7 @@ namespace CsvQuery.Csv
 
         public override string ToString()
         {
-            var ret = $"{DataType}({Size})";
+            var ret = $"{DataType}({MaxSize})";
             if (IsSingleValue)
                 return $"{ret} '{CreationString}'";
 
@@ -268,10 +286,10 @@ namespace CsvQuery.Csv
             if (!_tooManyStrings && ValuesAnalyzed > 30 && !_commonStrings.Contains(head._commonStrings[0]))
                 return true;
 #endif
-            if (Size < 10 && head.Size > 20)
+            if (MaxSize < 10 && head.MaxSize > 20)
                 return true;
 
-            if (MinSize > 20 && head.Size < 10)
+            if (MinSize > 20 && head.MaxSize < 10)
                 return true;
 
             return false;

@@ -9,6 +9,7 @@ namespace CsvQuery
     using System.Text.RegularExpressions;
     using Community.CsharpSqlite;
     using Csv;
+    using Tools;
 
     public class SQLiteDataStorage : DataStorageBase
     {
@@ -46,23 +47,45 @@ namespace CsvQuery
             var createQuery = new StringBuilder("CREATE TABLE [" + tableName + "] (");
 
             bool first=true;
-            foreach (var column in columnTypes.ColumnNames)
+            foreach (var column in columnTypes.Columns)
             {
                 if (first) first = false;
                 else createQuery.Append(", ");
-                createQuery.AppendFormat("[{0}] CHAR", column);
+
+                if (Main.Settings.GuessDbColumnTypes)
+                {
+                    createQuery.Append('[').Append(column.Name).Append("] ");
+                    switch (column.DataType)
+                    {
+                        case ColumnType.Empty:
+                            createQuery.Append(" CHAR");
+                            break;
+                        case ColumnType.Integer:
+                            createQuery.Append(" INT");
+                            break;
+                        case ColumnType.Decimal:
+                            createQuery.Append(" FLOAT");
+                            break;
+                        case ColumnType.String:
+                            createQuery.Append(" CHAR");
+                            break;
+                    }
+                    createQuery.Append(column.Nullable ? " NULL" : " NOT NULL");
+                }
+                else
+                    createQuery.AppendFormat("[{0}] CHAR", column.Name);
             }
-           
+
             createQuery.Append(")");
             ExecuteNonQuery("BEGIN EXCLUSIVE");
             ExecuteNonQuery(createQuery.ToString());
             ExecuteNonQuery("END");
 
-
+            var columns = columnTypes.Columns.Count;
             var insertQuery = new StringBuilder("INSERT INTO ");
             insertQuery.Append(tableName);
             insertQuery.Append(" VALUES (?");
-            for (int i = 1; i < columnTypes.Columns.Count; i++)
+            for (int i = 1; i < columns; i++)
                 insertQuery.Append(",?");
             insertQuery.Append(")");
 
@@ -81,8 +104,10 @@ namespace CsvQuery
                 int index = 0;
                 foreach (var s in stringse)
                 {
-                    stmt.BindText(++index,s);
+                    stmt.BindText(++index, s);
                 }
+                while (index < columns)
+                    stmt.BindText(++index, null);
                 stmt.ExecuteStep();
             }
             stmt.Close();
@@ -90,7 +115,7 @@ namespace CsvQuery
 
             return tableName;
         }
-        
+
         /// <summary>
         /// Executes the query. The first row in the results will be the column names
         /// </summary>
@@ -106,12 +131,12 @@ namespace CsvQuery
             while (c1.ExecuteStep() == Sqlite3.SQLITE_ROW)
             {
                 columns = c1.ResultColumnCount();
-                var data = new List<string>();
+                var data = new string[columns];
                 for (int i = 0; i < columns; i++)
                 {
-                    data.Add(c1.Result_Text(i));
+                    data[i] = c1.Result_Text(i);
                 }
-                result.Add(data.ToArray());
+                result.Add(data);
             }
 
             if (includeColumnNames)

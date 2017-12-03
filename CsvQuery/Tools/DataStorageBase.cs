@@ -59,5 +59,10 @@ namespace CsvQuery
             ExecuteNonQuery(string.Format(QueryDropTableIfExists, tableName));
             return tableName;
         }
+
+        public void SetLastCreatedTableName(int tableNumber)
+        {
+            _lastCreatedTableName = tableNumber;
+        }
     }
 }

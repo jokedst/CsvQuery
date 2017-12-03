@@ -6,6 +6,14 @@
 
     public abstract class TestBaseClass
     {
+        protected static int TestCount = 0;
+
+        [TestInitialize]
+        public void InitializeTestBase()
+        {
+            TestCount++;
+        }
+
         public void AssertDataEqual(IList<string[]> expected, IList<string[]> actual)
         {
             Assert.AreEqual(expected.Count, actual.Count, "Not same number of rows");

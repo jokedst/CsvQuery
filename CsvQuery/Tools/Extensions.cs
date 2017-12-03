@@ -150,5 +150,13 @@
             //if (suffix != null) values = values.Append(suffix);
             //return string.Join(separator, values);
         }
+
+        public static void AppendMany(this StringBuilder sb, params string[] strings)
+        {
+            foreach (var s in strings)
+            {
+                sb.Append(s);
+            }
+        }
     }
 }
