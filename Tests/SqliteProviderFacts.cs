@@ -1,5 +1,6 @@
 ﻿namespace Tests
 {
+    using System.Diagnostics;
     using Community.CsharpSqlite;
     using CsvQuery;
     using CsvQuery.Database;
@@ -40,5 +41,18 @@
             // This should throw an SQliteException
             DataStorage.ExecuteQuery("cp", true);
         }
+    }
+
+    [TestClass]
+    public class SqliteWithTypesProviderFacts : DataStorageFacts
+    {
+        [TestInitialize]
+        public void ActivateTypes()
+        {
+            Main.Settings.DetectDbColumnTypes = true;
+            Trace.TraceInformation("Activated type system");
+        }
+
+        public override IDataStorage DataStorage { get; } = new SQLiteDataStorage();
     }
 }
