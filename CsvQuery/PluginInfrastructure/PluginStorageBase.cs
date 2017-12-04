@@ -1,20 +1,16 @@
-﻿namespace CsvQuery.Tools
+﻿namespace CsvQuery.PluginInfrastructure
 {
     using System.IO;
     using System.Text;
-    using PluginInfrastructure;
 
     /// <summary>
-    /// Helper for accessing the plugin-specific directory
+    /// Base class for managing plugin files
     /// </summary>
-    internal class PluginStorage
+    public class PluginStorageBase
     {
-        /// <summary> Storage location for query cache </summary>
-        public static string QueryCachePath => GetFullPath("querycache.txt");
-
         protected static string StorageDirPath;
 
-        static PluginStorage()
+        static PluginStorageBase()
         {
             var sbIniFilePath = new StringBuilder(Win32.MAX_PATH);
             Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_GETPLUGINSCONFIGDIR, Win32.MAX_PATH, sbIniFilePath);

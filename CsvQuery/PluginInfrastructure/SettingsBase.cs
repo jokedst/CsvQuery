@@ -1,4 +1,4 @@
-namespace CsvQuery.Tools
+namespace CsvQuery.PluginInfrastructure
 {
     using System;
     using System.Collections.Generic;
@@ -8,7 +8,7 @@ namespace CsvQuery.Tools
     using System.Linq;
     using System.Text;
     using System.Windows.Forms;
-    using PluginInfrastructure;
+    using Tools;
 
     public class SettingsBase
     {

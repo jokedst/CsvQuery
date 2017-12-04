@@ -4,6 +4,7 @@ using System.Reflection;
 
 namespace Tests
 {
+    using System.Globalization;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
@@ -28,5 +29,27 @@ namespace Tests
         //    var gitVersion = gitVersionInformationType.GetField("SemVer").GetValue(null);
         //    Assert.AreEqual(gitVersion, $"{dllVersion.Major}.{dllVersion.Minor}.{dllVersion.Revision}");
         //}
+
+        [TestMethod]
+        public void IUnderstandDecimalParsing()
+        {
+            bool ok;
+            decimal decimalResult;
+            double doubleResult;
+
+            ok = decimal.TryParse("12,34", NumberStyles.Any, NumberFormatInfo.InvariantInfo, out decimalResult);
+            Console.WriteLine($"ok={ok}, res={decimalResult}");
+            ok = decimal.TryParse("12,34", NumberStyles.AllowDecimalPoint, NumberFormatInfo.InvariantInfo, out decimalResult);
+            Console.WriteLine($"ok={ok}, res={decimalResult}");
+            ok = decimal.TryParse("12,34", NumberStyles.Number, NumberFormatInfo.InvariantInfo, out decimalResult);
+            Console.WriteLine($"ok={ok}, res={decimalResult}");
+            ok = decimal.TryParse("12,34", NumberStyles.Integer, NumberFormatInfo.InvariantInfo, out decimalResult);
+            Console.WriteLine($"ok={ok}, res={decimalResult}");
+            ok = decimal.TryParse("12,34", NumberStyles.Integer|NumberStyles.AllowDecimalPoint | NumberStyles.AllowTrailingSign, NumberFormatInfo.InvariantInfo, out decimalResult);
+            Console.WriteLine($"ok={ok}, res={decimalResult}");
+            ok = decimal.TryParse("12,34", out decimalResult);
+            Console.WriteLine($"ok={ok}, res={decimalResult}");
+            
+        }
     }
 }

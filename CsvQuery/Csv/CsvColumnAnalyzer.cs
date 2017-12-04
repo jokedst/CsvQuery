@@ -30,6 +30,12 @@ namespace CsvQuery.Csv
             CurrencyDecimalSeparator = ",",
             CurrencyGroupSeparator = " "
         };
+        private static readonly NumberFormatInfo DotDecimal = new NumberFormatInfo
+        {
+            NumberGroupSeparator = " ",
+            PercentGroupSeparator = " ",
+            CurrencyGroupSeparator = " "
+        };
 #if COMMONONLY
         public string CreationString
         {
@@ -58,6 +64,7 @@ namespace CsvQuery.Csv
 #else
         public bool IsSingleValue = true;
 #endif
+        private static NumberStyles _numberStyles = NumberStyles.Number;
 
         /// <summary>
         ///     Detect data type from string
@@ -108,23 +115,47 @@ namespace CsvQuery.Csv
         private bool IsDecimal(string text, DecimalTypes updatedDecimalType)
         {
             // Try invariant, comma and user local settings
-            if (updatedDecimalType.HasFlag( DecimalTypes.Invariant) && decimal.TryParse(text, NumberStyles.Any, NumberFormatInfo.InvariantInfo, out _))
+            if (updatedDecimalType.HasFlag( DecimalTypes.Invariant) && decimal.TryParse(text, _numberStyles, DotDecimal, out _))
             {
                 DecimalType = DecimalTypes.Invariant;
                 return true;
             }
-            if (updatedDecimalType.HasFlag(DecimalTypes.Comma) && decimal.TryParse(text, NumberStyles.Any, CommaDecimal, out _))
+            if (updatedDecimalType.HasFlag(DecimalTypes.Comma) && decimal.TryParse(text, _numberStyles, CommaDecimal, out _))
             {
                 DecimalType = DecimalTypes.Comma;
                 return true;
             }
-            if (updatedDecimalType.HasFlag(DecimalTypes.Local) && decimal.TryParse(text, NumberStyles.Any, NumberFormatInfo.CurrentInfo,
+            if (updatedDecimalType.HasFlag(DecimalTypes.Local) && decimal.TryParse(text, _numberStyles | NumberStyles.AllowCurrencySymbol, NumberFormatInfo.CurrentInfo,
                 out _))
             {
                 DecimalType = DecimalTypes.Local;
                 return true;
             }
             return false;
+        }
+
+        /// <summary>
+        /// Converts a string to a native type representing this column type.
+        /// ONLY if DetectDbColumnTypes is activated, otherwise returns the input.
+        /// </summary>
+        /// <param name="input"> String containing data of this column's type </param>
+        /// <returns></returns>
+        public object Parse(string input)
+        {
+            if (!Main.Settings.DetectDbColumnTypes)
+                return input;
+            if (string.IsNullOrEmpty(input))
+                return null;
+            if (DataType == ColumnType.Decimal)
+            {
+                if (DecimalType.HasFlag(DecimalTypes.Invariant))
+                    return decimal.Parse(input, _numberStyles, DotDecimal);
+                if (DecimalType.HasFlag(DecimalTypes.Comma))
+                    return decimal.Parse(input, _numberStyles, CommaDecimal);
+                if (DecimalType.HasFlag(DecimalTypes.Local))
+                    return decimal.Parse(input, _numberStyles | NumberStyles.AllowCurrencySymbol, NumberFormatInfo.CurrentInfo);
+            }
+            return input;
         }
 
         /// <summary>

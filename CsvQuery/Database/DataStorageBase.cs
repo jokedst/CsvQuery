@@ -1,4 +1,4 @@
-namespace CsvQuery
+namespace CsvQuery.Database
 {
     using System;
     using System.Collections.Generic;
@@ -6,26 +6,9 @@ namespace CsvQuery
 
     public abstract class DataStorageBase : IDataStorage
     {
-        protected readonly Dictionary<IntPtr, string> _createdTables = new Dictionary<IntPtr, string>();
-        protected IntPtr _currentActiveBufferId;
-        protected int _lastCreatedTableName;
-
-        public void SetActiveTab(IntPtr bufferId)
-        {
-            if (_currentActiveBufferId != bufferId && _createdTables.ContainsKey(bufferId))
-            {
-                ExecuteNonQuery(QueryDropViewThisIfExists);
-                ExecuteNonQuery(string.Format(QueryCreateViewThisForTable,_createdTables[bufferId]));
-                _currentActiveBufferId = bufferId;
-            }
-        }
-
-        public abstract string SaveData(IntPtr bufferId, List<string[]> data, CsvColumnTypes columnTypes);
-        public abstract void ExecuteNonQuery(string query);
-        public virtual void TestConnection()
-        {
-            ExecuteNonQuery("SELECT 2*3");
-        }
+        protected readonly Dictionary<IntPtr, string> CreatedTables = new Dictionary<IntPtr, string>();
+        protected IntPtr CurrentActiveBufferId;
+        protected int LastCreatedTableName;
 
         /// <summary>
         /// Query to drop a table safely, i.e. if it doesn't exist no error should occur. Table name is inserted in parameter '{0}'
@@ -42,19 +25,37 @@ namespace CsvQuery
         /// </summary>
         public virtual string QueryCreateViewThisForTable => "CREATE VIEW this AS SELECT * FROM [{0}]";
 
+        public void SetActiveTab(IntPtr bufferId)
+        {
+            if (CurrentActiveBufferId != bufferId && CreatedTables.ContainsKey(bufferId))
+            {
+                ExecuteNonQuery(QueryDropViewThisIfExists);
+                ExecuteNonQuery(string.Format(QueryCreateViewThisForTable, CreatedTables[bufferId]));
+                CurrentActiveBufferId = bufferId;
+            }
+        }
+
+        public abstract string SaveData(IntPtr bufferId, List<string[]> data, CsvColumnTypes columnTypes);
+        public abstract void ExecuteNonQuery(string query);
+
+        public virtual void TestConnection()
+        {
+            ExecuteNonQuery("SELECT 2*3");
+        }
+
         public abstract List<string[]> ExecuteQuery(string query, bool includeColumnNames);
 
         protected string GetOrAllocateTableName(IntPtr bufferId)
         {
             string tableName;
-            if (_createdTables.ContainsKey(bufferId))
+            if (CreatedTables.ContainsKey(bufferId))
             {
-                tableName = _createdTables[bufferId];
+                tableName = CreatedTables[bufferId];
             }
             else
             {
-                tableName = "T" + ++_lastCreatedTableName;
-                _createdTables.Add(bufferId, tableName);
+                tableName = "T" + ++LastCreatedTableName;
+                CreatedTables.Add(bufferId, tableName);
             }
             ExecuteNonQuery(string.Format(QueryDropTableIfExists, tableName));
             return tableName;
@@ -62,7 +63,7 @@ namespace CsvQuery
 
         public void SetLastCreatedTableName(int tableNumber)
         {
-            _lastCreatedTableName = tableNumber;
+            LastCreatedTableName = tableNumber;
         }
     }
 }

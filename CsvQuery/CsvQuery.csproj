@@ -171,15 +171,15 @@
       <DependentUpon>ParseSettings.cs</DependentUpon>
     </Compile>
     <Compile Include="PluginInfrastructure\NppEventType.cs" />
+    <Compile Include="PluginInfrastructure\PluginStorageBase.cs" />
     <Compile Include="Tools\BlockingStream.cs" />
-    <Compile Include="Tools\DataStorageBase.cs" />
-    <Compile Include="Tools\dfd.cs" />
+    <Compile Include="Database\DataStorageBase.cs" />
     <Compile Include="Tools\Extensions.cs" />
-    <Compile Include="Tools\MssqlDataStorage.cs" />
+    <Compile Include="Database\MssqlDataStorage.cs" />
     <Compile Include="Tools\ReadTwiceStream.cs" />
-    <Compile Include="Tools\SettingsBase.cs" />
+    <Compile Include="PluginInfrastructure\SettingsBase.cs" />
     <Compile Include="Tools\SettingsChangedEventArgs.cs" />
-    <Compile Include="Tools\SQLiteDataStorage.cs" />
+    <Compile Include="Database\SQLiteDataStorage.cs" />
     <Compile Include="PluginInfrastructure\ClikeStringArray.cs" />
     <Compile Include="PluginInfrastructure\DllExport\DllExportAttribute.cs" />
     <Compile Include="Forms\QueryWindow.cs">
@@ -210,9 +210,9 @@
     </Compile>
     <Compile Include="PluginInfrastructure\UnmanagedExports.cs" />
     <Compile Include="Tools\DiagnosticTimer.cs" />
-    <Compile Include="Tools\IDataStorage.cs" />
-    <Compile Include="Tools\PluginStorage.cs" />
-    <Compile Include="Tools\Settings.cs" />
+    <Compile Include="Database\IDataStorage.cs" />
+    <Compile Include="PluginStorage.cs" />
+    <Compile Include="Settings.cs" />
     <Compile Include="Tools\SQLiteDatabase.cs" />
     <Compile Include="Tools\SQLiteVdbe.cs" />
   </ItemGroup>

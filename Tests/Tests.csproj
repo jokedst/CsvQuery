@@ -83,6 +83,8 @@
   <ItemGroup>
     <Compile Include="CsvColumnTypesFacts.cs" />
     <Compile Include="CsvSettingsFacts.cs" />
+    <Compile Include="DataStorageFacts.cs" />
+    <Compile Include="MssqlDataStorageFacts.cs" />
     <Compile Include="SqliteProviderFacts.cs" />
     <Compile Include="ExtensionsFacts.cs" />
     <Compile Include="Helpers.cs" />

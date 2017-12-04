@@ -35,5 +35,17 @@
             var result = CsvAnalyzer.Analyze(csvData);
             Assert.AreEqual(',', result.Separator);
         }
+
+        [TestMethod]
+        public void CanDetectFixedWidth()
+        {
+            var csvData = "header1  header2  header2  and4\n"
+                        + "data1    123      12.34    qwfw\n"
+                        + "more 00  23       2.34     frfrsd\n"
+                        + "data3    111      11.34    vrvvv fvf\n";
+            var result = CsvAnalyzer.Analyze(csvData);
+            Assert.IsNotNull(result.FieldWidths);
+            Assert.AreEqual(4, result.FieldWidths.Count);
+        }
     }
 }

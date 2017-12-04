@@ -1,15 +1,11 @@
-﻿using System.Diagnostics;
-
-namespace CsvQuery
+﻿namespace CsvQuery.Database
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
+    using System.Diagnostics;
     using System.Text;
-    using System.Text.RegularExpressions;
     using Community.CsharpSqlite;
     using Csv;
-    using Tools;
 
     public class SQLiteDataStorage : DataStorageBase
     {
@@ -52,7 +48,7 @@ namespace CsvQuery
                 if (first) first = false;
                 else createQuery.Append(", ");
 
-                if (Main.Settings.GuessDbColumnTypes)
+                if (Main.Settings.DetectDbColumnTypes)
                 {
                     createQuery.Append('[').Append(column.Name).Append("] ");
                     switch (column.DataType)

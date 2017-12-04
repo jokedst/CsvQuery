@@ -1,17 +1,15 @@
-﻿namespace CsvQuery.Tools
+﻿namespace CsvQuery
 {
-    using System.Collections.ObjectModel;
     using System.ComponentModel;
-    using System.Reflection;
-    using Forms;
+    using Database;
+    using PluginInfrastructure;
+    using Tools;
 
     /// <summary>
     /// Manages application settings
     /// </summary>
     public class Settings : SettingsBase
     {
-        private bool _useNppStyling;
-
         [Description("In debugmode extra diagnostics are output"), Category("General"), DefaultValue(false)]
         public bool DebugMode { get; set; }
 
@@ -34,7 +32,7 @@
         public string Database { get; set; }
 
         [Description("If true guesses the column types when creating database table"), Category("SQL"), DefaultValue(false)]
-        public bool GuessDbColumnTypes { get; set; }
+        public bool DetectDbColumnTypes { get; set; }
 
         [Description("If true converts strings starting with zeroes (e.g. 0014) to numbers"), Category("General"), DefaultValue(false)]
         public bool ConvertInitialZerosToNumber { get; set; }

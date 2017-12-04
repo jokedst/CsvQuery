@@ -64,6 +64,15 @@
         }
 
         [TestMethod]
+        public void CanDetectDecimalWithZeros()
+        {
+            Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo("sv-se");
+            var result = new CsvColumnAnalyzer("1,000");
+
+            Assert.IsTrue(result.DataType == ColumnType.Decimal);
+        }
+
+        [TestMethod]
         public void PerformanceTest()
         {
             var timer = new DiagnosticTimer();

@@ -1,6 +1,7 @@
 ﻿namespace Tests
 {
     using CsvQuery;
+    using CsvQuery.Database;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]

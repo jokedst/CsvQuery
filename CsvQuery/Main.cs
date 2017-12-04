@@ -14,9 +14,10 @@ namespace CsvQuery
     using CsvQuery.PluginInfrastructure;
     using CsvQuery.Forms;
     using CsvQuery.Tools;
+    using Database;
     using Properties;
 
-    internal class Main
+    public class Main
     {
         public const string PluginName = "CsvQuery";
         public static Settings Settings = new Settings();
