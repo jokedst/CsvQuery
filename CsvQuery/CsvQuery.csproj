@@ -164,6 +164,7 @@
     <Compile Include="Csv\CsvColumnAnalyzer.cs" />
     <Compile Include="Csv\CsvColumnTypes.cs" />
     <Compile Include="Csv\CsvSettings.cs" />
+    <Compile Include="Csv\W3CSettings.cs" />
     <Compile Include="Forms\ParseSettings.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -180,7 +181,6 @@
     <Compile Include="PluginInfrastructure\SettingsBase.cs" />
     <Compile Include="Tools\SettingsChangedEventArgs.cs" />
     <Compile Include="Database\SQLiteDataStorage.cs" />
-    <Compile Include="PluginInfrastructure\ClikeStringArray.cs" />
     <Compile Include="PluginInfrastructure\DllExport\DllExportAttribute.cs" />
     <Compile Include="Forms\QueryWindow.cs">
       <SubType>Form</SubType>

@@ -86,7 +86,8 @@ namespace CsvQuery.Database
                 }
                 else
                 {
-                    createQuery.AppendFormat("[{0}] NVARCHAR(MAX)", column.Name);
+                    var stringSize = Math.Max(1, column.MaxSize);
+                    createQuery.AppendFormat("[{0}] NVARCHAR({1})", column.Name, stringSize>2000?"MAX":stringSize.ToString());
                 }
             }
 

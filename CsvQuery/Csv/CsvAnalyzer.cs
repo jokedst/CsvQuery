@@ -2,9 +2,11 @@
 
 namespace CsvQuery.Csv
 {
+    using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using System.Text.RegularExpressions;
     using Tools;
 
     public class CsvAnalyzer
@@ -26,6 +28,10 @@ namespace CsvQuery.Csv
             // Not sure how to detect this, but we could just run the variance analysis
             // 3 times, one for none, one for ' and one for " and see which has best variances
             // That wouldn't detect escape chars though, or odd variants like [this]
+
+            var result = DetectW3C(csvString);
+            if (result != null)
+                return result;
 
             // First do a letter frequency analysis on each row
             var s = new StringReader(csvString);
@@ -78,7 +84,7 @@ namespace CsvQuery.Csv
             }
 
             // The char with lowest variance is most likely the separator
-            var result = new CsvSettings {Separator = GetSeparatorFromVariance(variances, occurrences, lineCount)};
+            result = new CsvSettings {Separator = GetSeparatorFromVariance(variances, occurrences, lineCount)};
             if (result.Separator != default(char)) return result;
             
             // Failed to detect separator. Could it be a fixed-width file?
@@ -100,6 +106,45 @@ namespace CsvQuery.Csv
             foundfieldWidths.Add(-1); // Last column gets "the rest"
             result.FieldWidths = foundfieldWidths;
             return result;
+        }
+
+        private static CsvSettings DetectW3C(string csvString)
+        {
+            if (!csvString.StartsWith("#")) return null;
+            var header = new Regex(@"^#([^:]*):\s*(.*)$");
+            using (var s = new StringReader(csvString))
+            {
+                var headers = new Dictionary<string,string>(StringComparer.InvariantCultureIgnoreCase);
+                string line;
+                while ((line = s.ReadLine()) != null)
+                {
+                    var headerMatch = header.Match(line);
+                    if (!headerMatch.Success) break;
+                    headers.Add(headerMatch.Groups[1].Value, headerMatch.Groups[2].Value);
+                }
+                if (!headers.ContainsKey("Version") || !headers.ContainsKey("Fields") || line==null)
+                    return null;
+
+                // Ok, fairly sure this is a w3c log... Check separator
+                var result = new W3CSettings {FieldNames = Regex.Split(headers["Fields"], @"\s")};
+                int spaces = 0, tabs = 0, runs = 0;
+                var lastCharWhite = true;
+                for (int i = 0; i < line.Length; i++)
+                {
+                    var white = line[i] == ' ' || line[i] == '\t';
+                    if (white && !lastCharWhite) runs++;
+                    lastCharWhite = white;
+                    if (line[i] == ' ') spaces++;
+                    if (line[i] == '\t') tabs++;
+                }
+                if (tabs == result.FieldNames.Length - 1) result.Separator = '\t';
+                else  if (spaces == result.FieldNames.Length - 1) result.Separator = ' ';
+                else if(tabs>spaces && tabs< result.FieldNames.Length) result.Separator = '\t';
+                else if (spaces < result.FieldNames.Length && spaces > 1) result.Separator = ' ';
+                else return null;
+
+                return result;
+            }
         }
 
         private static Dictionary<char, Stat> CalcVariances(string csvString, char textQualifyer, char escapeChar)
@@ -186,11 +231,6 @@ namespace CsvQuery.Csv
             
             // Ok, I have no idea
             return '\0';
-        }
-
-        public static CsvColumnTypes DetectColumnTypes(List<string[]> data, bool? hasHeader)
-        {
-            return new CsvColumnTypes(data, hasHeader);
         }
     }
 }

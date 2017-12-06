@@ -12,108 +12,131 @@
         public bool HasHeader { get; set; }
         public List<CsvColumnAnalyzer> Columns { get; set; }
 
-        public CsvColumnTypes(List<string[]> data, bool? hasHeader)
+        public CsvColumnTypes(List<string[]> data, CsvSettings csvSettings)
         {
             if(data==null || data.Count==0)
                 throw new ArgumentException("No data to analyze", nameof(data));
-            
-            var rowLengths = new Dictionary<int, int>();
+
+            if(csvSettings==null)
+                csvSettings=new CsvSettings();
 
             var headerTypes = data[0].Select(column => new CsvColumnAnalyzer(column)).ToList();
             IEnumerable<string[]> toAnalyze = data;
 
-            if (hasHeader == false) Columns = headerTypes;
+            if (csvSettings.HasHeader == false)
+                this.Columns = headerTypes;
             else
             {
-                Columns = new List<CsvColumnAnalyzer>();
+                this.Columns = new List<CsvColumnAnalyzer>();
                 toAnalyze = data.Skip(1);
             }
 
             foreach (var cols in toAnalyze)
             {
-                rowLengths.Increase(cols.Length);
-
                 // Save to Columns
                 for (int i = 0; i < cols.Length; i++)
                 {
                     var columnText = cols[i];
-                    if (Columns.Count <= i) Columns.Add(new CsvColumnAnalyzer(columnText));
-                    else Columns[i].Update(columnText);
+                    if (this.Columns.Count <= i)
+                        this.Columns.Add(new CsvColumnAnalyzer(columnText));
+                    else this.Columns[i].Update(columnText);
                 }
             }
 
             // If some columns only got values sometimes, add empty to them to represent the other lines
-            var valuesAnalyzed = Columns[0].ValuesAnalyzed;
-            foreach (var column in Columns.Skip(1))
+            var valuesAnalyzed = this.Columns[0].ValuesAnalyzed;
+            foreach (var column in this.Columns.Skip(1))
             {
                 if(column.ValuesAnalyzed < valuesAnalyzed)
                     column.Update(string.Empty);
             } 
 
             // If the header has more columns than the data, create empty columns
-            while (headerTypes.Count > Columns.Count)
-                Columns.Add(new CsvColumnAnalyzer(string.Empty));
+            while (headerTypes.Count > this.Columns.Count)
+                this.Columns.Add(new CsvColumnAnalyzer(string.Empty));
 
             // If the header has fewer columns than the data, add empty columns just for the header analysis
-            while (headerTypes.Count < Columns.Count)
+            while (headerTypes.Count < this.Columns.Count)
                 headerTypes.Add(new CsvColumnAnalyzer(string.Empty));
 
             // If any column first row is significantly different from the rest of the rows, it has a header
-            HasHeader = hasHeader ?? Columns.Zip(headerTypes, (row, header) => row.IsSignificantlyDifferent(header))
+            this.HasHeader = csvSettings.HasHeader ?? this.Columns.Zip(headerTypes, (row, header) => row.IsSignificantlyDifferent(header))
                             .Any(x => x);
             
-            if (!hasHeader.HasValue && HasHeader == false)
+            if (!csvSettings.HasHeader.HasValue && this.HasHeader == false)
             {
                 // We _detected_ that the file has no headers, so the headerTypes needs to be merged into the other types
                 for (int c = 0; c < headerTypes.Count; c++)
                 {
-                    if (Columns.Count <= c) Columns.Add(headerTypes[c]);
-                    else Columns[c].Update(headerTypes[c]);
+                    if (this.Columns.Count <= c) this.Columns.Add(headerTypes[c]);
+                    else this.Columns[c].Update(headerTypes[c]);
                 }
             }
 
             // Generate column names
-            if (HasHeader)
+            var usedNames = new List<string>();
+            var namedColumns = csvSettings.FieldNames?.Length ?? 0;
+            for (var z = 0; z < headerTypes.Count; z++)
             {
-                var usedNames = new List<string>();
-                for (var columnIndex = 0; columnIndex < headerTypes.Count; columnIndex++)
+                var unsafeName = namedColumns > z
+                    ? csvSettings.FieldNames[z]
+                    : HasHeader
+                        ? headerTypes[z].CreationString
+                        : null;
+                if(!string.IsNullOrWhiteSpace(unsafeName))
+                    unsafeName = Regex.Replace(unsafeName, @"[^\w_]", "");
+                if (string.IsNullOrWhiteSpace(unsafeName))
+                    unsafeName= $"Col{z + 1}";
+                if (usedNames.Contains(unsafeName))
                 {
-                    var headerType = headerTypes[columnIndex];
-                    var columnNameClean = Regex.Replace(headerType.CreationString, @"[^\w_]", "");
-
-                    if (string.IsNullOrEmpty(columnNameClean)) columnNameClean = $"Col{columnIndex + 1}";
-                    if (usedNames.Contains(columnNameClean))
-                    {
-                        var c = 2;
-                        var fixedName = columnNameClean + c;
-                        while (usedNames.Contains(fixedName))
-                            fixedName = columnNameClean + ++c;
-                        columnNameClean = fixedName;
-                    }
-                    usedNames.Add(columnNameClean);
-                    Columns[columnIndex].Name = columnNameClean;
+                    var c = 2;
+                    var fixedName = unsafeName + c;
+                    while (usedNames.Contains(fixedName))
+                        fixedName = unsafeName + ++c;
+                    unsafeName = fixedName;
                 }
-            }
-            else
-            {
-                // Just create Col1, Col2, Col3 etc
-                var i = 1;
-                foreach (var column in Columns)
-                {
-                    column.Name = "Col" + i++;
-                }
+                usedNames.Add(unsafeName);
+                this.Columns[z].Name = unsafeName;
             }
 
-            if (rowLengths.Count > 1)
-            {
-                Trace.TraceWarning("Column count mismatch:" + string.Join(",", rowLengths.Select(p => $"{p.Value} rows had {p.Key} columns")));
-            }
+            //if (this.HasHeader)
+            //{
+            ////    var usedNames = new List<string>();
+            //    for (var columnIndex = 0; columnIndex < headerTypes.Count; columnIndex++)
+            //    {
+            //        var headerType = headerTypes[columnIndex];
+            //        var columnNameClean = Regex.Replace(headerType.CreationString, @"[^\w_]", "");
+
+            //        if (string.IsNullOrEmpty(columnNameClean)) columnNameClean = $"Col{columnIndex + 1}";
+            //        if (usedNames.Contains(columnNameClean))
+            //        {
+            //            var c = 2;
+            //            var fixedName = columnNameClean + c;
+            //            while (usedNames.Contains(fixedName))
+            //                fixedName = columnNameClean + ++c;
+            //            columnNameClean = fixedName;
+            //        }
+            //        usedNames.Add(columnNameClean);
+            //        this.Columns[columnIndex].Name = columnNameClean;
+            //    }
+            //}
+            //else
+            //{
+            //    // Just create Col1, Col2, Col3 etc unless the settings had something
+            //   // var namedColumns = csvSettings.FieldNames?.Length ?? 0;
+            //    for (var index = 0; index < this.Columns.Count; index++)
+            //    {
+            //        if (namedColumns > index)
+            //            this.Columns[index].Name = csvSettings.FieldNames[index];
+            //        else
+            //            this.Columns[index].Name = "Col" + (index + 1);
+            //    }
+            //}
         }
-        
 
         public override string ToString()
         {
-            return $"{(HasHeader?"header":"no header")}, {Columns.Count} columns: [{string.Join(",", Columns)}]";
+            return $"{(this.HasHeader ? "header" : "no header")}, {this.Columns.Count} columns: [{string.Join(",", this.Columns)}]";
         }
     }
 }

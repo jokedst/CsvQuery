@@ -47,7 +47,7 @@
                 new[] {"3", "12", "13"},
                 new[] {"4", "2", "3"}
             };
-            var ctypes = new CsvColumnTypes(data, false);
+            var ctypes = new CsvColumnTypes(data, new CsvSettings{HasHeader = false});
 
             var tableName = DataStorage.SaveData(new IntPtr(10), data, ctypes);
 
@@ -68,7 +68,7 @@
                 new[] {"3", "12,000", "13"},
                 new[] {"4", "2,010", "3"}
             };
-            var ctypes = new CsvColumnTypes(data, true);
+            var ctypes = new CsvColumnTypes(data, new CsvSettings { HasHeader = true });
 
             var tableName = DataStorage.SaveData(new IntPtr(10), data, ctypes);
 
@@ -89,7 +89,7 @@
                 new[] {"4", "2", "3"}
             };
 
-            var tableName = DataStorage.SaveData(new IntPtr(11), data, new CsvColumnTypes(data, false));
+            var tableName = DataStorage.SaveData(new IntPtr(11), data, new CsvColumnTypes(data, new CsvSettings { HasHeader = false }));
             DataStorage.SetActiveTab(new IntPtr(11));
 
             var result = DataStorage.ExecuteQuery("SELECT * FROM this", false);
@@ -109,7 +109,7 @@
                 new[] {"4", "2", "3"}
             };
 
-            DataStorage.SaveData(new IntPtr(11), data, new CsvColumnTypes(data, true));
+            DataStorage.SaveData(new IntPtr(11), data, new CsvColumnTypes(data, new CsvSettings { HasHeader = true }));
             DataStorage.SetActiveTab(new IntPtr(11));
 
             var result = DataStorage.ExecuteQuery("SELECT * FROM this", true);

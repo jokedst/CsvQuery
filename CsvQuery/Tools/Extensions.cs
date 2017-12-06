@@ -158,5 +158,23 @@
                 sb.Append(s);
             }
         }
+
+        public static CheckState ToCheckboxState(this bool? booleanValue)
+        {
+            return booleanValue.HasValue
+                ? (booleanValue == true ? CheckState.Checked : CheckState.Unchecked)
+                : CheckState.Indeterminate;
+        }
+
+        public static bool? ToNullableBool(this CheckState state)
+        {
+            switch (state)
+            {
+                case CheckState.Unchecked: return false;
+                case CheckState.Checked: return true;
+                case CheckState.Indeterminate: return null;
+            }
+            return null;
+        }
     }
 }

@@ -22,7 +22,7 @@
         [Description("Default separators when generating CSV"), Category("Generation"), DefaultValue(",")]
         public string DefaultSeparator { get; set; }
 
-        [Description("Default quote character when generating CSV"), Category("Generation"), DefaultValue('\"')]
+        [Description("Default quote escape character when quotes exists inside text"), Category("Generation"), DefaultValue('\"')]
         public char DefaultQuoteChar { get; set; }
 
         [Description("SQL provider for data storage"), Category("SQL"), DefaultValue(DataStorageProvider.SQLite)]

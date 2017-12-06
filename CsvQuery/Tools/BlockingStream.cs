@@ -11,6 +11,10 @@
         private byte[] _currentBlock;
         private int _currentBlockIndex;
 
+        /// <summary>
+        /// Creates a read/write stream that blocks the writer when the reader gets too far behind
+        /// </summary>
+        /// <param name="streamWriteCountCache"> </param>
         public BlockingStream(int streamWriteCountCache)
         {
             _blocks = new BlockingCollection<byte[]>(streamWriteCountCache);
@@ -30,19 +34,11 @@
             set => throw new NotSupportedException();
         }
 
-        public override void Flush()
-        {
-        }
+        public override void Flush() { }
 
-        public override long Seek(long offset, SeekOrigin origin)
-        {
-            throw new NotSupportedException();
-        }
+        public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
 
-        public override void SetLength(long value)
-        {
-            throw new NotSupportedException();
-        }
+        public override void SetLength(long value) => throw new NotSupportedException();
 
         public override int Read(byte[] buffer, int offset, int count)
         {
@@ -97,10 +93,7 @@
             base.Close();
         }
 
-        public void CompleteWriting()
-        {
-            _blocks.CompleteAdding();
-        }
+        public void CompleteWriting() => _blocks.CompleteAdding();
 
         private static void ValidateBufferArgs(byte[] buffer, int offset, int count)
         {

@@ -1,9 +1,12 @@
 ﻿namespace Tests
 {
+    using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
     using System.Reflection;
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-    internal class Helpers
+    internal static class Helpers
     {
         public static string GetResource(string resourceName)
         {

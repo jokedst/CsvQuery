@@ -116,20 +116,17 @@ namespace CsvQuery
         {
             try
             {
-                var csvSettings = new CsvSettings();
                 var askUserDialog = new ParseSettings
                 {
                     MainLabel = {Text = "Manually enter values for parsing CSV\n\nUse this if detection fails"},
                     txbQuoteChar = {Text = Main.Settings.DefaultQuoteChar.ToString()},
                     txbSep = {Text = Main.Settings.DefaultSeparator}
                 };
-                var userChoice = askUserDialog.ShowDialog();
-                if (userChoice != DialogResult.OK)
+                if (askUserDialog.ShowDialog() != DialogResult.OK)
                     return;
 
-                csvSettings.Separator = askUserDialog.txbSep.Text.Unescape();
-                csvSettings.TextQualifier = askUserDialog.txbQuoteChar.Text.Unescape();
-                QueryWindowVisible(true);
+                var csvSettings = askUserDialog.Settings;
+                QueryWindowVisible(true, true);
                 QueryWindow.StartParse(csvSettings);
             }
             catch (Exception e)
@@ -211,7 +208,6 @@ namespace CsvQuery
                 testbutton.Click += (a, b) => TestDatabase();
                 dialog.Controls.Add(testbutton);
 
-
                 var settingsButton = new Button
                 {
                     Text = "&Settings",
@@ -275,7 +271,7 @@ namespace CsvQuery
             QueryWindowVisible();
         }
 
-        public static void QueryWindowVisible(bool? show = null)
+        public static void QueryWindowVisible(bool? show = null, bool supressAnalysis = false)
         {
             if (QueryWindow == null)
             {
@@ -307,7 +303,8 @@ namespace CsvQuery
                 Win32.SendMessage(PluginBase.nppData._nppHandle, (uint) NppMsg.NPPM_DMMREGASDCKDLG, 0, queryWindowPointer);
 
                 // Analyze current file
-                QueryWindow.StartAnalysis(true);
+                if(!supressAnalysis)
+                    QueryWindow.StartAnalysis(true);
             }
             else
             {

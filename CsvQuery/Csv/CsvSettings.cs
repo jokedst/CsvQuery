@@ -24,12 +24,22 @@ namespace CsvQuery.Csv
         public char TextQualifier { get; set; } = '"';
         public char CommentCharacter { get; set; }
         public List<int> FieldWidths { get; set; }
+        public bool? HasHeader { get; set; }
+        public string[] FieldNames { get; set; }
 
         public CsvSettings() {}
 
         public CsvSettings(char separator)
         {
             this.Separator = separator;
+        }
+        public CsvSettings(char separator, char quoteEscapeChar, char commentChar, bool? hasHeader, List<int> fieldWidths=null)
+        {
+            this.Separator = separator;
+            this.TextQualifier = quoteEscapeChar;
+            this.CommentCharacter = commentChar;
+            this.FieldWidths = fieldWidths;
+            this.HasHeader = hasHeader;
         }
 
         /// <summary>
@@ -44,17 +54,17 @@ namespace CsvQuery.Csv
             using (var parser = new Microsoft.VisualBasic.FileIO.TextFieldParser(reader))
             {
                 var errors = new StringBuilder();
-                if(CommentCharacter!=default(char))
-                    parser.CommentTokens = new[] { CommentCharacter.ToString() };
-                parser.SetDelimiters(Separator.ToString());
-                parser.HasFieldsEnclosedInQuotes = TextQualifier != default(char);
+                if(this.CommentCharacter !=default(char))
+                    parser.CommentTokens = new[] { this.CommentCharacter.ToString() };
+                parser.SetDelimiters(this.Separator.ToString());
+                parser.HasFieldsEnclosedInQuotes = this.TextQualifier != default(char);
 
-                if (FieldWidths != null)
+                if (this.FieldWidths != null)
                 {
                     parser.TextFieldType = FieldType.FixedWidth;
                     try
                     {
-                        parser.SetFieldWidths(FieldWidths.ToArray());
+                        parser.SetFieldWidths(this.FieldWidths.ToArray());
                     }
                     catch (Exception e)
                     {
@@ -80,11 +90,10 @@ namespace CsvQuery.Csv
         }
 
         /// <summary>
-        /// Generates a CSV file from a <see cref="DataGridView"/>, using the settings
+        /// Generates a CSV file from a <see cref="DataTable"/>, using the settings
         /// </summary>
-        /// <param name="dataGrid"> Grid containing data to create CSV from </param>
+        /// <param name="dataTable"> Table containing data to create CSV from </param>
         /// <param name="output"> Stream to write (UTF8) to </param>
-        /// <returns> string in CSV format </returns>
         public void GenerateToStream(DataTable dataTable, Stream output)
         {
             if (!output.CanWrite)
@@ -93,14 +102,17 @@ namespace CsvQuery.Csv
             using (var tw = new StreamWriter(output, Encoding.UTF8, 1024 * 8, true))
             {
                 var first = true;
-                foreach (DataColumn column in dataTable.Columns)
+                if (HasHeader ?? true)
                 {
-                    if (first) first = false;
-                    else tw.Write(Separator);
-                    Escape(tw, column.ColumnName);
+                    foreach (DataColumn column in dataTable.Columns)
+                    {
+                        if (first) first = false;
+                        else tw.Write(this.Separator);
+                        Escape(tw, column.ColumnName);
+                    }
+                    tw.WriteLine();
+                    Trace.TraceInformation("CSV Generated header");
                 }
-                tw.WriteLine();
-                Trace.TraceInformation("CSV Generated header");
 
                 foreach (DataRow row in dataTable.Rows)
                 {
@@ -108,7 +120,7 @@ namespace CsvQuery.Csv
                     foreach (object cell in row.ItemArray)
                     {
                         if (first) first = false;
-                        else tw.Write(Separator);
+                        else tw.Write(this.Separator);
                         
                         Escape(tw, cell.ToString());
                     }
@@ -126,11 +138,11 @@ namespace CsvQuery.Csv
         /// <returns> Escaped text </returns>
         protected string Escape(string text, bool always = false)
         {
-            if (!always && text.IndexOf(Separator) == -1)
+            if (!always && text.IndexOf(this.Separator) == -1)
                 return text;
-            return TextQualifier
-                   + text.Replace(TextQualifier.ToString(), TextQualifier.ToString() + TextQualifier)
-                   + TextQualifier;
+            return this.TextQualifier
+                   + text.Replace(this.TextQualifier.ToString(), this.TextQualifier.ToString() + this.TextQualifier)
+                   + this.TextQualifier;
         }
 
         /// <summary>
@@ -140,13 +152,13 @@ namespace CsvQuery.Csv
         /// <param name="text"> Text to escape </param>
         protected void Escape(StreamWriter writer, string text)
         {
-            if (text.IndexOf(Separator) == -1)
+            if (text.IndexOf(this.Separator) == -1)
                 writer.Write(text);
             else
             {
-                writer.Write(TextQualifier);
+                writer.Write(this.TextQualifier);
                 writer.Write(text);
-                writer.Write(TextQualifier);
+                writer.Write(this.TextQualifier);
             }
         }
     }

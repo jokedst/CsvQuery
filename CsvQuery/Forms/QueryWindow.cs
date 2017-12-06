@@ -23,6 +23,7 @@
         private Task _worker = Task.CompletedTask;
 
         private Color[] _winColors = null;
+        private CsvSettings _lastGenerateSettings = null;
 
         public QueryWindow()
         {
@@ -177,13 +178,11 @@
             {
                 if (silent) return;
 
-                var askUserDialog = new ParseSettings();
+                var askUserDialog = new ParseSettings(csvSettings);
                 this.UiThread(() => askUserDialog.ShowDialog());
-                var userChoice = askUserDialog.DialogResult;
-                if (userChoice != DialogResult.OK)
+                if (askUserDialog.DialogResult != DialogResult.OK)
                     return;
-                csvSettings.Separator = askUserDialog.txbSep.Text.Unescape();
-                csvSettings.TextQualifier = askUserDialog.txbQuoteChar.Text.Unescape();
+                csvSettings = askUserDialog.Settings;
             }
             watch.Checkpoint("Analyze");
 
@@ -195,7 +194,7 @@
             var data = csvSettings.Parse(text);
             watch.Checkpoint("Parse");
 
-            var columnTypes = CsvAnalyzer.DetectColumnTypes(data, null);
+            var columnTypes = new CsvColumnTypes(data, csvSettings);
             try
             {
                 Main.DataStorage.SaveData(bufferId, data, columnTypes);
@@ -308,28 +307,28 @@
                 MessageBox.Show("No results available to convert");
                 return;
             }
-            var settingsDialog = new ParseSettings
+
+            var initialSettings = _lastGenerateSettings ?? new CsvSettings(Main.Settings.DefaultSeparator.Unescape(),
+                                      Main.Settings.DefaultQuoteChar, '\0', true);
+            var settingsDialog = new ParseSettings(initialSettings)
             {
                 btnReparse = {Text = "&Ok"},
                 MainLabel = {Text = "How should the CSV be generated?"},
-                txbSep = {Text = Main.Settings.DefaultSeparator},
-                txbQuoteChar = {Text = Main.Settings.DefaultQuoteChar.ToString()}
+                hasHeaderCheckbox = { ThreeState = false , Text = "Create header row"},
+                txbCommentChar = {Visible = false},
+                CommentCharLabel = { Visible = false },
             };
 
-            if (settingsDialog.ShowDialog() == DialogResult.Cancel) return;
+            if (settingsDialog.ShowDialog() == DialogResult.Cancel)
+                return;
 
-            var settings = new CsvSettings
-            {
-                Separator = settingsDialog.txbSep.Text.Unescape(),
-                TextQualifier = settingsDialog.txbQuoteChar.Text.Unescape()
-            };
+            var settings = settingsDialog.Settings; 
 
             var watch = new DiagnosticTimer();
             try
             {
                 // Create new tab for results
-                Win32.SendMessage(PluginBase.nppData._nppHandle, (uint) NppMsg.NPPM_MENUCOMMAND, 0,
-                    NppMenuCmd.IDM_FILE_NEW);
+                Win32.SendMessage(PluginBase.nppData._nppHandle, (uint) NppMsg.NPPM_MENUCOMMAND, 0, NppMenuCmd.IDM_FILE_NEW);
                 watch.Checkpoint("New document created");
 
                 using (var stream = new BlockingStream(10))
@@ -351,6 +350,7 @@
             {
                 Trace.TraceInformation("CSV gen: Exception: " + ex.GetType().Name + " - " + ex.Message);
             }
+            _lastGenerateSettings = settings;
             Trace.TraceInformation(watch.LastCheckpoint("CSV Done"));
         }
     }

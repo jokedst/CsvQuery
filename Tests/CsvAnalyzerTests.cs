@@ -47,5 +47,23 @@
             Assert.IsNotNull(result.FieldWidths);
             Assert.AreEqual(4, result.FieldWidths.Count);
         }
+
+        [TestMethod]
+        public void CanDetectW3C()
+        {
+            var csvData = File.ReadAllText(@"TestFiles\w3c.log");
+            var result = CsvAnalyzer.Analyze(csvData);
+            Assert.AreEqual(' ', result.Separator);
+            Assert.AreEqual('#', result.CommentCharacter);
+        }
+
+        [TestMethod]
+        public void CanDetectTabW3C()
+        {
+            var csvData = File.ReadAllText(@"TestFiles\w3c.log").Replace(' ','\t');
+            var result = CsvAnalyzer.Analyze(csvData);
+            Assert.AreEqual('\t', result.Separator);
+            Assert.AreEqual('#', result.CommentCharacter);
+        }
     }
 }

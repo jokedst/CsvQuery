@@ -1,0 +1,14 @@
+﻿#Software: Microsoft Internet Information Services 10.0
+#Version: 1.0
+#Date: 2017-08-28 09:13:32
+#Fields: date time s-ip cs-method cs-uri-stem cs-uri-query s-port cs-username c-ip cs(User-Agent) cs(Referer) sc-status sc-substatus sc-win32-status time-taken
+2017-08-28 09:13:32 ::1 GET /bleh/labs - 80 - ::1 Mozilla/5.0+(Windows+NT+10.0;+Win64;+x64)+AppleWebKit/537.36+(KHTML,+like+Gecko)+Chrome/60.0.3112.101+Safari/537.36 - 200 0 0 16462
+2017-08-28 09:13:32 ::1 GET /favicon.ico - 80 - ::1 Mozilla/5.0+(Windows+NT+10.0;+Win64;+x64)+AppleWebKit/537.36+(KHTML,+like+Gecko)+Chrome/60.0.3112.101+Safari/537.36 http://localhost/bleh/labs 404 0 2 69
+2017-08-28 09:14:55 ::1 POST /bleh/api/Auth/Logon idp=default 80 - ::1 Mozilla/5.0+(Windows+NT+10.0;+Win64;+x64)+AppleWebKit/537.36+(KHTML,+like+Gecko)+Chrome/60.0.3112.101+Safari/537.36 http://localhost/bleh/labs 200 0 0 1802
+#Software: Microsoft Internet Information Services 10.0
+#Version: 1.0
+#Date: 2017-08-28 10:32:05
+#Fields: date time s-ip cs-method cs-uri-stem cs-uri-query s-port cs-username c-ip cs(User-Agent) cs(Referer) sc-status sc-substatus sc-win32-status time-taken
+2017-08-28 10:32:05 ::1 GET /bleh/Help/Api/POST-b2b-api-v1-currency-CurrencyExchangeList_fromPartyId_toPartyId - 80 - ::1 Mozilla/5.0+(Windows+NT+10.0;+Win64;+x64)+AppleWebKit/537.36+(KHTML,+like+Gecko)+Chrome/60.0.3112.101+Safari/537.36 http://localhost/bleh/Help 200 0 0 19984
+2017-08-28 10:32:08 ::1 GET /bleh/labs - 80 - ::1 Mozilla/5.0+(Windows+NT+10.0;+Win64;+x64)+AppleWebKit/537.36+(KHTML,+like+Gecko)+Chrome/60.0.3112.101+Safari/537.36 http://localhost/bleh/labs 200 0 0 6862
+2017-08-28 10:32:28 ::1 GET /bleh/swagger/ui/index - 80 - ::1 Mozilla/5.0+(Windows+NT+10.0;+Win64;+x64)+AppleWebKit/537.36+(KHTML,+like+Gecko)+Chrome/60.0.3112.101+Safari/537.36 http://localhost/bleh/labs 200 0 0 86
