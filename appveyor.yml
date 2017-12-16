@@ -30,11 +30,11 @@ after_build:
     - ps: >-
 
         if ($env:PLATFORM -eq "x64" -and $env:CONFIGURATION -eq "Release") {
-            #Push-AppveyorArtifact "bin\$env:PLATFORM\$env:CONFIGURATION\CsvQuery.dll" -FileName CsvQuery.dll
+            Push-AppveyorArtifact "bin\$env:PLATFORM\$env:CONFIGURATION\CsvQuery.dll" -FileName CsvQuery.dll
         }
 
         if ($env:PLATFORM -eq "x86" -and $env:CONFIGURATION -eq "Release") {
-            #Push-AppveyorArtifact "bin\$env:CONFIGURATION\CsvQuery.dll" -FileName CsvQuery.dll
+            Push-AppveyorArtifact "bin\$env:CONFIGURATION\CsvQuery.dll" -FileName CsvQuery.dll
         }
 
         if ($($env:APPVEYOR_REPO_TAG) -eq "true" -and $env:CONFIGURATION -eq "Release" -and $env:PLATFORMTOOLSET -eq "v141") {
