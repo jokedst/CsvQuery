@@ -4,7 +4,7 @@
     using CsvQuery.Database;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-    [TestClass]
+  //  [TestClass]
     public class MsSqlProviderFacts
     {
         [TestMethod]
