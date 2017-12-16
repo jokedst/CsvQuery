@@ -30,21 +30,25 @@ after_build:
     - ps: >-
 
         if ($env:PLATFORM -eq "x64" -and $env:CONFIGURATION -eq "Release") {
-            Push-AppveyorArtifact "bin\$env:PLATFORM\$env:CONFIGURATION\CsvQuery.dll" -FileName CsvQuery.dll
+            #Push-AppveyorArtifact "bin\$env:PLATFORM\$env:CONFIGURATION\CsvQuery.dll" -FileName CsvQuery.dll
         }
 
         if ($env:PLATFORM -eq "x86" -and $env:CONFIGURATION -eq "Release") {
-            Push-AppveyorArtifact "bin\$env:CONFIGURATION\CsvQuery.dll" -FileName CsvQuery.dll
+            #Push-AppveyorArtifact "bin\$env:CONFIGURATION\CsvQuery.dll" -FileName CsvQuery.dll
         }
 
         if ($($env:APPVEYOR_REPO_TAG) -eq "true" -and $env:CONFIGURATION -eq "Release" -and $env:PLATFORMTOOLSET -eq "v141") {
             if($env:PLATFORM -eq "x64"){
-            $ZipFileName = "CsvQuery_$($env:APPVEYOR_REPO_TAG_NAME)_x64.zip"
-            7z a $ZipFileName bin\$env:PLATFORM\$env:CONFIGURATION\CsvQuery.dll
+                #$ZipFileName = "CsvQuery_$($env:APPVEYOR_REPO_TAG_NAME)_x64.zip"
+                $ZipFileName = "CsvQuery64.zip"
+                7z a $ZipFileName bin\$env:PLATFORM\$env:CONFIGURATION\CsvQuery.dll
+                Push-AppveyorArtifact  "CsvQuery64.zip"
             }
             if($env:PLATFORM -eq "x86"){
-            $ZipFileName = "CsvQuery_$($env:APPVEYOR_REPO_TAG_NAME)_x86.zip"
-            7z a $ZipFileName bin\$env:CONFIGURATION\CsvQuery.dll
+                #$ZipFileName = "CsvQuery_$($env:APPVEYOR_REPO_TAG_NAME)_x86.zip"
+                $ZipFileName = "CsvQuery86.zip"
+                7z a $ZipFileName bin\$env:CONFIGURATION\CsvQuery.dll
+                Push-AppveyorArtifact  "CsvQuery86.zip"
             }
         }
 
