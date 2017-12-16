@@ -828,7 +828,7 @@ return FALSE;
     {
       //LONG upperBits;                 /* Most sig. 32 bits of new offset */
       //LONG lowerBits;                 /* Least sig. 32 bits of new offset */
-      DWORD dwRet;                    /* Value returned by SetFilePointer() */
+      //DWORD dwRet;                    /* Value returned by SetFilePointer() */
       sqlite3_file pFile = id;
 
       //upperBits = (LONG)((iOffset>>32) & 0x7fffffff);
@@ -853,7 +853,7 @@ return FALSE;
         id.fs.Seek( iOffset, SeekOrigin.Begin ); // SetFilePointer(pFile.fs.Name, lowerBits, upperBits, FILE_BEGIN);
 #endif
       }
-      catch ( Exception e )
+      catch ( Exception )
       {
 #if SQLITE_SILVERLIGHT || SQLITE_WINRT
           pFile.lastErrno = 1;
@@ -1048,7 +1048,7 @@ free(pFile.zDeleteOnClose);
 #endif
         rc = 1;// Success
       }
-      catch ( IOException e )
+      catch ( IOException )
       {
         return SQLITE_READONLY;
       }
@@ -1125,7 +1125,7 @@ free(pFile.zDeleteOnClose);
 #endif
         rc = SQLITE_OK;
       }
-      catch ( IOException e )
+      catch ( IOException )
       {
 #if SQLITE_SILVERLIGHT || SQLITE_WINRT
           id.lastErrno  = 1;
@@ -1298,7 +1298,7 @@ return SQLITE_OK;
         {
           lockingStrategy.UnlockFile( pFile, SHARED_FIRST, SHARED_SIZE ); //     res = UnlockFile(pFile.h, SHARED_FIRST, 0, SHARED_SIZE, 0);
         }
-        catch ( Exception e )
+        catch ( Exception )
         {
           res = 0;
         }
@@ -1397,7 +1397,7 @@ return SQLITE_OK;
             lockingStrategy.LockFile( pFile, PENDING_BYTE, 1 );
             res = 1;
           }
-          catch ( Exception e )
+          catch ( Exception )
           {
             /* Try 3 times to get the pending lock.  The pending lock might be
             ** held by another reader process who will release it momentarily.
@@ -1455,7 +1455,7 @@ return SQLITE_OK;
           newLocktype = RESERVED_LOCK;
           res = 1;
         }
-        catch ( Exception e )
+        catch ( Exception )
         {
           res = 0;
 #if SQLITE_SILVERLIGHT || SQLITE_WINRT
@@ -1585,7 +1585,7 @@ error = 1;
           lockingStrategy.UnlockFile( pFile, RESERVED_BYTE, 1 );
           rc = 1;
         }
-        catch ( IOException e )
+        catch ( IOException )
         {
           rc = 0;
         }
@@ -1638,7 +1638,7 @@ error = 1;
         {
           lockingStrategy.UnlockFile( pFile, RESERVED_BYTE, 1 );// UnlockFile(pFile.h, RESERVED_BYTE, 0, 1, 0);
         }
-        catch ( Exception e )
+        catch ( Exception )
         {
         }
       }
@@ -1652,7 +1652,7 @@ error = 1;
         {
           lockingStrategy.UnlockFile( pFile, PENDING_BYTE, 1 );//    UnlockFile(pFile.h, PENDING_BYTE, 0, 1, 0);
         }
-        catch ( Exception e )
+        catch ( Exception )
         {
         }
       }
@@ -2952,7 +2952,7 @@ pFile.zDeleteOnClose = zConverted;
 #endif
             rc = SQLITE_OK;
           }
-          catch ( IOException e )
+          catch ( IOException )
           {
             rc = SQLITE_IOERR;
 #if SQLITE_WINRT
@@ -2988,7 +2988,7 @@ pFile.zDeleteOnClose = zConverted;
             File.Delete( zConverted );
             rc = SQLITE_OK;
           }
-          catch ( IOException e )
+          catch ( IOException )
           {
             rc = SQLITE_IOERR;
             Thread.Sleep( 100 );
@@ -3102,7 +3102,7 @@ pFile.zDeleteOnClose = zConverted;
             File.Delete( name );
             attr = FileAttributes.Normal;
           }
-          catch ( IOException e )
+          catch ( IOException )
           {
             attr = FileAttributes.ReadOnly;
           }
@@ -3120,7 +3120,7 @@ pFile.zDeleteOnClose = zConverted;
 #endif
 #endif
       //}
-      catch ( IOException e )
+      catch ( IOException )
       {
         winLogError(SQLITE_IOERR_ACCESS, "winAccess", zFilename);
       }
@@ -3785,7 +3785,7 @@ Debug.Assert(winSysInfo.dwAllocationGranularity > 0);
             Task<StorageFile> fileTask = StorageFile.GetFileFromPathAsync(path).AsTask<StorageFile>();
             fileTask.Wait();
         }
-        catch (Exception e)
+        catch (Exception)
         {
             AggregateException ae = e as AggregateException;
             if (ae != null && ae.InnerException is FileNotFoundException)

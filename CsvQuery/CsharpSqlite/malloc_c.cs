@@ -219,7 +219,7 @@ return sqlite3MemoryAlarm(xCallback, pArg, iThreshold);
       if ( sqlite3GlobalConfig.pScratch != null && sqlite3GlobalConfig.szScratch >= 100
       && sqlite3GlobalConfig.nScratch >= 0 )
       {
-        int i;
+        //int i;
         sqlite3GlobalConfig.szScratch = ROUNDDOWN8( sqlite3GlobalConfig.szScratch - 4 );
         //mem0.aScratchFree = (u32)&((char)sqlite3GlobalConfig.pScratch)
         //  [sqlite3GlobalConfig.szScratch*sqlite3GlobalConfig.nScratch];

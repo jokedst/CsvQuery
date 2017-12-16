@@ -1121,7 +1121,7 @@ pOp.cnt = 0;
       else if ( n == P4_KEYINFO )
       {
         KeyInfo pKeyInfo;
-        int nByte;
+        //int nByte;
 
         //int nField = _p4.pKeyInfo.nField;
         //nByte = sizeof(*pKeyInfo) + (nField-1)*sizeof(pKeyInfo.aColl[0]) + nField;
@@ -3191,7 +3191,7 @@ fclose(out);
     static void sqlite3VdbeDeleteObject( sqlite3 db, ref Vdbe p )
     {
       SubProgram pSub, pNext;
-      int i;
+      //int i;
       Debug.Assert( p.db == null || p.db == db );
       releaseMemArray( p.aVar, p.nVar );
       releaseMemArray( p.aColName, p.nResColumn, COLNAME_N );

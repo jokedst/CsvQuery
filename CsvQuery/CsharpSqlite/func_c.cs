@@ -1256,7 +1256,7 @@ break;
       int nStr;           /* Size of zStr */
       int nOut;           /* Maximum size of zOut */
       //int loopLimit;    /* Last zStr[] that might match zPattern[] */
-      int i, j = 0;       /* Loop counters */
+      int j = 0;       /* Loop counters */
 
       Debug.Assert( argc == 3 );
       UNUSED_PARAMETER( argc );

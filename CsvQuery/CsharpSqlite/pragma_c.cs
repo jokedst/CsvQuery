@@ -1553,7 +1553,7 @@ new VdbeOpList( OP_ResultRow,    2,  1,  0),
 */
                                                       if ( zLeft.Equals( "encoding", StringComparison.OrdinalIgnoreCase )  )
                                                       {                                                        
-                                                        int iEnc;
+                                                        //int iEnc;
                                                         if ( null == zRight )
                                                         {    /* "PRAGMA encoding" */
                                                           if ( sqlite3ReadSchema( pParse ) != 0 )

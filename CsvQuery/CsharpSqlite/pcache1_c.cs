@@ -706,7 +706,7 @@ static int pcache1MemSize(object p){
     {
       PCache1 pCache;      /* The newly created page cache */
       PGroup pGroup;       /* The group the new page cache will belong to */
-      int sz;               /* Bytes of memory required to allocate the new cache */
+      //int sz;               /* Bytes of memory required to allocate the new cache */
 
       /*
       ** The seperateCache variable is true if each PCache has its own private

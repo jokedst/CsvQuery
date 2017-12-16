@@ -3649,7 +3649,7 @@ exit_drop_index:
       if ( pSrc.nSrc + nExtra > pSrc.nAlloc )
       {
         int nAlloc = pSrc.nSrc + nExtra;
-        int nGot;
+        // int nGot;
         // sqlite3DbRealloc(db, pSrc,
         //     sizeof(*pSrc) + (nAlloc-1)*sizeof(pSrc.a[0]) );
         pSrc.nAlloc = (i16)nAlloc;

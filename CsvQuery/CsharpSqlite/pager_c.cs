@@ -4872,7 +4872,7 @@ static Pgno sqlite3PagerPagenumber( DbPage pPg )    {      return pPg.pgno;    }
     dxReiniter xReinit       /* Function to reinitialize pages */
     )
     {
-      u8 pPtr;
+      //u8 pPtr;
       Pager pPager = null;     /* Pager object to allocate and return */
       int rc = SQLITE_OK;      /* Return code */
       u8 tempFile = 0;         /* True for temp files (incl. in-memory files) */ // Needs to be u8 for later tests
@@ -4886,7 +4886,7 @@ static Pgno sqlite3PagerPagenumber( DbPage pPg )    {      return pPg.pgno;    }
       int pcacheSize = sqlite3PcacheSize();       /* Bytes to allocate for PCache */
       u32 szPageDflt = SQLITE_DEFAULT_PAGE_SIZE;  /* Default page size */
       string zUri = null;     /* URI args to copy */
-      int nUri = 0;           /* Number of bytes of URI args at *zUri */
+      //int nUri = 0;           /* Number of bytes of URI args at *zUri */
 
       /* Figure out how much space is required for each journal file-handle
       ** (there are two of them, the main journal and the sub-journal). This
