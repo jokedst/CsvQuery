@@ -1,4 +1,4 @@
-version: 1.0.3.{build}
+version: 1.2.1.{build}
 image: Visual Studio 2017
 
 
@@ -21,10 +21,6 @@ install:
     - nuget restore "%APPVEYOR_BUILD_FOLDER%"\CsvQuery\packages.config -PackagesDirectory "%APPVEYOR_BUILD_FOLDER%"\packages
 
 
-build:
-    parallel: true                  # enable MSBuild parallel builds
-    verbosity: minimal
-
 build_script:
     - cd "%APPVEYOR_BUILD_FOLDER%"
     - msbuild CsvQuerySolution.sln /m /p:configuration="%configuration%" /p:platform="%platform%" /p:PlatformToolset="%PlatformToolset%" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
@@ -43,12 +39,12 @@ after_build:
 
         if ($($env:APPVEYOR_REPO_TAG) -eq "true" -and $env:CONFIGURATION -eq "Release" -and $env:PLATFORMTOOLSET -eq "v141") {
             if($env:PLATFORM -eq "x64"){
-            $ZipFileName = "CsvQuerySolution_$($env:APPVEYOR_REPO_TAG_NAME)_x64.zip"
+            $ZipFileName = "CsvQuery_$($env:APPVEYOR_REPO_TAG_NAME)_x64.zip"
             7z a $ZipFileName bin\$env:PLATFORM\$env:CONFIGURATION\CsvQuery.dll
             }
             if($env:PLATFORM -eq "x86"){
-            $ZipFileName = "CsvQuerySolution_$($env:APPVEYOR_REPO_TAG_NAME)_x86.zip"
-            7z a $ZipFileName bin\$env:PLATFORM\$env:CONFIGURATION\CsvQuery.dll
+            $ZipFileName = "CsvQuery_$($env:APPVEYOR_REPO_TAG_NAME)_x86.zip"
+            7z a $ZipFileName bin\$env:CONFIGURATION\CsvQuery.dll
             }
         }
 
@@ -68,15 +64,15 @@ artifacts:
   - path: CsvQuery_*.zip
     name: releases
 
-deploy:
-    provider: GitHub
-    auth_token:
-        secure: !!TODO, see https://www.appveyor.com/docs/deployment/github/#provider-settings!!
-    artifact: releases
-    draft: false
-    prerelease: false
-    force_update: true
-    on:
-        appveyor_repo_tag: true
-        PlatformToolset: v141
-        configuration: Release
+#deploy:
+    #provider: GitHub
+    #auth_token:
+    #    secure: !!TODO, see https://www.appveyor.com/docs/deployment/github/#provider-settings!!
+    #artifact: releases
+    #draft: false
+    #prerelease: false
+    #force_update: true
+    #on:
+    #    appveyor_repo_tag: true
+    #    PlatformToolset: v141
+    #    configuration: Release
