@@ -61,18 +61,18 @@ test_script:
     }
 
 artifacts:
-  - path: CsvQuery_*.zip
+  - path: CsvQuery*.zip
     name: releases
 
-#deploy:
-    #provider: GitHub
-    #auth_token:
-    #    secure: !!TODO, see https://www.appveyor.com/docs/deployment/github/#provider-settings!!
-    #artifact: releases
-    #draft: false
-    #prerelease: false
-    #force_update: true
-    #on:
-    #    appveyor_repo_tag: true
-    #    PlatformToolset: v141
-    #    configuration: Release
+deploy:
+    provider: GitHub
+    auth_token:
+        secure: hOmuEQQBrYPfKsYOoAFwkqlkTKkuO0JcXrBbwPIvD31cDC0PushXMF5MY/J+fZYE
+    artifact: releases
+    draft: false
+    prerelease: true
+    force_update: false
+    on:
+        appveyor_repo_tag: true
+        PlatformToolset: v141
+        configuration: Release
