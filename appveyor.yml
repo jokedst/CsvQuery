@@ -28,13 +28,13 @@ build_script:
 after_build:
     - cd "%APPVEYOR_BUILD_FOLDER%"\CsvQuery
     - ps: >-
-    
+
         if ($env:CONFIGURATION -eq "Release") {
             $ZipFileName = "CsvQuery$($env:PLATFORM.Trim("x")).zip"
             7z a $ZipFileName bin\$env:PLATFORM\$env:CONFIGURATION\CsvQuery.dll
             Push-AppveyorArtifact $ZipFileName
         }
-        
+
         if ($env:PLATFORM -eq "x64" -and $env:CONFIGURATION -eq "Release") {
             #Push-AppveyorArtifact "bin\$env:PLATFORM\$env:CONFIGURATION\CsvQuery.dll" -FileName CsvQuery.dll
         }

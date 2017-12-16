@@ -11,3 +11,5 @@ obj
 /*.suo
 /CsvQuerySolution.sln.DotSettings.user
 /.vs
+/*.psess
+/*.vspx
