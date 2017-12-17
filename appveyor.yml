@@ -67,7 +67,7 @@ test_script:
     }
 
 artifacts:
-  - path: 'CsvQuery*.zip'
+  - path: CsvQuery\CsvQuery*.zip
     name: releases
 
 deploy:
