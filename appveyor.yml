@@ -30,7 +30,7 @@ after_build:
     - ps: >-
 
         if ($env:CONFIGURATION -eq "Release") {
-            $ZipFileName = "CsvQuery$($env:PLATFORM.Trim("x")).zip"
+            $ZipFileName = "CsvQuery$($env:PLATFORM).zip"
             7z a $ZipFileName bin\$env:PLATFORM\$env:CONFIGURATION\CsvQuery.dll
             Push-AppveyorArtifact $ZipFileName
         }
@@ -50,7 +50,7 @@ after_build:
             }
             if($env:PLATFORM -eq "x86"){
                 $ZipFileName = "CsvQuery_$($env:APPVEYOR_REPO_TAG_NAME)_x86.zip"
-                7z a $ZipFileName bin\$env:CONFIGURATION\CsvQuery.dll
+                7z a $ZipFileName bin\$env:PLATFORM\$env:CONFIGURATION\CsvQuery.dll
             }
         }
 
@@ -67,7 +67,7 @@ test_script:
     }
 
 artifacts:
-  - path: CsvQuery*.zip
+  - path: 'CsvQuery*.zip'
     name: releases
 
 deploy:
@@ -77,7 +77,7 @@ deploy:
     artifact: releases
     draft: false
     prerelease: true
-    force_update: false
+    force_update: true
     on:
         appveyor_repo_tag: true
         PlatformToolset: v141
