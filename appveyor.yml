@@ -23,7 +23,6 @@ build_script:
     - msbuild CsvQuerySolution.sln /m /p:configuration="%configuration%" /p:platform="%platform%" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
 
 after_build:
-    - CsvQueryTest
     - cd "%APPVEYOR_BUILD_FOLDER%"\CsvQuery
     - ps: >-
         if ($($env:APPVEYOR_REPO_TAG) -eq "true" -and $env:CONFIGURATION -eq "Release") {
