@@ -4,9 +4,9 @@ CSV Query - Notepad++ plugin
 [![Build status](https://ci.appveyor.com/api/projects/status/j1r9m77jwiyfsn4u?svg=true)](https://ci.appveyor.com/project/jokedst/csvquery)
 
 A plugin to Notepad++ to parse different types of CSV files and display them in a table.
-The data is stored in a in-memory SQLite database, so you can write SQL queries against the data.
+The data is stored in a in-memory SQLite database (or MSSQL if configured), so you can write SQL queries against the data.
 
-It tries to auto-detect separators, headers and column types. If it can't it just fails - there is currently no way to tell it what separator to use.
+It tries to auto-detect separators, headers and column types. If it fails it asks you for it.
 
 ![screenshot](/Meta/Screenshot.png?raw=true "Small file with header row parsed")
 
@@ -20,7 +20,6 @@ The CsharpSqlite code is licensed under MIT license (which is apparently GPL v3 
 Planned features
 ----------------
 
-* Better type detection so numbers aren't treated as strings in the SQL queries :P
 * Support for more types of CSV files (more test cases, basically)
 * Optimizations
 
@@ -30,7 +29,7 @@ Auto-detection
 
 CSV Query detects the separator by calculating the variance in occurrence of characters on each line, then chose the one that seems best, preferring one of comma, semicolon, pipe or tab. It's certainly not perfect, but it handles all the files I regularly work with, which is why I wrote the plugin in the first place.
 
-If the first line is all strings and the rest of the lines have at least one numeric column, it assumes the first line is a header and use it for the column names in the database.
+If the first line is "significantly different" from the rest it assumes the first line is a header and use it for the column names in the database.
 
 
 Used Libraries

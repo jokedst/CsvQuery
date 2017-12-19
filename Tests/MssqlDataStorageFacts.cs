@@ -6,7 +6,7 @@
     using CsvQuery.Database;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-   // [TestClass]
+    [TestClass]
     public class MssqlDataStorageFacts : DataStorageFacts
     {
         public override IDataStorage DataStorage { get; } = new MssqlDataStorage("CsvQueryTest");
@@ -20,7 +20,7 @@
         }
     }
 
-   // [TestClass]
+    [TestClass]
     public class MssqlWithTypesDataStorageFacts : DataStorageFacts
     {
         public override IDataStorage DataStorage { get; } = new MssqlDataStorage("CsvQueryTest");

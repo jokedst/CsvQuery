@@ -1,10 +1,6 @@
-﻿<Project
-  xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <UsingTask TaskName="NppPlugin.DllExport.MSBuild.DllExportTask"
-             AssemblyFile="NppPlugin.DllExport.MSBuild.dll"/>
-  <Target Name="AfterBuild"
-          DependsOnTargets="GetFrameworkPaths"
-          >
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <UsingTask TaskName="NppPlugin.DllExport.MSBuild.DllExportTask" AssemblyFile="NppPlugin.DllExport.MSBuild.dll"/>
+  <Target Name="AfterBuild" DependsOnTargets="GetFrameworkPaths">
     <DllExportTask Platform="$(Platform)"
                    PlatformTarget="$(PlatformTarget)"
                    CpuType="$(CpuType)"
