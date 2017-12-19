@@ -32,7 +32,7 @@ after_build:
         }
 
 test_script:
-- ps: >-
+- ps: |-
     sqlcmd -S "(local)" -U "sa" -P "Password12!" -Q "CREATE DATABASE CsvQueryTest" -d "master"
     vstest.console /Platform:$env:PLATFORM /logger:Appveyor "$env:APPVEYOR_BUILD_FOLDER\Tests\bin\$env:PLATFORM\$env:CONFIGURATION\Tests.dll"
 
