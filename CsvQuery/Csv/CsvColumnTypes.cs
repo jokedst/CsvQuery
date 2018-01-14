@@ -83,55 +83,25 @@
                     : HasHeader
                         ? headerTypes[z].CreationString
                         : null;
-                if(!string.IsNullOrWhiteSpace(unsafeName))
-                    unsafeName = Regex.Replace(unsafeName, @"[^\w_]", "");
-                if (string.IsNullOrWhiteSpace(unsafeName))
-                    unsafeName= $"Col{z + 1}";
-                if (usedNames.Contains(unsafeName))
+                var safeName = unsafeName;
+                if (!string.IsNullOrWhiteSpace(safeName))
+                    safeName = Regex.Replace(safeName, @"[^\w_]", "");
+                if (string.IsNullOrWhiteSpace(safeName))
+                    safeName = $"Col{z + 1}";
+                if (usedNames.Contains(safeName))
                 {
                     var c = 2;
-                    var fixedName = unsafeName + c;
+                    var fixedName = safeName + c;
                     while (usedNames.Contains(fixedName))
-                        fixedName = unsafeName + ++c;
-                    unsafeName = fixedName;
+                        fixedName = safeName + ++c;
+                    safeName = fixedName;
                 }
-                usedNames.Add(unsafeName);
-                this.Columns[z].Name = unsafeName;
+                usedNames.Add(safeName);
+                this.Columns[z].Name = safeName;
+
+                // Remember unsafe name
+                this.Columns[z].CreationString = string.IsNullOrWhiteSpace(unsafeName) ? safeName : unsafeName;
             }
-
-            //if (this.HasHeader)
-            //{
-            ////    var usedNames = new List<string>();
-            //    for (var columnIndex = 0; columnIndex < headerTypes.Count; columnIndex++)
-            //    {
-            //        var headerType = headerTypes[columnIndex];
-            //        var columnNameClean = Regex.Replace(headerType.CreationString, @"[^\w_]", "");
-
-            //        if (string.IsNullOrEmpty(columnNameClean)) columnNameClean = $"Col{columnIndex + 1}";
-            //        if (usedNames.Contains(columnNameClean))
-            //        {
-            //            var c = 2;
-            //            var fixedName = columnNameClean + c;
-            //            while (usedNames.Contains(fixedName))
-            //                fixedName = columnNameClean + ++c;
-            //            columnNameClean = fixedName;
-            //        }
-            //        usedNames.Add(columnNameClean);
-            //        this.Columns[columnIndex].Name = columnNameClean;
-            //    }
-            //}
-            //else
-            //{
-            //    // Just create Col1, Col2, Col3 etc unless the settings had something
-            //   // var namedColumns = csvSettings.FieldNames?.Length ?? 0;
-            //    for (var index = 0; index < this.Columns.Count; index++)
-            //    {
-            //        if (namedColumns > index)
-            //            this.Columns[index].Name = csvSettings.FieldNames[index];
-            //        else
-            //            this.Columns[index].Name = "Col" + (index + 1);
-            //    }
-            //}
         }
 
         public override string ToString()

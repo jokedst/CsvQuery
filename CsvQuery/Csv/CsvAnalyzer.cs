@@ -1,6 +1,4 @@
-﻿using System.Data.SqlTypes;
-
-namespace CsvQuery.Csv
+﻿namespace CsvQuery.Csv
 {
     using System;
     using System.Collections.Generic;
@@ -71,7 +69,7 @@ namespace CsvQuery.Csv
             var variances = new Dictionary<char, float>();
             foreach (var c in occurrences.Keys)
             {
-                var mean = (float) occurrences[c] / lineCount;
+                var mean = (float)occurrences[c] / lineCount;
                 float variance = 0;
                 foreach (var frequency in frequencies)
                 {
@@ -84,9 +82,9 @@ namespace CsvQuery.Csv
             }
 
             // The char with lowest variance is most likely the separator
-            result = new CsvSettings {Separator = GetSeparatorFromVariance(variances, occurrences, lineCount)};
+            result = new CsvSettings { Separator = GetSeparatorFromVariance(variances, occurrences, lineCount) };
             if (result.Separator != default(char)) return result;
-            
+
             // Failed to detect separator. Could it be a fixed-width file?
             var commonSpace = bigSpaces.Where(x => x.Value == lineCount).Select(x => x.Key).OrderBy(x => x);
             var lastvalue = 0;
@@ -114,7 +112,7 @@ namespace CsvQuery.Csv
             var header = new Regex(@"^#([^:]*):\s*(.*)$");
             using (var s = new StringReader(csvString))
             {
-                var headers = new Dictionary<string,string>(StringComparer.InvariantCultureIgnoreCase);
+                var headers = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
                 string line;
                 while ((line = s.ReadLine()) != null)
                 {
@@ -122,24 +120,24 @@ namespace CsvQuery.Csv
                     if (!headerMatch.Success) break;
                     headers.Add(headerMatch.Groups[1].Value, headerMatch.Groups[2].Value);
                 }
-                if (!headers.ContainsKey("Version") || !headers.ContainsKey("Fields") || line==null)
+                if (!headers.ContainsKey("Version") || !headers.ContainsKey("Fields") || line == null)
                     return null;
 
                 // Ok, fairly sure this is a w3c log... Check separator
-                var result = new W3CSettings {FieldNames = Regex.Split(headers["Fields"], @"\s")};
+                var result = new W3CSettings { FieldNames = Regex.Split(headers["Fields"], @"\s") };
                 int spaces = 0, tabs = 0, runs = 0;
                 var lastCharWhite = true;
-                for (int i = 0; i < line.Length; i++)
+                foreach (var t in line)
                 {
-                    var white = line[i] == ' ' || line[i] == '\t';
+                    var white = t == ' ' || t == '\t';
                     if (white && !lastCharWhite) runs++;
                     lastCharWhite = white;
-                    if (line[i] == ' ') spaces++;
-                    if (line[i] == '\t') tabs++;
+                    if (t == ' ') spaces++;
+                    if (t == '\t') tabs++;
                 }
                 if (tabs == result.FieldNames.Length - 1) result.Separator = '\t';
-                else  if (spaces == result.FieldNames.Length - 1) result.Separator = ' ';
-                else if(tabs>spaces && tabs< result.FieldNames.Length) result.Separator = '\t';
+                else if (spaces == result.FieldNames.Length - 1) result.Separator = ' ';
+                else if (tabs > spaces && tabs < result.FieldNames.Length) result.Separator = '\t';
                 else if (spaces < result.FieldNames.Length && spaces > 1) result.Separator = ' ';
                 else return null;
 
@@ -160,7 +158,7 @@ namespace CsvQuery.Csv
                 foreach (var c in line)
                 {
                     if (!statistics.ContainsKey(c))
-                        statistics.Add(c, new Stat{Occurances = 1});
+                        statistics.Add(c, new Stat { Occurances = 1 });
                     else
                         statistics[c].Occurances++;
 
@@ -204,7 +202,7 @@ namespace CsvQuery.Csv
                 .Select(x => (char?)x.Key)
                 .FirstOrDefault();
 
-            if (separator != null) 
+            if (separator != null)
                 return separator.Value;
 
             var defaultKV = default(KeyValuePair<char, float>);
@@ -212,7 +210,7 @@ namespace CsvQuery.Csv
             // Ok, no perfect separator. Check if the best char that exists on all lines is a prefered separator
             var sortedVariances = variances.OrderBy(x => x.Value).ToList();
             var best = sortedVariances.FirstOrDefault(x => occurrences[x.Key] >= lineCount);
-            if (!best.Equals(defaultKV) && preferredSeparators.IndexOf(best.Key) != -1) 
+            if (!best.Equals(defaultKV) && preferredSeparators.IndexOf(best.Key) != -1)
                 return best.Key;
 
             // No? Second best?
@@ -222,13 +220,13 @@ namespace CsvQuery.Csv
 
             // Ok, screw the preferred separators, is any other char a perfect separator? (and common, i.e. at least 3 per line)
             separator = variances
-                .Where(x => x.Value == 0f && occurrences[x.Key] >= lineCount*2)
+                .Where(x => x.Value == 0f && occurrences[x.Key] >= lineCount * 2)
                 .OrderByDescending(x => occurrences[x.Key])
                 .Select(x => (char?)x.Key)
                 .FirstOrDefault();
             if (separator != null)
                 return separator.Value;
-            
+
             // Ok, I have no idea
             return '\0';
         }

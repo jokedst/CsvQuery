@@ -1,3 +1,7 @@
+using System.Data;
+using System.Linq;
+using CsvQuery.Tools;
+
 namespace CsvQuery.Database
 {
     using System;
@@ -7,6 +11,7 @@ namespace CsvQuery.Database
     public abstract class DataStorageBase : IDataStorage
     {
         protected readonly Dictionary<IntPtr, string> CreatedTables = new Dictionary<IntPtr, string>();
+        public readonly Dictionary<IntPtr, Dictionary<string,string>> UnsafeColumnNames = new Dictionary<IntPtr, Dictionary<string, string>>();
         protected IntPtr CurrentActiveBufferId;
         protected int LastCreatedTableName;
 
@@ -27,7 +32,7 @@ namespace CsvQuery.Database
 
         public void SetActiveTab(IntPtr bufferId)
         {
-            if (CurrentActiveBufferId != bufferId && CreatedTables.ContainsKey(bufferId))
+            if (CreatedTables.ContainsKey(bufferId))
             {
                 ExecuteNonQuery(QueryDropViewThisIfExists);
                 ExecuteNonQuery(string.Format(QueryCreateViewThisForTable, CreatedTables[bufferId]));
@@ -43,7 +48,34 @@ namespace CsvQuery.Database
             ExecuteNonQuery("SELECT 2*3");
         }
 
+        public IReadOnlyDictionary<string, string> GetUnsafeColumnMaps(IntPtr bufferId)
+        {
+            return UnsafeColumnNames.GetValueOrDefault(bufferId);
+        }
+
         public abstract List<string[]> ExecuteQuery(string query, bool includeColumnNames);
+
+        public DataTable ExecuteQueryToDataTable(string query, IntPtr bufferId)
+        {
+            var data = this.ExecuteQuery(query, true);
+            if (data == null || data.Count == 0) return null;
+
+            var table = new DataTable();
+            table.ExtendedProperties.Add("query", query);
+            table.ExtendedProperties.Add("bufferId", bufferId);
+
+            // Create columns
+            foreach (var header in data[0])
+            {
+                // Column names in a DataGridView can't contain commas it seems
+                table.Columns.Add(header.Replace(",", string.Empty));
+            }
+            
+            foreach (var row in data.Skip(1))
+                table.Rows.Add(row);
+
+            return table;
+        }
 
         protected string GetOrAllocateTableName(IntPtr bufferId)
         {
@@ -64,6 +96,12 @@ namespace CsvQuery.Database
         public void SetLastCreatedTableName(int tableNumber)
         {
             LastCreatedTableName = tableNumber;
+        }
+
+        protected void SaveUnsafeColumnNames(IntPtr bufferId, CsvColumnTypes columnTypes)
+        {
+            UnsafeColumnNames[bufferId] = columnTypes.Columns.Where(c => c.CreationString != c.Name)
+                .ToDictionary(c => c.Name, c => c.CreationString);
         }
     }
 }

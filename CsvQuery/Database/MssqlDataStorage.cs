@@ -131,6 +131,8 @@ namespace CsvQuery.Database
 
                 transaction.Commit();
             }
+
+            SaveUnsafeColumnNames(bufferId, columnTypes);
             return tableName;
         }
 

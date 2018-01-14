@@ -33,7 +33,7 @@
         /// </summary>
         /// <param name="bufferId"></param>
         /// <param name="data"></param>
-        /// <param name="hasHeader"></param>
+        /// <param name="columnTypes"></param>
         /// <returns></returns>
         public override string SaveData(IntPtr bufferId, List<string[]> data, CsvColumnTypes columnTypes)
         {
@@ -109,6 +109,7 @@
             stmt.Close();
             ExecuteNonQuery("END");
 
+            SaveUnsafeColumnNames(bufferId, columnTypes);
             return tableName;
         }
 

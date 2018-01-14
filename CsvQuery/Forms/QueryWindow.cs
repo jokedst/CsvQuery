@@ -247,6 +247,9 @@
             }
 
             var table = new DataTable();
+            table.ExtendedProperties.Add("query",query);
+            table.ExtendedProperties.Add("bufferId", bufferId);
+
             // Create columns
             foreach (var s in toshow[0])
             {
@@ -302,7 +305,7 @@
 
         private void createNewCSVToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (dataGrid.DataSource == null)
+            if (!(dataGrid.DataSource is DataTable table ))
             {
                 MessageBox.Show("No results available to convert");
                 return;
@@ -330,12 +333,17 @@
                 // Create new tab for results
                 Win32.SendMessage(PluginBase.nppData._nppHandle, (uint) NppMsg.NPPM_MENUCOMMAND, 0, NppMenuCmd.IDM_FILE_NEW);
                 watch.Checkpoint("New document created");
+                var headerLookup = Main.Settings.UseOriginalColumnHeadersOnGeneratedCsv
+                                   && table.ExtendedProperties.ContainsKey("bufferId")
+                                   && table.ExtendedProperties["bufferId"] is IntPtr bufferId
+                    ? Main.DataStorage.GetUnsafeColumnMaps(bufferId)
+                    : null;
 
                 using (var stream = new BlockingStream(10))
                 {
                     var producer = Task.Factory.StartNew(s =>
                     {
-                        settings.GenerateToStream(dataGrid.DataSource as DataTable, (Stream) s);
+                        settings.GenerateToStream(dataGrid.DataSource as DataTable, (Stream) s, headerLookup);
                         ((BlockingStream) s).CompleteWriting();
                     }, stream);
 

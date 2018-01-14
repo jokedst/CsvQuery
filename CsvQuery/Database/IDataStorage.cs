@@ -1,3 +1,5 @@
+using System.Data;
+
 namespace CsvQuery.Database
 {
     using System;
@@ -39,6 +41,13 @@ namespace CsvQuery.Database
         /// Tests the database connection. Should throw an exception if it doesn't work
         /// </summary>
         void TestConnection();
+       
+        /// <summary>
+        /// Returns the column headers as it was before made safe
+        /// </summary>
+        IReadOnlyDictionary<string, string> GetUnsafeColumnMaps(IntPtr bufferId);
+
+        DataTable ExecuteQueryToDataTable(string query, IntPtr bufferId);
     }
 
     public enum DataStorageProvider

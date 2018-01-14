@@ -137,10 +137,10 @@ namespace CsvQuery
 
         public static void SetToolBarIcon()
         {
-            var icons = new toolbarIcons {hToolbarBmp = Properties.Resources.cq.GetHbitmap()};
+            var icons = new toolbarIcons { hToolbarBmp = Resources.cq.GetHbitmap() };
             var iconPointer = Marshal.AllocHGlobal(Marshal.SizeOf(icons));
             Marshal.StructureToPtr(icons, iconPointer, false);
-            Win32.SendMessage(PluginBase.nppData._nppHandle, (uint) NppMsg.NPPM_ADDTOOLBARICON, PluginBase._funcItems.Items[MenuToggleId]._cmdID, iconPointer);
+            Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_ADDTOOLBARICON, PluginBase._funcItems.Items[MenuToggleId]._cmdID, iconPointer);
             Marshal.FreeHGlobal(iconPointer);
         }
 

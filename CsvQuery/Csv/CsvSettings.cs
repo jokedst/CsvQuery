@@ -1,3 +1,5 @@
+using CsvQuery.Tools;
+
 namespace CsvQuery.Csv
 {
     using System;
@@ -94,7 +96,8 @@ namespace CsvQuery.Csv
         /// </summary>
         /// <param name="dataTable"> Table containing data to create CSV from </param>
         /// <param name="output"> Stream to write (UTF8) to </param>
-        public void GenerateToStream(DataTable dataTable, Stream output)
+        /// <param name="headerAlias"> Column header translation table </param>
+        public void GenerateToStream(DataTable dataTable, Stream output, IReadOnlyDictionary<string,string> headerAlias = null)
         {
             if (!output.CanWrite)
                 throw new ArgumentException("Stream is not writeable", nameof(output));
@@ -108,7 +111,8 @@ namespace CsvQuery.Csv
                     {
                         if (first) first = false;
                         else tw.Write(this.Separator);
-                        Escape(tw, column.ColumnName);
+                        var columnName = headerAlias?.GetValueOrDefault(column.ColumnName) ?? column.ColumnName;
+                        Escape(tw, columnName);
                     }
                     tw.WriteLine();
                     Trace.TraceInformation("CSV Generated header");

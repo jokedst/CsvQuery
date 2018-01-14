@@ -107,6 +107,23 @@
             dictionary.TryGetValue(key, out var ret);
             return ret;
         }
+        public static TValue GetValueOrDefault<TKey, TValue>(this IEnumerable<KeyValuePair<TKey, TValue>> keyValues, TKey key)
+        {
+            if (key == null || keyValues == null) return default(TValue);
+            TValue returnValue;
+            switch (keyValues)
+            {
+                case IDictionary<TKey,TValue> dictionary:
+                    dictionary.TryGetValue(key, out returnValue);
+                    return returnValue;
+                case IReadOnlyDictionary<TKey, TValue> readOnlyDictionary:
+                    readOnlyDictionary.TryGetValue(key, out returnValue);
+                    return returnValue;
+                default:
+                    return keyValues.FirstOrDefault(x => x.Key.Equals(key)).Value;
+            }
+        }
+
 
         public static IEnumerable<T> Interspace<T>(this IEnumerable<T> enumerable, T separator)
         {

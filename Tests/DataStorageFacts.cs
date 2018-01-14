@@ -1,4 +1,7 @@
-﻿namespace Tests
+﻿using System.IO;
+using System.Text;
+
+namespace Tests
 {
     using System;
     using System.Collections.Generic;
@@ -350,19 +353,51 @@
             Assert.AreEqual("ArtGrp", result[0][0], "whitelisting not working");
         }
 
+        [TestMethod]
         public void CanOverwriteExistingTable()
         {
-            DataStorage.SaveData(new IntPtr(77), FourRowsThreeColumnsWithHeader, new CsvColumnTypes(FourRowsThreeColumnsWithHeader, null));
+            DataStorage.SaveData(new IntPtr(77), FourRowsThreeColumnsWithHeader, new CsvColumnTypes(FourRowsThreeColumnsWithHeader, new CsvSettings{HasHeader = true}));
+            DataStorage.SetActiveTab(new IntPtr(77));
 
             var result = DataStorage.ExecuteQuery("SELECT * FROM this", false);
             Assert.AreEqual(4, result.Count);
             Assert.IsTrue(result.TrueForAll(x => x.Length == 3));
 
-            DataStorage.SaveData(new IntPtr(77), FiveRowsFourColumnsWithNoHeader, new CsvColumnTypes(FiveRowsFourColumnsWithNoHeader, null));
+            DataStorage.SaveData(new IntPtr(77), FiveRowsFourColumnsWithNoHeader, new CsvColumnTypes(FiveRowsFourColumnsWithNoHeader, new CsvSettings{HasHeader = false}));
+            DataStorage.SetActiveTab(new IntPtr(77));
 
             result = DataStorage.ExecuteQuery("SELECT * FROM this", false);
             Assert.AreEqual(5, result.Count);
             Assert.IsTrue(result.TrueForAll(x => x.Length == 4));
+        }
+
+        [TestMethod]
+        public void Can_generate_csv()
+        {
+            var data = new List<string[]>
+            {
+                new[] {"A number", "another number here", "#¤%i"},
+                new[] {"1", "2", "3"},
+                new[] {"2", "12", "14"},
+                new[] {"3", "12", "13"},
+                new[] {"4", "2", "3"}
+            };
+            var csvSettings = new CsvSettings(',') { HasHeader = true };
+            var ctypes = new CsvColumnTypes(data, csvSettings);
+
+            var tableName = DataStorage.SaveData(new IntPtr(10), data, ctypes);
+
+            var result = DataStorage.ExecuteQueryToDataTable("SELECT * FROM " + tableName, new IntPtr(10));
+            Assert.AreEqual("Anumber", result.Columns[0].ColumnName);
+
+            string csv;
+            using (var memStream = new MemoryStream())
+            {
+                var lookup = DataStorage.GetUnsafeColumnMaps(new IntPtr(10));
+                csvSettings.GenerateToStream(result, memStream, lookup);
+                csv= Encoding.UTF8.GetString(memStream.GetBuffer());
+            }
+            Assert.IsTrue(csv.StartsWith("A number,another number here,#¤%i"));
         }
     }
 }

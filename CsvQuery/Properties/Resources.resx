@@ -127,4 +127,7 @@
   <data name="Title_MessagBox" xml:space="preserve">
     <value>CSV Query</value>
   </data>
+  <data name="CQIcon" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CQIcon.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
 </root>
