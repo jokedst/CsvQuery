@@ -27,7 +27,7 @@ after_build:
     - ps: >-
         if ($($env:APPVEYOR_REPO_TAG) -eq "true" -and $env:CONFIGURATION -eq "Release") {
             $ZipFileName = "CsvQuery-$($env:APPVEYOR_REPO_TAG_NAME)-$($env:PLATFORM).zip"
-            7z a $ZipFileName bin\$env:CONFIGURATION-$env:PLATFORM\CsvQuery.dll
+            7z a $ZipFileName .\bin\$env:CONFIGURATION-$env:PLATFORM\CsvQuery.dll
             Push-AppveyorArtifact $ZipFileName
         }
 
@@ -42,6 +42,7 @@ artifacts:
 
 deploy:
     provider: GitHub
+    tag: $(appveyor_repo_tag_name)
     release: "%APPVEYOR_REPO_TAG_NAME% %APPVEYOR_REPO_COMMIT_MESSAGE%"
     desription: "Release %APPVEYOR_REPO_TAG_NAME%"
     auth_token:
