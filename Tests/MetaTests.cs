@@ -35,7 +35,6 @@ namespace Tests
         {
             bool ok;
             decimal decimalResult;
-            double doubleResult;
 
             ok = decimal.TryParse("12,34", NumberStyles.Any, NumberFormatInfo.InvariantInfo, out decimalResult);
             Console.WriteLine($"ok={ok}, res={decimalResult}");

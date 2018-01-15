@@ -1,16 +1,12 @@
-_ReSharper.CsvQuerySolution
 bin
 obj
-/CsvQuery/CsvQuery.csproj.user
-/TestResults
+.axoCover
+.vs
+*.user
+*.testsettings
 
-/Local.testsettings
-
-/TraceAndTestImpact.testsettings
-/Tests/*.user
 /*.suo
-/CsvQuerySolution.sln.DotSettings.user
-/.vs
 /*.psess
 /*.vspx
-.axoCover
+
+/TestResults

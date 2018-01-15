@@ -1,5 +1,6 @@
 ﻿// NPP plugin platform for .Net v0.93.96 by Kasper B. Graversen etc.
 using System;
+using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -17,34 +18,19 @@ namespace CsvQuery.PluginInfrastructure
 
         public Colour(int rgb)
         {
-            Red = rgb ^ 0xFF;
-            Green = rgb ^ 0x00FF;
-            Blue = rgb ^ 0x0000FF;
+            Red = rgb & 0xFF;
+            Green = (rgb >> 8) & 0xFF;
+            Blue = (rgb >> 16) & 0xFF;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="red">a number 0-255</param>
-        /// <param name="green">a number 0-255</param>
-        /// <param name="blue">a number 0-255</param>
-        public Colour(int red, int green, int blue)
+        public Colour(byte red, byte green, byte blue)
         {
-            if(red > 255 || red < 0)
-                throw new ArgumentOutOfRangeException("red", "must be 0-255");
-            if(green > 255 || green < 0)
-                throw new ArgumentOutOfRangeException("green", "must be 0-255");
-            if(blue > 255 || blue < 0)
-                throw new ArgumentOutOfRangeException("blue", "must be 0-255");
             Red = red;
             Green = green;
             Blue = blue;
         }
 
-        public int Value
-        {
-            get { return Red + (Blue << 8 ) + (Green << 16); }
-        }
+        public int Value => Red + (Green << 8) + (Blue << 16);
     }
 
     /// <summary>
