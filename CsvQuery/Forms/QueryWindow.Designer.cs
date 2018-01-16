@@ -36,8 +36,10 @@
             this.contextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.copyWithHeadersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.contextmenuSelectAll = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
             this.createNewCSVToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.contextmenuShowRowNumbers = new System.Windows.Forms.ToolStripMenuItem();
             this.btnAnalyze = new System.Windows.Forms.Button();
             this.btnExec = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGrid)).BeginInit();
@@ -72,6 +74,9 @@
             this.dataGrid.RowHeadersVisible = false;
             this.dataGrid.Size = new System.Drawing.Size(259, 223);
             this.dataGrid.TabIndex = 1;
+            this.dataGrid.DataBindingComplete += new System.Windows.Forms.DataGridViewBindingCompleteEventHandler(this.OnDataBindingComplete);
+            //this.dataGrid.RowHeadersWidthSizeMode = DataGridViewRowHeadersWidthSizeMode.AutoSizeToDisplayedHeaders;
+            //this.dataGrid.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.DisplayedCells;
             // 
             // contextMenuStrip
             // 
@@ -79,8 +84,10 @@
             this.contextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.copyToolStripMenuItem,
             this.copyWithHeadersToolStripMenuItem,
+            this.contextmenuSelectAll,
             this.toolStripMenuItem1,
-            this.createNewCSVToolStripMenuItem});
+            this.createNewCSVToolStripMenuItem,
+            this.contextmenuShowRowNumbers});
             this.contextMenuStrip.Name = "contextMenuStrip";
             this.contextMenuStrip.Size = new System.Drawing.Size(173, 76);
             // 
@@ -89,12 +96,20 @@
             this.copyToolStripMenuItem.Name = "copyToolStripMenuItem";
             this.copyToolStripMenuItem.Size = new System.Drawing.Size(172, 22);
             this.copyToolStripMenuItem.Text = "&Copy";
+            this.copyToolStripMenuItem.Click += new System.EventHandler(this.OnContextmenuCopy);
             // 
             // copyWithHeadersToolStripMenuItem
             // 
             this.copyWithHeadersToolStripMenuItem.Name = "copyWithHeadersToolStripMenuItem";
             this.copyWithHeadersToolStripMenuItem.Size = new System.Drawing.Size(172, 22);
             this.copyWithHeadersToolStripMenuItem.Text = "Copy with &headers";
+            this.copyWithHeadersToolStripMenuItem.Click += new System.EventHandler(this.OnContextmenuCopyWithHeaders);
+            // 
+            // contextmenuSelectAll
+            // 
+            this.contextmenuSelectAll.Name = "contextmenuSelectAll";
+            this.contextmenuSelectAll.Size = new System.Drawing.Size(172, 22);
+            this.contextmenuSelectAll.Text = "Select &All";
             // 
             // toolStripMenuItem1
             // 
@@ -107,6 +122,14 @@
             this.createNewCSVToolStripMenuItem.Size = new System.Drawing.Size(172, 22);
             this.createNewCSVToolStripMenuItem.Text = "Create &new CSV...";
             this.createNewCSVToolStripMenuItem.Click += new System.EventHandler(this.createNewCSVToolStripMenuItem_Click);
+            // 
+            // contextmenuShowRowNumbers
+            // 
+            this.contextmenuShowRowNumbers.CheckOnClick = true;
+            this.contextmenuShowRowNumbers.Name = "contextmenuShowRowNumbers";
+            this.contextmenuShowRowNumbers.Size = new System.Drawing.Size(295, 36);
+            this.contextmenuShowRowNumbers.Text = "Show row numbers";
+            this.contextmenuShowRowNumbers.Click += new System.EventHandler(this.OnContextmenuShowRowNumbers);
             // 
             // btnAnalyze
             // 
@@ -161,5 +184,7 @@
         private System.Windows.Forms.ToolStripMenuItem copyWithHeadersToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem createNewCSVToolStripMenuItem;
+        private ToolStripMenuItem contextmenuSelectAll;
+        private ToolStripMenuItem contextmenuShowRowNumbers;
     }
 }
