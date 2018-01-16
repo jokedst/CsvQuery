@@ -43,7 +43,7 @@
         [Description("Use colors from Notepad++ theme"), Category("General"), DefaultValue(false)]
         public bool UseNppStyling { get; set; }
 
-        [Description("Use originl headers when generating a new CSV (only works on THIS-queries)"), Category("Generation"), DefaultValue(true)]
+        [Description("Use original headers when generating a new CSV (only works on THIS-queries)"), Category("Generation"), DefaultValue(true)]
         public bool UseOriginalColumnHeadersOnGeneratedCsv { get; set; }
     }
 }

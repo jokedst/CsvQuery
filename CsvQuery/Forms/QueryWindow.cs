@@ -265,7 +265,6 @@
             this.UiThread(() =>
             {
                 dataGrid.DataSource = table;
-                dataGrid.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.DisplayedCells);
             });
             watch.Checkpoint("Display");
 
@@ -360,6 +359,53 @@
             }
             _lastGenerateSettings = settings;
             Trace.TraceInformation(watch.LastCheckpoint("CSV Done"));
+        }
+
+        public void CopyDataToClipboard(DataGridViewClipboardCopyMode mode)
+        {
+            if (dataGrid.GetCellCount(DataGridViewElementStates.Selected) == 0) return;
+            var previousValue = dataGrid.ClipboardCopyMode;
+            dataGrid.ClipboardCopyMode = mode;
+            var clipboardContent = dataGrid.GetClipboardContent();
+            dataGrid.ClipboardCopyMode = previousValue;
+            if (clipboardContent == null) return;
+            try
+            {
+                Clipboard.SetDataObject(clipboardContent);
+            }
+            catch (Exception exception)
+            {
+                this.ErrorMessage("Could not copy to clipboard: " + exception.Message);
+            }
+        }
+
+        private void OnContextmenuCopy(object sender, EventArgs eventArgs) 
+            => CopyDataToClipboard(DataGridViewClipboardCopyMode.EnableWithoutHeaderText);
+
+        private void OnContextmenuCopyWithHeaders(object sender, EventArgs e) 
+            => CopyDataToClipboard(DataGridViewClipboardCopyMode.EnableAlwaysIncludeHeaderText);
+
+        private void OnContextmenuSelectAll(object sender, EventArgs e) 
+            => dataGrid.SelectAll();
+
+        private void OnContextmenuShowRowNumbers(object sender, EventArgs e)
+        {
+            contextmenuShowRowNumbers.Checked = dataGrid.RowHeadersVisible = !dataGrid.RowHeadersVisible;
+            FormatDataGrid();
+        }
+
+        private void OnDataBindingComplete(object grid, DataGridViewBindingCompleteEventArgs args) => FormatDataGrid();
+
+        private void FormatDataGrid()
+        {
+            if (dataGrid.RowHeadersVisible)
+            {
+                for (var i = 0; i < dataGrid.Rows.Count; i++)
+                    dataGrid.Rows[i].HeaderCell.Value = (i + 1).ToString();
+                dataGrid.AutoResizeRowHeadersWidth(DataGridViewRowHeadersWidthSizeMode.AutoSizeToDisplayedHeaders);
+            }
+
+            dataGrid.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.DisplayedCells);
         }
     }
 }
