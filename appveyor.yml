@@ -33,10 +33,10 @@ after_build:
             $ZipFileName = "CsvQuery-$($env:APPVEYOR_REPO_TAG_NAME)-$($env:PLATFORM).zip"
             7z a $ZipFileName .\bin\$env:CONFIGURATION-$env:PLATFORM\CsvQuery.dll
             Push-AppveyorArtifact $ZipFileName
-			$tagMessage = (git tag -n1 -l $($env:APPVEYOR_REPO_TAG_NAME))
-			echo $tagMessage
-			Add-AppveyorMessage "The tag message was $tagMessage"
-			Set-AppveyorBuildVariable 'TagMessage' $tagMessage
+            $tagMessage = (git tag -n1 -l $($env:APPVEYOR_REPO_TAG_NAME))
+            echo $tagMessage
+            Add-AppveyorMessage "The tag message was $tagMessage"
+            Set-AppveyorBuildVariable 'TagMessage' $tagMessage
         }
 
 test_script:
