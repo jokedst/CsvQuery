@@ -9,16 +9,32 @@
     public class ReadTwiceStream : Stream
     {
         private readonly Stream _underlyingStream;
+        private readonly bool _leaveOpen;
         private MemoryStream _cache;
         private int _phase;
 
-        public ReadTwiceStream(Stream underlyingStream)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="underlyingStream"> The stream to read from </param>
+        public ReadTwiceStream(Stream underlyingStream) : this(underlyingStream, false)
+        {
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="underlyingStream"> The stream to read from </param>
+        /// <param name="leaveOpen"> <see langword="true" /> to leave the stream open after the <see cref="T:System.IO.StreamWriter" /> object is disposed; otherwise, <see langword="false" />.</param>
+        public ReadTwiceStream(Stream underlyingStream, bool leaveOpen)
         {
             _underlyingStream = underlyingStream;
+            _leaveOpen = leaveOpen;
             _cache = new MemoryStream();
             _phase = 1;
         }
 
+        /// <inheritdoc cref="Stream.Flush"/>/>
         public override void Flush() { }
 
         public override long Seek(long offset, SeekOrigin origin)

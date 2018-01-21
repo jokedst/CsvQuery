@@ -1,4 +1,6 @@
-﻿namespace CsvQuery.Forms
+﻿using System.Text;
+
+namespace CsvQuery.Forms
 {
     using System;
     using System.Collections.Generic;
@@ -170,7 +172,16 @@
         {
             var watch = new DiagnosticTimer();
             var bufferId = NotepadPPGateway.GetCurrentBufferId();
-            var text = PluginBase.CurrentScintillaGateway.GetAllText();
+
+            string text;
+           // var text = PluginBase.CurrentScintillaGateway.GetAllText();
+
+            using (var sr = new StreamReader(ScintillaStreams.StreamAllText(), Encoding.UTF8))
+            {
+                text = sr.ReadToEnd();
+            }
+            
+
             watch.Checkpoint("GetText");
 
             var csvSettings = CsvAnalyzer.Analyze(text);

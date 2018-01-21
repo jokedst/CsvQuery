@@ -1,6 +1,8 @@
 ﻿// NPP plugin platform for .Net v0.93.96 by Kasper B. Graversen etc.
 using System;
 using System.Text;
+using System.Threading.Tasks;
+using CsvQuery.Tools;
 
 namespace CsvQuery.PluginInfrastructure
 {
@@ -85,7 +87,16 @@ namespace CsvQuery.PluginInfrastructure
         public string GetAllText()
         {
             var length = GetLength();
-            return GetTextRange(0, length);
+            // return GetTextRange(0, length);
+
+            var chunkSize = 1000000;
+            var sb = new StringBuilder();
+            for (int pos = 0; pos < length; pos += Math.Min(chunkSize, length - pos))
+            {
+                sb.Append( GetTextRange(pos, Math.Min(pos+chunkSize,length)));
+            }
+
+            return sb.ToString();
         }
 
         protected string DecodeStringresult(byte[] textBuffer)

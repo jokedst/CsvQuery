@@ -8,7 +8,7 @@ The data is stored in a in-memory SQLite database (or MSSQL if configured), so y
 
 It tries to auto-detect separators, headers and column types. If it fails it asks you for it.
 
-![screenshot](/Meta/Screenshot.png?raw=true "Small file with header row parsed")
+![screenshot](Meta/Screenshot.png "Small file with header row parsed")
 
 License
 -------

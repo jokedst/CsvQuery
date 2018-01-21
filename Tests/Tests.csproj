@@ -86,6 +86,7 @@
     </CodeAnalysisDependentAssemblyPaths>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ConcatenatingStreamFacts.cs" />
     <Compile Include="CsvColumnTypesFacts.cs" />
     <Compile Include="CsvSettingsFacts.cs" />
     <Compile Include="DataStorageFacts.cs" />
