@@ -193,5 +193,40 @@
             }
             return null;
         }
+
+        public static bool EqualBytes(this byte[] buffer, byte[] other, int offset, int length)
+        {
+            var end = offset + length;
+            if (buffer.Length < end || other.Length < end) return false;
+            for (int i = offset; i < end; i++)
+            {
+                if (buffer[i] != other[i]) return false;
+            }
+
+            return true;
+        }
+
+        public static bool EqualData<T>(this T[] buffer, T[] other, int offset, int length)
+        {
+            var end = offset + length;
+            if (buffer.Length < end || other.Length < end) return false;
+            for (int i = offset; i < end; i++)
+            {
+                if (!buffer[i].Equals(other[i])) return false;
+            }
+
+            return true;
+        }
+
+        public static bool EqualData<T>(this T[] buffer, int offset, T[] other, int otherOffset, int length)
+        {
+            if (buffer.Length < offset + length || other.Length < otherOffset + length) return false;
+            for (int i = 0; i < length; i++)
+            {
+                if (!buffer[offset + i].Equals(other[otherOffset + i])) return false;
+            }
+
+            return true;
+        }
     }
 }

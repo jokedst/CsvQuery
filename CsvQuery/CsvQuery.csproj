@@ -162,8 +162,10 @@
     </Compile>
     <Compile Include="PluginInfrastructure\NppEventType.cs" />
     <Compile Include="PluginInfrastructure\PluginStorageBase.cs" />
+    <Compile Include="PluginInfrastructure\ScintillaStreams.cs" />
     <Compile Include="Tools\BlockingStream.cs" />
     <Compile Include="Database\DataStorageBase.cs" />
+    <Compile Include="Tools\ConcatenatingStream.cs" />
     <Compile Include="Tools\Extensions.cs" />
     <Compile Include="Database\MssqlDataStorage.cs" />
     <Compile Include="Tools\ReadTwiceStream.cs" />
