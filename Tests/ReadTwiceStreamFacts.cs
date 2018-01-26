@@ -1,4 +1,6 @@
-﻿namespace Tests
+﻿using System.Linq;
+
+namespace Tests
 {
     using System;
     using System.IO;
@@ -34,7 +36,7 @@
             Assert.AreEqual(10, read);
             firstLine = Encoding.UTF8.GetString(buffer, 0, 10);
             Assert.AreEqual("First line", firstLine);
-
+            
             // Phase 3
             string theRest;
             using (var memoryStream = new MemoryStream())
@@ -43,6 +45,21 @@
                 theRest = Encoding.UTF8.GetString(memoryStream.GetBuffer(),0,(int) memoryStream.Position);
             }
             Assert.AreEqual("\nSecond line\nThird line", theRest);
+        }
+
+        public void Binary_works()
+        {
+            var r = new Random();
+            var buffer = new byte[1024];
+            r.NextBytes(buffer);
+
+            var sourceStream = new MemoryStream(buffer);
+            var twiceStream = new ReadTwiceStream(sourceStream);
+
+            var readBuffer = new byte[256];
+            twiceStream.Read(readBuffer, 0, 256);
+
+            Assert.IsTrue(readBuffer.EqualData(buffer, 0, 256));
         }
     }
 }

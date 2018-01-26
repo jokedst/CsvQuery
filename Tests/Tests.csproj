@@ -86,6 +86,7 @@
     </CodeAnalysisDependentAssemblyPaths>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ConcatenatingStreamFacts.cs" />
     <Compile Include="CsvColumnTypesFacts.cs" />
     <Compile Include="CsvSettingsFacts.cs" />
     <Compile Include="DataStorageFacts.cs" />
@@ -109,6 +110,9 @@
     </None>
     <EmbeddedResource Include="TestFiles\semicolon.csv" />
     <None Include="TestFiles\Headers.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="TestFiles\QuotedWithSeparator.csv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="TestFiles\random100x10.csv">

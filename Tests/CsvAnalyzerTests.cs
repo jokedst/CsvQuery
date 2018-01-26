@@ -29,6 +29,14 @@
         }
 
         [TestMethod]
+        public void CanFindColonInQuotedFile()
+        {
+            var data = File.ReadAllText(@"TestFiles\QuotedWithSeparator.csv");
+            var result = CsvAnalyzer.Analyze(data);
+            Assert.AreEqual(',', result.Separator);
+        }
+
+        [TestMethod]
         public void CanReadFiles()
         {
             var csvData = File.ReadAllText(@"TestFiles\sentences.csv");

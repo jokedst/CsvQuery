@@ -189,4 +189,29 @@ namespace CsvQuery.PluginInfrastructure
         public IntPtr hToolbarBmp;
         public IntPtr hToolbarIcon;
     }
+
+    public class TemporaryPointer:IDisposable
+    {
+        public IntPtr Pointer { get; }
+        public TemporaryPointer(object obj)
+        {
+            Pointer = Marshal.AllocHGlobal(Marshal.SizeOf(obj));
+            Marshal.StructureToPtr(obj, Pointer, false);
+        }
+        private void ReleaseUnmanagedResources()
+        {
+            Marshal.FreeHGlobal(Pointer);
+        }
+
+        public void Dispose()
+        {
+            ReleaseUnmanagedResources();
+            GC.SuppressFinalize(this);
+        }
+
+        ~TemporaryPointer()
+        {
+            ReleaseUnmanagedResources();
+        }
+    }
 }

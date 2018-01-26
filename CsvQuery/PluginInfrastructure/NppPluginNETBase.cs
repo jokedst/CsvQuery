@@ -1,5 +1,6 @@
 ﻿// NPP plugin platform for .Net v0.93.96 by Kasper B. Graversen etc.
 using System;
+using System.Linq;
 
 namespace CsvQuery.PluginInfrastructure
 {
@@ -14,20 +15,34 @@ namespace CsvQuery.PluginInfrastructure
         /// <summary>
         /// Adds an entry in the Notepad++ Plugin menu.
         /// </summary>
-        /// <param name="text"></param>
-        /// <param name="functionPointer"></param>
-        /// <param name="checkOnInit"></param>
-        /// <param name="shortcut"></param>
-        /// <returns></returns>
-        public static int AddMenuItem(string text, NppFuncItemDelegate functionPointer, bool checkOnInit = false, ShortcutKey shortcut = new ShortcutKey())
+        /// <param name="text"> Menu item text. Prefix a character with "&" to hotkey it </param>
+        /// <param name="onMenuClickedHandler"> Method to call when item is clicked </param>
+        /// <param name="checkOnInit"> If true the menu item will have a checkmark initially</param>
+        /// <param name="shortcut"> Keyboard chortcut </param>
+        /// <returns> Index this menu item was given </returns>
+        public static int AddMenuItem(string text, NppFuncItemDelegate onMenuClickedHandler, bool checkOnInit = false, ShortcutKey shortcut = new ShortcutKey())
         {
             var funcItem = new FuncItem { _itemName = text };
-            if (functionPointer != null)
-                funcItem._pFunc = functionPointer;
+            if (onMenuClickedHandler != null)
+                funcItem._pFunc = onMenuClickedHandler;
             if (shortcut._key != 0)
                 funcItem._pShKey = shortcut;
             funcItem._init2Check = checkOnInit;
             return _funcItems.Add(funcItem);
+        }
+
+        public static int GetMenuItemId(string menuItemText)
+        {
+            try
+            {
+                return _funcItems.Items.First(item => item._itemName == menuItemText)._cmdID;
+            }
+            catch (InvalidOperationException e)
+            {
+                throw new ArgumentException($"Unknown menu item '{menuItemText}'", nameof(menuItemText), e);
+            }
+
+            //  ?? throw new ArgumentException("Unknown ´menu item '"+menuItemText+"'", nameof(menuItemText))
         }
 
         [Obsolete("The 'index' parameter is not used! Use 'AddMenuItem' instead!")]

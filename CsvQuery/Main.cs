@@ -23,7 +23,6 @@ namespace CsvQuery
         public static Settings Settings = new Settings();
 
         public static QueryWindow QueryWindow;
-        public static int MenuToggleId = -1;
         public static IDataStorage DataStorage;
 
         static Main()
@@ -96,6 +95,10 @@ namespace CsvQuery
                     QueryWindow.ApplyStyling(true);
                 }
             }
+            else if (notification.Header.EventType == NppEventType.NPPN_BUFFERACTIVATED)
+            {
+                Debug.WriteLine($"NPPN_BUFFERACTIVATED: {notification.Header.BufferId}");
+            }
             // This method is invoked whenever something is happening in notepad++. Use as:
             // if (notification.Header.Code == (uint)NppMsg.NPPN_xxx) {...}
             // (or SciMsg.SCNxxx)
@@ -104,7 +107,7 @@ namespace CsvQuery
 
         public static void CommandMenuInit()
         {
-            MenuToggleId = PluginBase.AddMenuItem("Toggle query window", ToggleQueryWindow, false, new ShortcutKey(true, true, false, Keys.C));
+            PluginBase.AddMenuItem("Toggle query window", ToggleQueryWindow, false, new ShortcutKey(true, true, false, Keys.C));
             PluginBase.AddMenuItem("Manual parse settings", ParseWithManualSettings);
             PluginBase.AddMenuItem("List parsed files", ListSqliteTables);
             PluginBase.AddMenuItem("---", null);
@@ -138,10 +141,21 @@ namespace CsvQuery
         public static void SetToolBarIcon()
         {
             var icons = new toolbarIcons { hToolbarBmp = Resources.cq.GetHbitmap() };
-            var iconPointer = Marshal.AllocHGlobal(Marshal.SizeOf(icons));
-            Marshal.StructureToPtr(icons, iconPointer, false);
-            Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_ADDTOOLBARICON, PluginBase._funcItems.Items[MenuToggleId]._cmdID, iconPointer);
-            Marshal.FreeHGlobal(iconPointer);
+            using (var iconPointer = new TemporaryPointer(icons))
+            {
+                Win32.SendMessage(PluginBase.nppData._nppHandle,
+                    (uint)NppMsg.NPPM_ADDTOOLBARICON,
+                    PluginBase.GetMenuItemId("Toggle query window"),
+                    iconPointer.Pointer);
+            }
+
+            //var iconPointer = Marshal.AllocHGlobal(Marshal.SizeOf(icons));
+            //Marshal.StructureToPtr(icons, iconPointer, false);
+            //Win32.SendMessage(PluginBase.nppData._nppHandle, 
+            //    (uint)NppMsg.NPPM_ADDTOOLBARICON, 
+            //    PluginBase.GetMenuItemId("Toggle query window"), 
+            //    iconPointer);
+            //Marshal.FreeHGlobal(iconPointer);
         }
 
         public static void PluginCleanUp()
@@ -292,7 +306,7 @@ namespace CsvQuery
                 {
                     hClient = QueryWindow.Handle,
                     pszName = "CSV Query",
-                    dlgID = MenuToggleId,
+                    dlgID = PluginBase.GetMenuItemId("Toggle query window"),
                     uMask = NppTbMsg.DWS_DF_CONT_BOTTOM | NppTbMsg.DWS_ICONTAB | NppTbMsg.DWS_ICONBAR,
                     hIconTab = (uint) queryWindowIcon.Handle,
                     pszModuleName = PluginName
@@ -311,12 +325,17 @@ namespace CsvQuery
                 if (show ?? !QueryWindow.Visible)
                 {
                     Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_DMMSHOW, 0, QueryWindow.Handle);
-                    Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_SETMENUITEMCHECK, PluginBase._funcItems.Items[MenuToggleId]._cmdID, 1);
+                    Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_SETMENUITEMCHECK,
+                        PluginBase.GetMenuItemId("Toggle query window"), 
+                        1);
                 }
                 else
                 {
-                    Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_DMMHIDE, 0, QueryWindow.Handle);
-                    Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_SETMENUITEMCHECK, PluginBase._funcItems.Items[MenuToggleId]._cmdID, 0);
+                    Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_DMMHIDE, 
+                        0, QueryWindow.Handle);
+                    Win32.SendMessage(PluginBase.nppData._nppHandle,
+                        (uint)NppMsg.NPPM_SETMENUITEMCHECK,
+                        PluginBase.GetMenuItemId("Toggle query window"), 0);
                 }
             }
         }
