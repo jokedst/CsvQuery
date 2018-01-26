@@ -22,11 +22,6 @@
         /// <returns></returns>
         public static CsvSettings Analyze(string csvString)
         {
-            // TODO: strings with quoted values (e.g. 'hej,san')
-            // Not sure how to detect this, but we could just run the variance analysis
-            // 3 times, one for none, one for ' and one for " and see which has best variances
-            // That wouldn't detect escape chars though, or odd variants like [this]
-
             var result = DetectW3C(csvString);
             if (result != null)
                 return result;
@@ -120,6 +115,8 @@
             var separatorQuoted = GetSeparatorFromVariance(variancesQuoted, occurrencesQuoted, linesQuoted, out var uncertancyQuoted);
             if (uncertancyQuoted < uncertancy)
                 result.Separator = separatorQuoted;
+            else if (uncertancy < uncertancyQuoted) // It was better ignoring quotes!
+                result.TextQualifier = '\0';
 
             if (result.Separator != default(char)) return result;
 

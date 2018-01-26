@@ -173,13 +173,14 @@ namespace CsvQuery.Forms
             var watch = new DiagnosticTimer();
             var bufferId = NotepadPPGateway.GetCurrentBufferId();
 
-            string text;
+            var textLength = PluginBase.CurrentScintillaGateway.GetTextLength();
+            var text = PluginBase.CurrentScintillaGateway.GetTextRange(0, Math.Min(100000, textLength));
            // var text = PluginBase.CurrentScintillaGateway.GetAllText();
 
-            using (var sr = new StreamReader(ScintillaStreams.StreamAllText(), Encoding.UTF8))
-            {
-                text = sr.ReadToEnd();
-            }
+            //using (var sr = new StreamReader(ScintillaStreams.StreamAllText(), Encoding.UTF8))
+            //{
+            //    text = sr.ReadToEnd();
+            //}
             
 
             watch.Checkpoint("GetText");
@@ -197,10 +198,13 @@ namespace CsvQuery.Forms
             }
             watch.Checkpoint("Analyze");
 
-            Parse(csvSettings, watch, text, bufferId);
+            using (var sr = new StreamReader(ScintillaStreams.StreamAllText(), Encoding.UTF8))
+            {
+                Parse(csvSettings, watch, sr, bufferId);
+            }
         }
 
-        private void Parse(CsvSettings csvSettings, DiagnosticTimer watch, string text, IntPtr bufferId)
+        private void Parse(CsvSettings csvSettings, DiagnosticTimer watch, TextReader text, IntPtr bufferId)
         {
             var data = csvSettings.Parse(text);
             watch.Checkpoint("Parse");
@@ -227,10 +231,16 @@ namespace CsvQuery.Forms
 
         public void StartParse(CsvSettings settings)
         {
-            StartSomething(() => Parse(settings,
-                new DiagnosticTimer(),
-                PluginBase.CurrentScintillaGateway.GetAllText(),
-                NotepadPPGateway.GetCurrentBufferId()));
+            StartSomething(() =>
+            {
+                using (var sr = new StreamReader(ScintillaStreams.StreamAllText(), Encoding.UTF8))
+                {
+                    Parse(settings,
+                        new DiagnosticTimer(),
+                        sr,
+                        NotepadPPGateway.GetCurrentBufferId());
+                }
+            });
         }
 
         private void Execute(IntPtr bufferId, DiagnosticTimer watch)

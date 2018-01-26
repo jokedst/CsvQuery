@@ -44,6 +44,7 @@ namespace CsvQuery.Csv
             this.HasHeader = hasHeader;
         }
 
+
         /// <summary>
         /// Parses a big text blob into rows and columns, using the settings
         /// </summary>
@@ -51,8 +52,20 @@ namespace CsvQuery.Csv
         /// <returns>Parsed data</returns>
         public List<string[]> Parse(string text)
         {
+            using (var reader = new StringReader(text))
+            {
+                return Parse(reader);
+            }
+        }
+
+        /// <summary>
+        /// Parses a big text blob into rows and columns, using the settings
+        /// </summary>
+        /// <param name="reader">Big blob of text</param>
+        /// <returns>Parsed data</returns>
+        public List<string[]> Parse(TextReader reader)
+        {
             // The actual _parsing_ .NET can handle. Well, VisualBasic anyway...
-            using(var reader = new StringReader(text))
             using (var parser = new Microsoft.VisualBasic.FileIO.TextFieldParser(reader))
             {
                 var errors = new StringBuilder();
