@@ -314,7 +314,7 @@ out object pp                 /* OUT: Pointer to mapping */
     ** Locate a VFS by name.  If no name is given, simply return the
     ** first VFS on the list.
     */
-    static bool isInit = false;
+    //static bool isInit = false;
 
     static public sqlite3_vfs sqlite3_vfs_find(string zVfs)
     {

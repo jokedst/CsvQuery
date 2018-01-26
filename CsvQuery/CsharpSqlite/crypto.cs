@@ -549,7 +549,7 @@ static void CODEC_TRACE( string T, params object[] ap ) { if ( sqlite3PagerTrace
         codec_ctx ctx;
         int rc;
         ////Pager pPager = pDb.pBt.pBt.pPager;
-        sqlite3_file fd;
+        //sqlite3_file fd;
 
         ctx = new codec_ctx();//sqlite3Malloc(sizeof(codec_ctx);
         //if(ctx == null) return SQLITE_NOMEM;

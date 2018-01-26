@@ -2055,7 +2055,7 @@ sqlite3DebugPrintf( "  estimatedCost=%g\n", p.estimatedCost );
       double logN;               /* log(nTableRow) */
       double costTempIdx;        /* per-query cost of the transient index */
       WhereTerm pTerm;           /* A single term of the WHERE clause */
-      WhereTerm pWCEnd;          /* End of pWC.a[] */
+      //WhereTerm pWCEnd;          /* End of pWC.a[] */
       Table pTable;              /* Table that might be indexed */
 
       if ( pParse.nQueryLoop <= (double)1 )
@@ -2138,8 +2138,8 @@ WhereCost pCost            /* Lowest cost query plan */
     {
       int nColumn;               /* Number of columns in the constructed index */
       WhereTerm pTerm;           /* A single term of the WHERE clause */
-      WhereTerm pWCEnd;          /* End of pWC.a[] */
-      int nByte;                 /* Byte of memory needed for pIdx */
+      //WhereTerm pWCEnd;          /* End of pWC.a[] */
+      //int nByte;                 /* Byte of memory needed for pIdx */
       Index pIdx;                /* Object describing the transient index */
       Vdbe v;                    /* Prepared statement under construction */
       int regIsInit;             /* Register set by initialization */

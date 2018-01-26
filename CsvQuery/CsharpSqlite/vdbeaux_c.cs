@@ -2049,7 +2049,7 @@ sqlite3IoTrace( "SQL %s\n", z.Trim() );
       int n;                         /* Loop counter */
       //u8 zCsr;                     /* Memory available for allocation */
       //u8 zEnd;                     /* First byte past allocated memory */
-      int nByte;                     /* How much extra memory is needed */
+      //int nByte;                     /* How much extra memory is needed */
 
       Debug.Assert( p != null );
       Debug.Assert( pParse != null );
@@ -3854,13 +3854,13 @@ swapMixedEndianFloat(x);
     {
       byte[] aKey = pKey;
       UnpackedRecord p;     /* The unpacked record that we will return */
-      int nByte;            /* Memory space needed to hold p, in bytes */
+      //int nByte;            /* Memory space needed to hold p, in bytes */
       int d;
       u32 idx;
       int u;                /* Unsigned loop counter */
       int szHdr = 0;
       Mem pMem;
-      int nOff;           /* Increase pSpace by this much to 8-byte align it */
+      //int nOff;           /* Increase pSpace by this much to 8-byte align it */
 
       /*
       ** We want to shift the pointer pSpace up such that it is 8-byte aligned.
@@ -3917,7 +3917,7 @@ swapMixedEndianFloat(x);
     {
 #if SQLITE_DEBUG
       ////int i;
-      Mem pMem;
+      //Mem pMem;
       Debug.Assert( p != null );
       Debug.Assert( ( p.flags & UNPACKED_NEED_DESTROY ) != 0 );
       //for ( i = 0, pMem = p->aMem ; i < p->nField ; i++, pMem++ )

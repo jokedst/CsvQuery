@@ -4288,7 +4288,7 @@ break;
     ** This routine does NOT free the Select structure passed in.  The
     ** calling function needs to do that.
     */
-    static SelectDest sdDummy = null;
+    //static SelectDest sdDummy = null;
     //static bool bDummy = false;
 
     static int sqlite3Select(

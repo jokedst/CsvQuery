@@ -1097,7 +1097,7 @@ namespace Community.CsharpSqlite
       FuncDef pNew;
       int rc = 0;
       string zLowerName;
-      string z;
+      //string z;
 
       /* Check to see the left operand is a column in a virtual table */
       if ( NEVER( pExpr == null ) )

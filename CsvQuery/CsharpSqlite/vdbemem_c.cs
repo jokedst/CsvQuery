@@ -67,7 +67,7 @@ namespace Community.CsharpSqlite
     */
     static int sqlite3VdbeChangeEncoding( Mem pMem, int desiredEnc )
     {
-      int rc;
+     // int rc;
       Debug.Assert( ( pMem.flags & MEM_RowSet ) == 0 );
       Debug.Assert( desiredEnc == SQLITE_UTF8 || desiredEnc == SQLITE_UTF16LE
       || desiredEnc == SQLITE_UTF16BE );

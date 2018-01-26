@@ -195,7 +195,7 @@ winceLock *shared;      /* Global shared lock memory for the file  */
 #if SQLITE_TEST
     int sqlite3_os_type = 0;
 #else
-static int sqlite3_os_type = 0;
+//static int sqlite3_os_type = 0;
 #endif
 
     /*
@@ -940,8 +940,6 @@ free(pFile.zDeleteOnClose);
     sqlite3_int64 offset       /* Begin reading at this offset */
     )
     {
-
-      long rc;
       sqlite3_file pFile = id;
       int nRead;                    /* Number of bytes actually read from file */
 
@@ -1159,7 +1157,6 @@ free(pFile.zDeleteOnClose);
     {
 #if !(NDEBUG) || !(SQLITE_NO_SYNC) || (SQLITE_DEBUG)
       sqlite3_file pFile = (sqlite3_file)id;
-      bool rc;
 #else
 UNUSED_PARAMETER(id);
 #endif
@@ -3172,7 +3169,7 @@ return SQLITE_OK;
 #endif
 
 #if !SQLITE_OS_WINCE && !__CYGWIN__
-      int nByte;
+      //int nByte;
       //string  zConverted;
       string zOut = null;
 
@@ -3213,7 +3210,7 @@ return SQLITE_OK;
           zOut = Path.GetFullPath( zRelative ); // was unicodeToUtf8(zTemp);
 #endif
         }
-        catch ( Exception  e )
+        catch ( Exception )
         {
           zOut = zRelative;
         }
@@ -3724,7 +3721,7 @@ Debug.Assert(winSysInfo.dwAllocationGranularity > 0);
         ovlp.OffsetHigh = 0;
         ovlp.EventHandle = IntPtr.Zero;
 
-        return LockFileEx( pFile.fs.Handle, LOCKFILE_FAIL_IMMEDIATELY, 0, (uint)length, 0, ref ovlp ) ? 1 : 0;
+        return LockFileEx( pFile.fs.SafeFileHandle.DangerousGetHandle(), LOCKFILE_FAIL_IMMEDIATELY, 0, (uint)length, 0, ref ovlp ) ? 1 : 0;
 #else
             return 1;
 #endif

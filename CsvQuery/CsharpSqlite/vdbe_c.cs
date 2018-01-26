@@ -1843,7 +1843,7 @@ arithmetic_result_is_null:
           case OP_ShiftRight:
             {           /* same as TK_RSHIFT, in1, in2, ref3 */
               i64 iA;
-              u64 uA;
+              //u64 uA;
               i64 iB;
               u8 op;
 
@@ -6311,7 +6311,7 @@ cDebug.Ase OP_Checkpoint: {
               Pager pPager;                   /* Pager associated with pBt */
               int eNew;                       /* New journal mode */
               int eOld;                       /* The old journal mode */
-              string zFilename;               /* Name of database file for pPager */
+              //string zFilename;               /* Name of database file for pPager */
 
               eNew = pOp.p3;
               Debug.Assert( eNew == PAGER_JOURNALMODE_DELETE

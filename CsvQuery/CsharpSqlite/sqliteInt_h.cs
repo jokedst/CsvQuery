@@ -586,7 +586,7 @@ const int ;//#define SQLITE_LITTLEENDIAN 1
 const int ;//#define SQLITE_UTF16NATIVE  SQLITE_UTF16LE
 #else
     static u8 SQLITE_BIGENDIAN = 0;//#define SQLITE_BIGENDIAN    (*(char )(&sqlite3one)==0)
-    static u8 SQLITE_LITTLEENDIAN = 1;//#define SQLITE_LITTLEENDIAN (*(char )(&sqlite3one)==1)
+    //static u8 SQLITE_LITTLEENDIAN = 1;//#define SQLITE_LITTLEENDIAN (*(char )(&sqlite3one)==1)
     static u8 SQLITE_UTF16NATIVE = ( SQLITE_BIGENDIAN != 0 ? SQLITE_UTF16BE : SQLITE_UTF16LE );//#define SQLITE_UTF16NATIVE (SQLITE_BIGENDIAN?SQLITE_UTF16BE:SQLITE_UTF16LE)
 #endif
 
@@ -687,7 +687,7 @@ const int ;//#define SQLITE_UTF16NATIVE  SQLITE_UTF16LE
     ** This is an internal extension to SQLITE_STATIC and SQLITE_TRANSIENT.
     */
     //#define SQLITE_DYNAMIC   ((sqlite3_destructor_type)sqlite3DbFree)
-    static dxDel SQLITE_DYNAMIC;
+    static dxDel SQLITE_DYNAMIC = null;
 
     /*
     ** When SQLITE_OMIT_WSD is defined, it means that the target platform does

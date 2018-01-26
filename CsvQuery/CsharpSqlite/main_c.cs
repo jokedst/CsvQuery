@@ -3125,9 +3125,10 @@ error_out:
 #if (SQLITE_SILVERLIGHT || WINDOWS_MOBILE || SQLITE_WINRT)
               pArg = (long)-1; // not supported
 #else
-            pArg = (long)fd.fs.Handle;
+            //pArg = (long)fd.fs.Handle;
+              pArg = (long) fd.fs.SafeFileHandle.DangerousGetHandle();
 #endif
-            rc = SQLITE_OK;
+                        rc = SQLITE_OK;
           }
           else if ( fd.pMethods != null )
           {
