@@ -1,5 +1,6 @@
 ﻿namespace Tests
 {
+    using System.Linq;
     using CsvQuery.Csv;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -53,10 +54,10 @@
             var set = new CsvSettings {Separator = ',', TextQualifier = '"'};
 
             // Act
-            var data = set.Parse(csvText);
+            var data = set.Parse(csvText).ToList();
 
             // Assert
-            Assert.AreEqual(3,data.Count);
+            Assert.AreEqual(3, data.Count);
             Assert.AreEqual(2, data[2].Length);
         }
     }

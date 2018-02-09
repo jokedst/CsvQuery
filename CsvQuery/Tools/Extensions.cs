@@ -228,5 +228,34 @@
 
             return true;
         }
+
+        /// <summary>
+        /// Partitions an enumerable into several with defined size.
+        /// Not thread safe, so don't use in parallell for or something like that.
+        /// Also don't enumerate over it several times.
+        /// </summary>
+        /// <typeparam name="T">Type of object to enumerate over</typeparam>
+        /// <param name="input">This</param>
+        /// <param name="blockSize">Size of each block</param>
+        /// <returns>List of lists of blocksize size</returns>
+        public static IEnumerable<IEnumerable<T>> Partition<T>(this IEnumerable<T> input, int blockSize)
+        {
+            // This creates no temporary storage, it just enumerates. Brilliant. Not thread safe though.
+            var enumerator = input.GetEnumerator();
+
+            while (enumerator.MoveNext())
+            {
+                yield return NextPartition(enumerator, blockSize);
+            }
+        }
+
+        private static IEnumerable<T> NextPartition<T>(IEnumerator<T> enumerator, int blockSize)
+        {
+            do
+            {
+                yield return enumerator.Current;
+            }
+            while (--blockSize > 0 && enumerator.MoveNext());
+        }
     }
 }

@@ -17,8 +17,8 @@
             if(data==null || data.Count==0)
                 throw new ArgumentException("No data to analyze", nameof(data));
 
-            if(csvSettings==null)
-                csvSettings=new CsvSettings();
+            if (csvSettings == null)
+                csvSettings = new CsvSettings();
 
             var headerTypes = data[0].Select(column => new CsvColumnAnalyzer(column)).ToList();
             IEnumerable<string[]> toAnalyze = data;

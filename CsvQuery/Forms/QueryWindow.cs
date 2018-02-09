@@ -198,7 +198,7 @@ namespace CsvQuery.Forms
             }
             watch.Checkpoint("Analyze");
 
-            using (var sr = new StreamReader(ScintillaStreams.StreamAllText(), Encoding.UTF8))
+            using (var sr = ScintillaStreams.StreamAllText())
             {
                 Parse(csvSettings, watch, sr, bufferId);
             }
@@ -206,13 +206,41 @@ namespace CsvQuery.Forms
 
         private void Parse(CsvSettings csvSettings, DiagnosticTimer watch, TextReader text, IntPtr bufferId)
         {
-            var data = csvSettings.Parse(text);
-            watch.Checkpoint("Parse");
-
-            var columnTypes = new CsvColumnTypes(data, csvSettings);
+            IEnumerable<string[]> data;
             try
             {
-                Main.DataStorage.SaveData(bufferId, data, columnTypes);
+                data = csvSettings.Parse(text);
+            }
+            catch (Exception e)
+            {
+                this.ErrorMessage("Error when parsing text:\n" + e.Message);
+                return;
+            }
+            watch.Checkpoint("Parse");
+
+            var count = 0;
+            try
+            {
+                var first = true;
+                const int partitionSize = 10000;
+                foreach (var chunk in data.Partition(partitionSize))
+                {
+                    if (first)
+                    {
+                        var wholeChunk = chunk.ToList();
+                        var columnTypes = new CsvColumnTypes(wholeChunk, csvSettings);
+                        Main.DataStorage.SaveData(bufferId, wholeChunk, columnTypes);
+                        first = false;
+                        watch.Checkpoint("Saved first chunk to DB");
+                    }
+                    else
+                    {
+                        count += partitionSize;
+                        var msg = $"Read lines: {count}";
+                        this.UiThread(() => txbQuery.Text = msg);
+                        Main.DataStorage.SaveMore(bufferId, chunk);
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -220,7 +248,9 @@ namespace CsvQuery.Forms
                 return;
             }
             watch.Checkpoint("Saved to DB");
-            this.UiThread(() => txbQuery.Text = "SELECT * FROM THIS");
+            var selectQuery = "SELECT * FROM THIS";
+            if (count > 10000) selectQuery = Main.DataStorage.CreateLimitedSelect(10000);
+            this.UiThread(() => txbQuery.Text = selectQuery);
             Execute(bufferId, watch);
 
             var diagnostic = watch.LastCheckpoint("Resize");
@@ -233,7 +263,7 @@ namespace CsvQuery.Forms
         {
             StartSomething(() =>
             {
-                using (var sr = new StreamReader(ScintillaStreams.StreamAllText(), Encoding.UTF8))
+                using (var sr = ScintillaStreams.StreamAllText())
                 {
                     Parse(settings,
                         new DiagnosticTimer(),

@@ -136,6 +136,11 @@ namespace CsvQuery.Database
             return tableName;
         }
 
+        public override void SaveMore(IntPtr bufferId, IEnumerable<string[]> data)
+        {
+            throw new NotImplementedException();
+        }
+
         public override List<string[]> ExecuteQuery(string query, bool includeColumnNames)
         {
             var result = new List<string[]>();
@@ -193,6 +198,11 @@ namespace CsvQuery.Database
         {
             // Test connection and permission to create tables
             ExecuteNonQuery("BEGIN tran;CREATE TABLE [bnfkwencvwrjk]([X] int NULL);ROLLBACK tran");
+        }
+
+        public override string CreateLimitedSelect(int linesToSelect)
+        {
+            return $"SELECT TOP {linesToSelect} * FROM THIS";
         }
     }
 }

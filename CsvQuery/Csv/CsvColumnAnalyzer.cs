@@ -9,6 +9,9 @@ namespace CsvQuery.Csv
     using System.Linq;
     using Tools;
 
+    /// <summary>
+    /// Decimal numbers can use dot ("invariant"), comma or other local settings
+    /// </summary>
     [Flags]
     public enum DecimalTypes : byte
     {
@@ -19,6 +22,9 @@ namespace CsvQuery.Csv
         Any = Invariant | Comma | Local
     }
 
+    /// <summary>
+    /// Analyses one column and figures out the type
+    /// </summary>
     public class CsvColumnAnalyzer
     {
         private static readonly NumberFormatInfo CommaDecimal = new NumberFormatInfo
@@ -59,7 +65,7 @@ namespace CsvQuery.Csv
 #if HISTOGRAM
         public Dictionary<string, int> DistinctCounts;
 #elif COMMONONLY
-        private readonly string[] _commonStrings = new string[10];
+        private string[] _commonStrings = new string[10];
         private bool _tooManyStrings;
 #else
         public bool IsSingleValue = true;
@@ -97,7 +103,7 @@ namespace CsvQuery.Csv
                     DataType = ColumnType.Integer;
                     MinInteger = MaxInteger = iout;
                 }
-            else if (updatedType<=ColumnType.Decimal && IsDecimal(csvText, updatedDecimalType))
+            else if (updatedType <= ColumnType.Decimal && IsDecimal(csvText, updatedDecimalType))
                 DataType = ColumnType.Decimal;
             else
                 DataType = ColumnType.String;
@@ -289,7 +295,19 @@ namespace CsvQuery.Csv
 #endif
             return ret;
         }
-        
+
+        public CsvColumnAnalyzer Clone()
+        {
+            var clone =(CsvColumnAnalyzer) this.MemberwiseClone();
+#if HISTOGRAM
+            clone.DistinctCounts = new Dictionary<string, int>(this.DistinctCounts);
+#elif COMMONONLY
+            clone._commonStrings = new string[10];
+            Array.Copy(_commonStrings, clone._commonStrings, 10);
+#endif
+            return clone;
+        }
+
         public bool IsSignificantlyDifferent(CsvColumnAnalyzer head)
         {
             if (head.DataType == ColumnType.String && DataType != ColumnType.String)

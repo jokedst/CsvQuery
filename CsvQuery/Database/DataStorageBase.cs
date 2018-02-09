@@ -103,5 +103,12 @@ namespace CsvQuery.Database
             UnsafeColumnNames[bufferId] = columnTypes.Columns.Where(c => c.CreationString != c.Name)
                 .ToDictionary(c => c.Name, c => c.CreationString);
         }
+
+        public abstract void SaveMore(IntPtr bufferId, IEnumerable<string[]> data);
+
+        public virtual string CreateLimitedSelect(int linesToSelect)
+        {
+            return $"SELECT * FROM THIS LIMIT {linesToSelect}";
+        }
     }
 }

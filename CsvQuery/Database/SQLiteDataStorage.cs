@@ -6,6 +6,7 @@
     using System.Text;
     using Community.CsharpSqlite;
     using Csv;
+    using CsvQuery.Tools;
 
     public class SQLiteDataStorage : DataStorageBase
     {
@@ -27,6 +28,7 @@
                 Db.ExecuteNonQuery(command);
         }
 
+        private readonly Dictionary<IntPtr, (string, CsvColumnTypes)> _lastWriteSettings = new Dictionary<IntPtr, (string, CsvColumnTypes)>();
         /// <summary>
         /// Saves parsed data into SQLite database.
         /// This function currently does a little too much, it detects headers and column types (which it then pretty much ignore)
@@ -110,7 +112,36 @@
             ExecuteNonQuery("END");
 
             SaveUnsafeColumnNames(bufferId, columnTypes);
+
+            _lastWriteSettings[bufferId] = (insertQuery.ToString(), columnTypes);
+           
             return tableName;
+        }
+
+        public override void SaveMore(IntPtr bufferId, IEnumerable<string[]> data)
+        {
+            if(!_lastWriteSettings.ContainsKey(bufferId))
+                throw new CsvQueryException("Can not save more data - no settings for this file saved");
+
+            var (insertQuery, columnTypes) = _lastWriteSettings[bufferId];
+            var columns = columnTypes.Columns.Count;
+
+            ExecuteNonQuery("BEGIN EXCLUSIVE");
+            var stmt = new SQLiteVdbe(Db, insertQuery);
+            foreach (var stringse in data)
+            {
+                stmt.Reset();
+                int index = 0;
+                foreach (var s in stringse)
+                {
+                    stmt.BindText(++index, s);
+                }
+                while (index < columns)
+                    stmt.BindText(++index, null);
+                stmt.ExecuteStep();
+            }
+            stmt.Close();
+            ExecuteNonQuery("END");
         }
 
         /// <summary>

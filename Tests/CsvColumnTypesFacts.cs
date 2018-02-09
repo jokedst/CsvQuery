@@ -17,7 +17,7 @@
         [TestMethod]
         public void CanReadFiles()
         {
-            var data = CsvSettings.Semicolon.Parse(File.ReadAllText(@"TestFiles\Headers.csv"));
+            var data = CsvSettings.Semicolon.Parse(File.ReadAllText(@"TestFiles\Headers.csv")).ToList();
 
             var result = new CsvColumnTypes(data, null);
 
@@ -27,7 +27,7 @@
         [TestMethod]
         public void CanDetectColumnTypes()
         {
-            var data = CsvSettings.Comma.Parse(File.ReadAllText(@"TestFiles\random100x10.csv"));
+            var data = CsvSettings.Comma.Parse(File.ReadAllText(@"TestFiles\random100x10.csv")).ToList();
 
             var result = new CsvColumnTypes(data, null);
 
@@ -42,7 +42,7 @@
         [TestMethod]
         public void CanDetectNoHeader()
         {
-            var data = CsvSettings.Comma.Parse(File.ReadAllText(@"TestFiles\random100x10.csv"));
+            var data = CsvSettings.Comma.Parse(File.ReadAllText(@"TestFiles\random100x10.csv")).ToList();
             data.RemoveAt(0);
 
             var result = new CsvColumnTypes(data, null);

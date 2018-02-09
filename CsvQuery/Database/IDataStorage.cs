@@ -48,6 +48,20 @@ namespace CsvQuery.Database
         IReadOnlyDictionary<string, string> GetUnsafeColumnMaps(IntPtr bufferId);
 
         DataTable ExecuteQueryToDataTable(string query, IntPtr bufferId);
+
+        /// <summary>
+        /// Continue saving more data after a call to SaveDate
+        /// </summary>
+        /// <param name="bufferId"></param>
+        /// <param name="data"></param>
+        void SaveMore(IntPtr bufferId, IEnumerable<string[]> data);
+
+        /// <summary>
+        /// Returns a SQL query that only selects a limited number of rows (e.g. SELECT TOP 10 * FROM THIS)
+        /// </summary>
+        /// <param name="linesToSelect"></param>
+        /// <returns></returns>
+        string CreateLimitedSelect(int linesToSelect);
     }
 
     public enum DataStorageProvider

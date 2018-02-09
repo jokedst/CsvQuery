@@ -1,0 +1,39 @@
+
+Idea: automatically update pluginmanager on release
+
+These are some pieces for the appveyor.yml
+
+
+# check out pluginmanager to edit it
+# Update fork of plugin list
+
+git clone https://github.com/jokedst/npp-plugins-x64.git npp-plugins-x64
+cd npp-plugins-x64
+git checkout master
+git pull
+git checkout -b CsvQuery-v1.2.5
+
+# TODO Changes here
+$xml = [xml](cat plugins/plugins64.xml)
+$cq = $xml.plugins.plugin | where {$_.Name -eq 'CsvQuery'}
+$cq.stability = "Meh"
+$xml.Save("plug.xml")
+
+# push
+git commit -a -m "CsvQuery updated to v1.2.5"
+git push -u origin CsvQuery-v1.2.5
+
+
+
+
+# MD5 
+$someFilePath = "C:\foo.txt"
+$md5 = New-Object -TypeName System.Security.Cryptography.MD5CryptoServiceProvider
+$hash = [System.BitConverter]::ToString($md5.ComputeHash([System.IO.File]::ReadAllBytes($someFilePath)))
+
+
+# call github API to get latest release
+$latest = Invoke-WebRequest "https://api.github.com/repos/jokedst/csvquery/releases/latest" | ConvertFrom-Json
+
+
+
