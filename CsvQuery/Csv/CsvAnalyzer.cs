@@ -115,7 +115,7 @@
             var separatorQuoted = GetSeparatorFromVariance(variancesQuoted, occurrencesQuoted, linesQuoted, out var uncertancyQuoted);
             if (uncertancyQuoted < uncertancy)
                 result.Separator = separatorQuoted;
-            else if (uncertancy < uncertancyQuoted) // It was better ignoring quotes!
+            else if (uncertancy < uncertancyQuoted || (uncertancy == uncertancyQuoted && lineCount > linesQuoted)) // It was better ignoring quotes!
                 result.TextQualifier = '\0';
 
             if (result.Separator != default(char)) return result;

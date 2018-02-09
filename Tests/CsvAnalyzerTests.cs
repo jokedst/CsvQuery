@@ -73,5 +73,45 @@
             Assert.AreEqual('\t', result.Separator);
             Assert.AreEqual('#', result.CommentCharacter);
         }
+
+        [TestMethod]
+        public void Issue10QuotedCommas()
+        {
+            var data =
+                "\"ControlID\",\"Status\",\"FeatureName\",\"ResourceGroupName\",\"ResourceName\",\"ChildResourceName\",\"ControlSeverity\",\"IsBaselineControl\",\"SupportsAutoFix\",\"Description\",\"Recommendation\",\"DetailedLogFile\"\r\n\"test123\",\"test123\",\"test123\",\"test123\",\"test123\",\"test123\",\"test123\",\"test123\",\"test123\",\"test123\",\"comma goes here, \",\"test123\"";
+
+            var result = CsvAnalyzer.Analyze(data);
+
+            Assert.AreEqual(',', result.Separator);
+            Assert.AreEqual('"', result.TextQualifier);
+        }
+
+        [TestMethod]
+        public void Issue10UnquotedStringsWithQuotes()
+        {
+            var data = "artnr, description, cost\n"
+                     + "B12332, a 9\" nail, 123.32\n"
+                       + "C12322, Screw, 22.1\n";
+            
+            var result = CsvAnalyzer.Analyze(data);
+
+            Assert.AreEqual(',', result.Separator);
+            Assert.AreEqual('\0', result.TextQualifier);
+        }
+
+        [TestMethod]
+        public void UnquotedStringsWithQuotesOnEveryRow()
+        {
+            var data = "artnr, description, cost\n"
+                       + "B12332, a 9\" nail, 123.32\n"
+                       + "C12322, TV 30\", 123.32\n"
+                       + "C1222, Samsung 7\", 4000.32\n"
+                       + "C3P0, Cyborg 90\", 5.33\n";
+
+            var result = CsvAnalyzer.Analyze(data);
+
+            Assert.AreEqual(',', result.Separator);
+            Assert.AreEqual('\0', result.TextQualifier);
+        }
     }
 }
