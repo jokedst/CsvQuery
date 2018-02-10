@@ -6,6 +6,7 @@ namespace CsvQuery.Csv
     using System.Data;
     using System.Diagnostics;
     using System.IO;
+    using System.Linq;
     using System.Text;
     using Microsoft.VisualBasic.FileIO;
 
@@ -55,7 +56,7 @@ namespace CsvQuery.Csv
         {
             using (var reader = new StringReader(text))
             {
-                return Parse(reader);
+                return Parse(reader).ToList();
             }
         }
 
