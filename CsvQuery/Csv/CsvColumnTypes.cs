@@ -2,15 +2,14 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.Linq;
     using System.Text.RegularExpressions;
-    using Tools;
 
     public class CsvColumnTypes
     {
         public bool HasHeader { get; set; }
         public List<CsvColumnAnalyzer> Columns { get; set; }
+        public Dictionary<string,string> ColumnUnsafeNames { get; }
 
         public CsvColumnTypes(List<string[]> data, CsvSettings csvSettings)
         {
@@ -76,11 +75,12 @@
             // Generate column names
             var usedNames = new List<string>();
             var namedColumns = csvSettings.FieldNames?.Length ?? 0;
+            this.ColumnUnsafeNames = new Dictionary<string, string>();
             for (var z = 0; z < headerTypes.Count; z++)
             {
                 var unsafeName = namedColumns > z
                     ? csvSettings.FieldNames[z]
-                    : HasHeader
+                    : this.HasHeader
                         ? headerTypes[z].CreationString
                         : null;
                 var safeName = unsafeName;
@@ -99,8 +99,8 @@
                 usedNames.Add(safeName);
                 this.Columns[z].Name = safeName;
 
-                // Remember unsafe name
-                this.Columns[z].CreationString = string.IsNullOrWhiteSpace(unsafeName) ? safeName : unsafeName;
+                if(!string.IsNullOrWhiteSpace(unsafeName) && unsafeName != safeName)
+                    this.ColumnUnsafeNames.Add(safeName, unsafeName);
             }
         }
 

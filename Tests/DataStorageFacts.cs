@@ -1,13 +1,11 @@
-﻿using System.IO;
-using System.Text;
-
-namespace Tests
+﻿namespace Tests
 {
     using System;
+    using System.IO;
+    using System.Text;
     using System.Collections.Generic;
     using System.Globalization;
     using System.Threading;
-    using CsvQuery;
     using CsvQuery.Csv;
     using CsvQuery.Database;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -17,7 +15,7 @@ namespace Tests
         [TestInitialize]
         public void InitializeDataStorageFacts()
         {
-            ((DataStorageBase) DataStorage).SetLastCreatedTableName(TestCount);
+            ((DataStorageBase) this.DataStorage).SetLastCreatedTableName(TestCount);
         }
 
         public abstract IDataStorage DataStorage { get; }
@@ -52,11 +50,11 @@ namespace Tests
             };
             var ctypes = new CsvColumnTypes(data, new CsvSettings{HasHeader = false});
 
-            var tableName = DataStorage.SaveData(new IntPtr(10), data, ctypes);
+            var tableName = this.DataStorage.SaveData(new IntPtr(10), data, ctypes);
 
-            var result = DataStorage.ExecuteQuery("SELECT * FROM " + tableName, false);
+            var result = this.DataStorage.ExecuteQuery("SELECT * FROM " + tableName, false);
 
-            AssertDataEqual(data, result);
+            this.AssertDataEqual(data, result);
         }
 
         [TestMethod]
@@ -73,11 +71,11 @@ namespace Tests
             };
             var ctypes = new CsvColumnTypes(data, new CsvSettings { HasHeader = true });
 
-            var tableName = DataStorage.SaveData(new IntPtr(10), data, ctypes);
+            var tableName = this.DataStorage.SaveData(new IntPtr(10), data, ctypes);
 
-            var result = DataStorage.ExecuteQuery("SELECT * FROM " + tableName, true);
+            var result = this.DataStorage.ExecuteQuery("SELECT * FROM " + tableName, true);
 
-            AssertDataEqualAfterTypeConversion(data, result);
+            this.AssertDataEqualAfterTypeConversion(data, result);
         }
 
         [TestMethod]
@@ -92,12 +90,12 @@ namespace Tests
                 new[] {"4", "2", "3"}
             };
 
-            var tableName = DataStorage.SaveData(new IntPtr(11), data, new CsvColumnTypes(data, new CsvSettings { HasHeader = false }));
-            DataStorage.SetActiveTab(new IntPtr(11));
+            this.DataStorage.SaveData(new IntPtr(11), data, new CsvColumnTypes(data, new CsvSettings { HasHeader = false }));
+            this.DataStorage.SetActiveTab(new IntPtr(11));
 
-            var result = DataStorage.ExecuteQuery("SELECT * FROM this", false);
+            var result = this.DataStorage.ExecuteQuery("SELECT * FROM this", false);
 
-            AssertDataEqual(data, result);
+            this.AssertDataEqual(data, result);
         }
 
         [TestMethod]
@@ -112,12 +110,12 @@ namespace Tests
                 new[] {"4", "2", "3"}
             };
 
-            DataStorage.SaveData(new IntPtr(11), data, new CsvColumnTypes(data, new CsvSettings { HasHeader = true }));
-            DataStorage.SetActiveTab(new IntPtr(11));
+            this.DataStorage.SaveData(new IntPtr(11), data, new CsvColumnTypes(data, new CsvSettings { HasHeader = true }));
+            this.DataStorage.SetActiveTab(new IntPtr(11));
 
-            var result = DataStorage.ExecuteQuery("SELECT * FROM this", true);
+            var result = this.DataStorage.ExecuteQuery("SELECT * FROM this", true);
 
-            AssertDataEqual(data, result);
+            this.AssertDataEqual(data, result);
         }
 
         [TestMethod]
@@ -132,12 +130,12 @@ namespace Tests
                 new[] {"4", "2", "3"}
             };
 
-            DataStorage.SaveData(new IntPtr(11), data, new CsvColumnTypes(data, null));
-            DataStorage.SetActiveTab(new IntPtr(11));
+            this.DataStorage.SaveData(new IntPtr(11), data, new CsvColumnTypes(data, null));
+            this.DataStorage.SetActiveTab(new IntPtr(11));
 
-            var result = DataStorage.ExecuteQuery("SELECT * FROM this", true);
+            var result = this.DataStorage.ExecuteQuery("SELECT * FROM this", true);
 
-            AssertDataEqual(data, result);
+            this.AssertDataEqual(data, result);
         }
 
         [TestMethod]
@@ -153,10 +151,10 @@ namespace Tests
             };
 
             var columnTypes = new CsvColumnTypes(data, null);
-            DataStorage.SaveData(new IntPtr(11), data, columnTypes);
-            DataStorage.SetActiveTab(new IntPtr(11));
+            this.DataStorage.SaveData(new IntPtr(11), data, columnTypes);
+            this.DataStorage.SetActiveTab(new IntPtr(11));
 
-            var result = DataStorage.ExecuteQuery("SELECT * FROM this", true);
+            var result = this.DataStorage.ExecuteQuery("SELECT * FROM this", true);
 
             Assert.AreEqual(5, result.Count);
             Assert.IsTrue(result.TrueForAll(x => x.Length == 4));
@@ -175,10 +173,10 @@ namespace Tests
             };
 
             var columnTypes = new CsvColumnTypes(data, null);
-            DataStorage.SaveData(new IntPtr(11), data, columnTypes);
-            DataStorage.SetActiveTab(new IntPtr(11));
+            this.DataStorage.SaveData(new IntPtr(11), data, columnTypes);
+            this.DataStorage.SetActiveTab(new IntPtr(11));
 
-            var result = DataStorage.ExecuteQuery("SELECT * FROM this", true);
+            var result = this.DataStorage.ExecuteQuery("SELECT * FROM this", true);
 
             Assert.AreEqual(6, result.Count);
             Assert.AreEqual(result[0][3], "Col4");
@@ -199,12 +197,12 @@ namespace Tests
                 new[] {"4", "2", "3"}
             };
 
-            DataStorage.SaveData(new IntPtr(11), data, new CsvColumnTypes(data, null));
-            DataStorage.SetActiveTab(new IntPtr(11));
+            this.DataStorage.SaveData(new IntPtr(11), data, new CsvColumnTypes(data, null));
+            this.DataStorage.SetActiveTab(new IntPtr(11));
 
-            var result = DataStorage.ExecuteQuery("SELECT * FROM this", false);
+            var result = this.DataStorage.ExecuteQuery("SELECT * FROM this", false);
 
-            AssertDataEqual(data, result);
+            this.AssertDataEqual(data, result);
         }
 
         [TestMethod]
@@ -344,10 +342,10 @@ namespace Tests
                 }
             };
 
-            DataStorage.SaveData(new IntPtr(11), data, new CsvColumnTypes(data, null));
-            DataStorage.SetActiveTab(new IntPtr(11));
+            this.DataStorage.SaveData(new IntPtr(11), data, new CsvColumnTypes(data, null));
+            this.DataStorage.SetActiveTab(new IntPtr(11));
 
-            var result = DataStorage.ExecuteQuery("SELECT * FROM this", true);
+            var result = this.DataStorage.ExecuteQuery("SELECT * FROM this", true);
 
             //AssertDataEqual(data.Skip(1).ToList(), result.Skip(1).ToList());
             Assert.AreEqual("ArtGrp", result[0][0], "whitelisting not working");
@@ -356,17 +354,17 @@ namespace Tests
         [TestMethod]
         public void CanOverwriteExistingTable()
         {
-            DataStorage.SaveData(new IntPtr(77), FourRowsThreeColumnsWithHeader, new CsvColumnTypes(FourRowsThreeColumnsWithHeader, new CsvSettings{HasHeader = true}));
-            DataStorage.SetActiveTab(new IntPtr(77));
+            this.DataStorage.SaveData(new IntPtr(77), this.FourRowsThreeColumnsWithHeader, new CsvColumnTypes(this.FourRowsThreeColumnsWithHeader, new CsvSettings{HasHeader = true}));
+            this.DataStorage.SetActiveTab(new IntPtr(77));
 
-            var result = DataStorage.ExecuteQuery("SELECT * FROM this", false);
+            var result = this.DataStorage.ExecuteQuery("SELECT * FROM this", false);
             Assert.AreEqual(4, result.Count);
             Assert.IsTrue(result.TrueForAll(x => x.Length == 3));
 
-            DataStorage.SaveData(new IntPtr(77), FiveRowsFourColumnsWithNoHeader, new CsvColumnTypes(FiveRowsFourColumnsWithNoHeader, new CsvSettings{HasHeader = false}));
-            DataStorage.SetActiveTab(new IntPtr(77));
+            this.DataStorage.SaveData(new IntPtr(77), this.FiveRowsFourColumnsWithNoHeader, new CsvColumnTypes(this.FiveRowsFourColumnsWithNoHeader, new CsvSettings{HasHeader = false}));
+            this.DataStorage.SetActiveTab(new IntPtr(77));
 
-            result = DataStorage.ExecuteQuery("SELECT * FROM this", false);
+            result = this.DataStorage.ExecuteQuery("SELECT * FROM this", false);
             Assert.AreEqual(5, result.Count);
             Assert.IsTrue(result.TrueForAll(x => x.Length == 4));
         }
@@ -385,15 +383,15 @@ namespace Tests
             var csvSettings = new CsvSettings(',') { HasHeader = true };
             var ctypes = new CsvColumnTypes(data, csvSettings);
 
-            var tableName = DataStorage.SaveData(new IntPtr(10), data, ctypes);
+            var tableName = this.DataStorage.SaveData(new IntPtr(10), data, ctypes);
 
-            var result = DataStorage.ExecuteQueryToDataTable("SELECT * FROM " + tableName, new IntPtr(10));
+            var result = this.DataStorage.ExecuteQueryToDataTable("SELECT * FROM " + tableName, new IntPtr(10));
             Assert.AreEqual("Anumber", result.Columns[0].ColumnName);
 
             string csv;
             using (var memStream = new MemoryStream())
             {
-                var lookup = DataStorage.GetUnsafeColumnMaps(new IntPtr(10));
+                var lookup = this.DataStorage.GetUnsafeColumnMaps(new IntPtr(10));
                 csvSettings.GenerateToStream(result, memStream, lookup);
                 csv= Encoding.UTF8.GetString(memStream.GetBuffer());
             }

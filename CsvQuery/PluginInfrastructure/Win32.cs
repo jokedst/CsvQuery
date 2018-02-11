@@ -83,10 +83,9 @@ namespace CsvQuery.PluginInfrastructure
         /// If gateways are missing or incomplete, please help extend them and send your code to the project 
         /// at https://github.com/kbilsted/NotepadPlusPlusPluginPack.Net
         /// </summary>
-        public static IntPtr SendMessage(IntPtr hWnd, uint Msg, int wParam, out int lParam)
+        public static IntPtr SendMessage(IntPtr hWnd, uint msg, int wParam, out int lParam)
         {
-            IntPtr outVal;
-            IntPtr retval = SendMessage(hWnd, (UInt32)Msg, new IntPtr(wParam), out outVal);
+            IntPtr retval = SendMessage(hWnd, msg, new IntPtr(wParam), out var outVal);
             lParam = outVal.ToInt32();
             return retval;
         }
@@ -198,8 +197,7 @@ namespace CsvQuery.PluginInfrastructure
         /// </summary>
 	    public static IntPtr SendMessage(IntPtr hWnd, uint Msg, int wParam, ref LangType lParam)
         {
-            IntPtr outVal;
-            IntPtr retval = SendMessage(hWnd, (UInt32)Msg, new IntPtr(wParam), out outVal);
+            IntPtr retval = SendMessage(hWnd, (UInt32)Msg, new IntPtr(wParam), out var outVal);
             lParam = (LangType)outVal;
             return retval;
         }

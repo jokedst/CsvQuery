@@ -17,9 +17,7 @@ namespace Community.CsharpSqlite
         /// <summary>
         /// Creates new instance of SQLiteVdbe class by compiling a statement
         /// </summary>
-        /// <param name="query"></param>
-        /// <returns>Vdbe</returns>
-        public SQLiteVdbe(SQLiteDatabase db, String query)
+        public SQLiteVdbe(SQLiteDatabase db, string query)
         {
             vm = null;
             LastError = string.Empty;
@@ -36,7 +34,6 @@ namespace Community.CsharpSqlite
         /// <summary>
         /// Return Virtual Machine Pointer
         /// </summary>
-        /// <param name="query"></param>
         /// <returns>Vdbe</returns>
         public Vdbe VirtualMachine()
         {
@@ -161,7 +158,7 @@ namespace Community.CsharpSqlite
         /// <returns>Count of Results</returns>
         public int ResultColumnCount()
         {
-            return vm.pResultSet == null ? 0 : vm.pResultSet.Length;
+            return vm.pResultSet?.Length ?? 0;
         }
 
         /// <summary>

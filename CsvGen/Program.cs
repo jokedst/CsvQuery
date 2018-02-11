@@ -23,7 +23,7 @@
     /// </summary>
     internal class Program
     {
-        private static void Main(string[] args)
+        private static void Main()
         {
             if (Param.Flag('P'))
             {

@@ -41,13 +41,12 @@ static int atoi( string inStr )
     if ( !sqlite3Isdigit( inStr[i] ) && inStr[i] != '-' )
       break;
   }
-  int result = 0;
 #if WINDOWS_MOBILE 
   try { result = Int32.Parse(inStr.Substring(0, i)); }
   catch { }
   return result;
 #else
-  return ( Int32.TryParse( inStr.Substring( 0, i ), out result ) ? result : 0 );
+  return ( Int32.TryParse( inStr.Substring( 0, i ), out var result ) ? result : 0 );
 #endif
 }
 
@@ -230,7 +229,7 @@ static Byte[][] va_arg( object[] ap, Byte[][] sysType )
 
 static Char va_arg( object[] ap, Char sysType )
 {
-  if ( ap[vaNEXT] is Int32 && (int)ap[vaNEXT] == 0 )
+  if ( ap[vaNEXT] is int && (int)ap[vaNEXT] == 0 )
   {
     vaNEXT++;
     return (char)'0';

@@ -15,8 +15,8 @@ namespace CsvQuery.Tools
         public ConcatenatingStream(IEnumerable<Stream> source, bool closeStreams)
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
-            _iterator = source.GetEnumerator();
-            _closeStreams = closeStreams;
+            this._iterator = source.GetEnumerator();
+            this._closeStreams = closeStreams;
         }
 
         public static ConcatenatingStream FromFactoryFunctions<T>(bool closeStreams, params Func<T>[] factories)
@@ -27,13 +27,12 @@ namespace CsvQuery.Tools
 
         private Stream NextStream()
         {
-            if (_closeStreams)
-                _current?.Dispose();
+            if (this._closeStreams) this._current?.Dispose();
 
-            _current = null;
-            if (_iterator == null) throw new ObjectDisposedException(GetType().Name);
-            if (_iterator.MoveNext()) _current = _iterator.Current;
-            return _current;
+            this._current = null;
+            if (this._iterator == null) throw new ObjectDisposedException(this.GetType().Name);
+            if (this._iterator.MoveNext()) this._current = this._iterator.Current;
+            return this._current;
         }
 
         public override bool CanRead => true;
@@ -44,28 +43,28 @@ namespace CsvQuery.Tools
 
         public override long Position
         {
-            get => _position;
+            get => this._position;
             set => throw new NotSupportedException();
         }
 
         private void EndOfStream()
         {
-            if (_closeStreams)
-                _current?.Dispose();
+            if (this._closeStreams) this._current?.Dispose();
 
-            _current = null;
+            this._current = null;
         }
 
         protected override void Dispose(bool disposing)
         {
             if (disposing)
             {
-                if (_closeStreams)
-                    do _iterator.Current?.Dispose(); while (_iterator.MoveNext());
+                if (this._closeStreams)
+                    do
+                        this._iterator.Current?.Dispose(); while (this._iterator.MoveNext());
 
-                _iterator.Dispose();
-                _iterator = null;
-                _current = null;
+                this._iterator.Dispose();
+                this._iterator = null;
+                this._current = null;
             }
 
             base.Dispose(disposing);
@@ -83,16 +82,16 @@ namespace CsvQuery.Tools
             var result = 0;
             while (count > 0)
             {
-                var stream = _current ?? NextStream();
+                var stream = this._current ?? this.NextStream();
                 if (stream == null) break;
                 var thisCount = stream.Read(buffer, offset, count);
                 result += thisCount;
                 count -= thisCount;
                 offset += thisCount;
-                if (thisCount == 0) EndOfStream();
+                if (thisCount == 0) this.EndOfStream();
             }
 
-            _position += result;
+            this._position += result;
             return result;
         }
     }

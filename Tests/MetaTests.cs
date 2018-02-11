@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
-using System.Reflection;
 
 namespace Tests
 {
@@ -33,10 +31,7 @@ namespace Tests
         [TestMethod]
         public void IUnderstandDecimalParsing()
         {
-            bool ok;
-            decimal decimalResult;
-
-            ok = decimal.TryParse("12,34", NumberStyles.Any, NumberFormatInfo.InvariantInfo, out decimalResult);
+            var ok = decimal.TryParse("12,34", NumberStyles.Any, NumberFormatInfo.InvariantInfo, out var decimalResult);
             Console.WriteLine($"ok={ok}, res={decimalResult}");
             ok = decimal.TryParse("12,34", NumberStyles.AllowDecimalPoint, NumberFormatInfo.InvariantInfo, out decimalResult);
             Console.WriteLine($"ok={ok}, res={decimalResult}");

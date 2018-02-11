@@ -1,9 +1,7 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using CsvQuery.Tools;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
 
 namespace Tests
 {

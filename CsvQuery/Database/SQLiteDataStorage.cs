@@ -6,12 +6,12 @@
     using System.Text;
     using Community.CsharpSqlite;
     using Csv;
-    using CsvQuery.Tools;
+    using Tools;
 
     public class SQLiteDataStorage : DataStorageBase
     {
-        private readonly SQLiteDatabase Db;
-        private static readonly string[] PRAGMA_Commands =
+        private readonly SQLiteDatabase _db;
+        private static readonly string[] PragmaCommands =
             {
                 "PRAGMA synchronous =  OFF",
                 "PRAGMA temp_store =  MEMORY",
@@ -23,12 +23,12 @@
 
         public SQLiteDataStorage(string database = ":memory:")
         {
-            Db = new SQLiteDatabase(database);
-            foreach (string command in PRAGMA_Commands)
-                Db.ExecuteNonQuery(command);
+            this._db = new SQLiteDatabase(database);
+            foreach (string command in PragmaCommands) this._db.ExecuteNonQuery(command);
         }
 
         private readonly Dictionary<IntPtr, (string, CsvColumnTypes)> _lastWriteSettings = new Dictionary<IntPtr, (string, CsvColumnTypes)>();
+      
         /// <summary>
         /// Saves parsed data into SQLite database.
         /// This function currently does a little too much, it detects headers and column types (which it then pretty much ignore)
@@ -39,7 +39,7 @@
         /// <returns></returns>
         public override string SaveData(IntPtr bufferId, List<string[]> data, CsvColumnTypes columnTypes)
         {
-            string tableName = GetOrAllocateTableName(bufferId);
+            string tableName = this.GetOrAllocateTableName(bufferId);
             
             // Create SQL by string concat - look out for SQL injection! (although rather harmless since it's all your own data)
             var createQuery = new StringBuilder("CREATE TABLE [" + tableName + "] (");
@@ -75,9 +75,9 @@
             }
 
             createQuery.Append(")");
-            ExecuteNonQuery("BEGIN EXCLUSIVE");
-            ExecuteNonQuery(createQuery.ToString());
-            ExecuteNonQuery("END");
+            this.ExecuteNonQuery("BEGIN EXCLUSIVE");
+            this.ExecuteNonQuery(createQuery.ToString());
+            this.ExecuteNonQuery("END");
 
             var columns = columnTypes.Columns.Count;
             var insertQuery = new StringBuilder("INSERT INTO ");
@@ -87,8 +87,8 @@
                 insertQuery.Append(",?");
             insertQuery.Append(")");
 
-            ExecuteNonQuery("BEGIN EXCLUSIVE");
-            var stmt = new SQLiteVdbe(Db, insertQuery.ToString());
+            this.ExecuteNonQuery("BEGIN EXCLUSIVE");
+            var stmt = new SQLiteVdbe(this._db, insertQuery.ToString());
             first = true;
             foreach (var stringse in data)
             {
@@ -109,25 +109,25 @@
                 stmt.ExecuteStep();
             }
             stmt.Close();
-            ExecuteNonQuery("END");
+            this.ExecuteNonQuery("END");
 
-            SaveUnsafeColumnNames(bufferId, columnTypes);
+            this.SaveUnsafeColumnNames(bufferId, columnTypes);
 
-            _lastWriteSettings[bufferId] = (insertQuery.ToString(), columnTypes);
+            this._lastWriteSettings[bufferId] = (insertQuery.ToString(), columnTypes);
            
             return tableName;
         }
 
         public override void SaveMore(IntPtr bufferId, IEnumerable<string[]> data)
         {
-            if(!_lastWriteSettings.ContainsKey(bufferId))
+            if(!this._lastWriteSettings.ContainsKey(bufferId))
                 throw new CsvQueryException("Can not save more data - no settings for this file saved");
 
-            var (insertQuery, columnTypes) = _lastWriteSettings[bufferId];
+            var (insertQuery, columnTypes) = this._lastWriteSettings[bufferId];
             var columns = columnTypes.Columns.Count;
 
-            ExecuteNonQuery("BEGIN EXCLUSIVE");
-            var stmt = new SQLiteVdbe(Db, insertQuery);
+            this.ExecuteNonQuery("BEGIN EXCLUSIVE");
+            var stmt = new SQLiteVdbe(this._db, insertQuery);
             foreach (var stringse in data)
             {
                 stmt.Reset();
@@ -141,7 +141,12 @@
                 stmt.ExecuteStep();
             }
             stmt.Close();
-            ExecuteNonQuery("END");
+            this.ExecuteNonQuery("END");
+        }
+
+        public override void SaveDone(IntPtr bufferId)
+        {
+            this._lastWriteSettings.Remove(bufferId);
         }
 
         /// <summary>
@@ -154,7 +159,7 @@
         {
             Trace.TraceInformation($"SQLite ExecuteQuery '{query}'");
             var result = new List<string[]>();
-            var c1 = new SQLiteVdbe(Db, query);
+            var c1 = new SQLiteVdbe(this._db, query);
             int columns = 0;
             while (c1.ExecuteStep() == Sqlite3.SQLITE_ROW)
             {
@@ -184,7 +189,7 @@
         public override void ExecuteNonQuery(string query)
         {
             Trace.TraceInformation($"SQLite ExecuteNonQuery '{query}'");
-            Db.ExecuteNonQuery(query);
+            this._db.ExecuteNonQuery(query);
         }
 
         public override string QueryDropTableIfExists => "DROP TABLE IF EXISTS [{0}]";

@@ -1,8 +1,5 @@
 ﻿namespace Tests
 {
-    using System.IO;
-    using System.Linq;
-    using CsvQuery.Csv;
     using CsvQuery.Tools;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 

@@ -57,7 +57,7 @@
             this.txbQuery.Name = "txbQuery";
             this.txbQuery.Size = new System.Drawing.Size(110, 21);
             this.txbQuery.TabIndex = 0;
-            this.txbQuery.KeyDown += new System.Windows.Forms.KeyEventHandler(this.txbQuery_KeyDown);
+            this.txbQuery.KeyDown += new System.Windows.Forms.KeyEventHandler(this.OnQueryTextboxKeyDown);
             // 
             // dataGrid
             // 
@@ -121,7 +121,7 @@
             this.createNewCSVToolStripMenuItem.Name = "createNewCSVToolStripMenuItem";
             this.createNewCSVToolStripMenuItem.Size = new System.Drawing.Size(172, 22);
             this.createNewCSVToolStripMenuItem.Text = "Create &new CSV...";
-            this.createNewCSVToolStripMenuItem.Click += new System.EventHandler(this.createNewCSVToolStripMenuItem_Click);
+            this.createNewCSVToolStripMenuItem.Click += new System.EventHandler(this.OnMenuClickCreateNewCSV);
             // 
             // contextmenuShowRowNumbers
             // 
@@ -141,7 +141,7 @@
             this.btnAnalyze.TabIndex = 2;
             this.btnAnalyze.Text = "&Read File";
             this.btnAnalyze.UseVisualStyleBackColor = true;
-            this.btnAnalyze.Click += new System.EventHandler(this.btnAnalyze_Click);
+            this.btnAnalyze.Click += new System.EventHandler(this.OnClickAnalyzeButton);
             // 
             // btnExec
             // 
@@ -153,7 +153,7 @@
             this.btnExec.TabIndex = 3;
             this.btnExec.Text = "&Execute";
             this.btnExec.UseVisualStyleBackColor = true;
-            this.btnExec.Click += new System.EventHandler(this.btnExec_Click);
+            this.btnExec.Click += new System.EventHandler(this.OnClickExecButton);
             // 
             // QueryWindow
             // 

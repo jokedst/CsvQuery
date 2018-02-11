@@ -1,6 +1,4 @@
-﻿using System.Text;
-
-namespace CsvQuery.Forms
+﻿namespace CsvQuery.Forms
 {
     using System;
     using System.Collections.Generic;
@@ -12,24 +10,24 @@ namespace CsvQuery.Forms
     using System.Threading.Tasks;
     using System.Windows.Forms;
     using Csv;
+    using Database;
     using PluginInfrastructure;
     using Properties;
     using Tools;
-
+    
     /// <summary>
-    ///     The query window that whos the current query and the results in a grid
-    /// </summary>
+    /// The query window that shows the current query and the results in a grid
+    /// </summary><inheritdoc />
     public partial class QueryWindow : Form
     {
         /// <summary> Background worker </summary>
         private Task _worker = Task.CompletedTask;
-
         private Color[] _winColors = null;
         private CsvSettings _lastGenerateSettings = null;
 
         public QueryWindow()
         {
-            InitializeComponent();
+            this.InitializeComponent();
 
             // Import query cache
             if (Main.Settings.SaveQueryCache && File.Exists(PluginStorage.QueryCachePath))
@@ -43,20 +41,20 @@ namespace CsvQuery.Forms
                     lines = newLines;
                     File.WriteAllLines(PluginStorage.QueryCachePath, lines);
                 }
-                txbQuery.AutoCompleteCustomSource.AddRange(lines);
+
+                this.txbQuery.AutoCompleteCustomSource.AddRange(lines);
             }
 
-            if (Main.Settings.UseNppStyling)
-                ApplyStyling(true);
+            if (Main.Settings.UseNppStyling) this.ApplyStyling(true);
             
-            Main.Settings.SettingsChanged += OnSettingsChanged;
+            Main.Settings.SettingsChanged += this.OnSettingsChanged;
         }
 
         private void OnSettingsChanged(object sender, SettingsChangedEventArgs e)
         {
             if (!e.Changed.Contains(nameof(Settings.UseNppStyling)))
                 return;
-            ApplyStyling(e.NewSettings.UseNppStyling);
+            this.ApplyStyling(e.NewSettings.UseNppStyling);
         }
 
         /// <summary>
@@ -64,8 +62,7 @@ namespace CsvQuery.Forms
         /// </summary>
         public void ApplyStyling(bool active)
         {
-            if (_winColors == null)
-                _winColors = new[] {dataGrid.ForeColor, dataGrid.BackgroundColor, dataGrid.BackColor};
+            if (this._winColors == null) this._winColors = new[] {this.dataGrid.ForeColor, this.dataGrid.BackgroundColor, this.dataGrid.BackColor};
             if (active)
             {
                 // Get NPP colors 
@@ -73,37 +70,37 @@ namespace CsvQuery.Forms
                 var foreColor = PluginBase.GetDefaultForegroundColor();
                 var inBetween = Color.FromArgb((foreColor.R + backgroundColor.R*3) / 4, (foreColor.G + backgroundColor.G*3) / 4, (foreColor.B + backgroundColor.B*3) / 4);
 
-                ApplyColors(foreColor, backgroundColor, inBetween);
-                dataGrid.EnableHeadersVisualStyles = false;
+                this.ApplyColors(foreColor, backgroundColor, inBetween);
+                this.dataGrid.EnableHeadersVisualStyles = false;
             }
             else
             {
                 // Disable styling
-                ApplyColors(_winColors[0], _winColors[2], _winColors[1]);
-                dataGrid.EnableHeadersVisualStyles = true;
+                this.ApplyColors(this._winColors[0], this._winColors[2], this._winColors[1]);
+                this.dataGrid.EnableHeadersVisualStyles = true;
             }
         }
 
         private void ApplyColors(Color foreColor, Color backgroundColor, Color inBetween)
         {
             Trace.TraceInformation($"FG {foreColor}, BG {backgroundColor}, inBetween {inBetween}");
-            BackColor = backgroundColor;
-            dataGrid.BackColor = backgroundColor;
-            dataGrid.BackgroundColor = inBetween;
-            dataGrid.ForeColor = foreColor;
-            dataGrid.ColumnHeadersDefaultCellStyle.BackColor = backgroundColor;
-            dataGrid.ColumnHeadersDefaultCellStyle.ForeColor = foreColor;
-            dataGrid.EnableHeadersVisualStyles = false;
+            this.BackColor = backgroundColor;
+            this.dataGrid.BackColor = backgroundColor;
+            this.dataGrid.BackgroundColor = inBetween;
+            this.dataGrid.ForeColor = foreColor;
+            this.dataGrid.ColumnHeadersDefaultCellStyle.BackColor = backgroundColor;
+            this.dataGrid.ColumnHeadersDefaultCellStyle.ForeColor = foreColor;
+            this.dataGrid.EnableHeadersVisualStyles = false;
 
-            txbQuery.BackColor = backgroundColor;
-            txbQuery.ForeColor = foreColor;
+            this.txbQuery.BackColor = backgroundColor;
+            this.txbQuery.ForeColor = foreColor;
 
-            btnAnalyze.ForeColor = foreColor;
-            btnAnalyze.BackColor = backgroundColor;
-            btnExec.ForeColor = foreColor;
-            btnExec.BackColor = backgroundColor;
+            this.btnAnalyze.ForeColor = foreColor;
+            this.btnAnalyze.BackColor = backgroundColor;
+            this.btnExec.ForeColor = foreColor;
+            this.btnExec.BackColor = backgroundColor;
 
-            dataGrid.DefaultCellStyle.BackColor = backgroundColor;
+            this.dataGrid.DefaultCellStyle.BackColor = backgroundColor;
         }
 
         /// <summary>
@@ -112,18 +109,18 @@ namespace CsvQuery.Forms
         /// <param name="query"> SQL query to run </param>
         public void ExecuteQuery(string query)
         {
-            txbQuery.Text = query;
-            btnExec.PerformClick();
+            this.txbQuery.Text = query;
+            this.btnExec.PerformClick();
         }
 
-        private void btnAnalyze_Click(object sender, EventArgs e)
+        private void OnClickAnalyzeButton(object sender, EventArgs e)
         {
-            StartAnalysis(false);
+            this.StartAnalysis(false);
         }
 
         private void StartSomething(Action someAction)
         {
-            this.UiThread(() => UiEnabled(false));
+            this.UiThread(() => this.UiEnabled(false));
 
             void SafeAction()
             {
@@ -138,34 +135,34 @@ namespace CsvQuery.Forms
                 }
                 finally
                 {
-                    this.UiThread(() => UiEnabled(true));
+                    this.UiThread(() => this.UiEnabled(true));
                 }
             }
 
             var busy = false;
-            lock (_worker)
+            lock (this._worker)
             {
-                if (_worker.IsCompleted)
-                    _worker = Task.Factory.StartNew(SafeAction);
+                if (this._worker.IsCompleted)
+                    this._worker = Task.Factory.StartNew(SafeAction);
                 else busy = true;
             }
             if (busy)
             {
                 this.Message("CSV Query is busy", Resources.Title_CSV_Query_Error);
-                this.UiThread(() => UiEnabled(true));
+                this.UiThread(() => this.UiEnabled(true));
             }
         }
 
         private void UiEnabled(bool enabled)
         {
-            txbQuery.Enabled = enabled;
-            btnAnalyze.Enabled = enabled;
-            btnExec.Enabled = enabled;
+            this.txbQuery.Enabled = enabled;
+            this.btnAnalyze.Enabled = enabled;
+            this.btnExec.Enabled = enabled;
         }
 
         public void StartAnalysis(bool silent)
         {
-            StartSomething(() => Analyze(silent));
+            this.StartSomething(() => this.Analyze(silent));
         }
 
         private void Analyze(bool silent)
@@ -175,13 +172,6 @@ namespace CsvQuery.Forms
 
             var textLength = PluginBase.CurrentScintillaGateway.GetTextLength();
             var text = PluginBase.CurrentScintillaGateway.GetTextRange(0, Math.Min(100000, textLength));
-           // var text = PluginBase.CurrentScintillaGateway.GetAllText();
-
-            //using (var sr = new StreamReader(ScintillaStreams.StreamAllText(), Encoding.UTF8))
-            //{
-            //    text = sr.ReadToEnd();
-            //}
-            
 
             watch.Checkpoint("GetText");
 
@@ -200,7 +190,7 @@ namespace CsvQuery.Forms
 
             using (var sr = ScintillaStreams.StreamAllText())
             {
-                Parse(csvSettings, watch, sr, bufferId);
+                this.Parse(csvSettings, watch, sr, bufferId);
             }
         }
 
@@ -222,7 +212,7 @@ namespace CsvQuery.Forms
             try
             {
                 var first = true;
-                const int partitionSize = 10000;
+                const int partitionSize = DataSettings.ChunkSize;
                 foreach (var chunk in data.Partition(partitionSize))
                 {
                     if (first)
@@ -237,7 +227,7 @@ namespace CsvQuery.Forms
                     {
                         count += partitionSize;
                         var msg = $"Read lines: {count}";
-                        this.UiThread(() => txbQuery.Text = msg);
+                        this.UiThread(() => this.txbQuery.Text = msg);
                         Main.DataStorage.SaveMore(bufferId, chunk);
                     }
                 }
@@ -250,8 +240,8 @@ namespace CsvQuery.Forms
             watch.Checkpoint("Saved to DB");
             var selectQuery = "SELECT * FROM THIS";
             if (count > 10000) selectQuery = Main.DataStorage.CreateLimitedSelect(10000);
-            this.UiThread(() => txbQuery.Text = selectQuery);
-            Execute(bufferId, watch);
+            this.UiThread(() => this.txbQuery.Text = selectQuery);
+            this.Execute(bufferId, watch);
 
             var diagnostic = watch.LastCheckpoint("Resize");
             Trace.TraceInformation(diagnostic);
@@ -261,11 +251,11 @@ namespace CsvQuery.Forms
 
         public void StartParse(CsvSettings settings)
         {
-            StartSomething(() =>
+            this.StartSomething(() =>
             {
                 using (var sr = ScintillaStreams.StreamAllText())
                 {
-                    Parse(settings,
+                    this.Parse(settings,
                         new DiagnosticTimer(),
                         sr,
                         NotepadPPGateway.GetCurrentBufferId());
@@ -278,7 +268,7 @@ namespace CsvQuery.Forms
             Main.DataStorage.SetActiveTab(bufferId);
             watch.Checkpoint("Switch buffer");
 
-            var query = txbQuery.Text;
+            var query = this.txbQuery.Text;
             List<string[]> toshow;
             try
             {
@@ -315,14 +305,14 @@ namespace CsvQuery.Forms
 
             this.UiThread(() =>
             {
-                dataGrid.DataSource = table;
+                this.dataGrid.DataSource = table;
             });
             watch.Checkpoint("Display");
 
             // Store query in history
-            if (!txbQuery.AutoCompleteCustomSource.Contains(query))
+            if (!this.txbQuery.AutoCompleteCustomSource.Contains(query))
             {
-                this.UiThread(() => txbQuery.AutoCompleteCustomSource.Add(query));
+                this.UiThread(() => this.txbQuery.AutoCompleteCustomSource.Add(query));
                 if (Main.Settings.SaveQueryCache)
                     using (var writer = File.AppendText(PluginStorage.QueryCachePath))
                     {
@@ -331,14 +321,14 @@ namespace CsvQuery.Forms
             }
         }
 
-        private void btnExec_Click(object sender, EventArgs e)
+        private void OnClickExecButton(object sender, EventArgs e)
         {
-            StartSomething(() =>
+            this.StartSomething(() =>
             {
                 var watch = new DiagnosticTimer();
                 var bufferId = NotepadPPGateway.GetCurrentBufferId();
 
-                Execute(bufferId, watch);
+                this.Execute(bufferId, watch);
 
                 var diagnosticMessage = watch.LastCheckpoint("Save query in history");
                 Trace.TraceInformation(diagnosticMessage);
@@ -347,21 +337,20 @@ namespace CsvQuery.Forms
             });
         }
 
-        private void txbQuery_KeyDown(object sender, KeyEventArgs e)
+        private void OnQueryTextboxKeyDown(object sender, KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.Return)
-                btnExec.PerformClick();
+            if (e.KeyCode == Keys.Return) this.btnExec.PerformClick();
         }
 
-        private void createNewCSVToolStripMenuItem_Click(object sender, EventArgs e)
+        private void OnMenuClickCreateNewCSV(object sender, EventArgs e)
         {
-            if (!(dataGrid.DataSource is DataTable table ))
+            if (!(this.dataGrid.DataSource is DataTable table ))
             {
                 MessageBox.Show("No results available to convert");
                 return;
             }
 
-            var initialSettings = _lastGenerateSettings ?? new CsvSettings(Main.Settings.DefaultSeparator.Unescape(),
+            var initialSettings = this._lastGenerateSettings ?? new CsvSettings(Main.Settings.DefaultSeparator.Unescape(),
                                       Main.Settings.DefaultQuoteChar, '\0', true);
             var settingsDialog = new ParseSettings(initialSettings)
             {
@@ -393,7 +382,7 @@ namespace CsvQuery.Forms
                 {
                     var producer = Task.Factory.StartNew(s =>
                     {
-                        settings.GenerateToStream(dataGrid.DataSource as DataTable, (Stream) s, headerLookup);
+                        settings.GenerateToStream(this.dataGrid.DataSource as DataTable, (Stream) s, headerLookup);
                         ((BlockingStream) s).CompleteWriting();
                     }, stream);
 
@@ -408,17 +397,18 @@ namespace CsvQuery.Forms
             {
                 Trace.TraceInformation("CSV gen: Exception: " + ex.GetType().Name + " - " + ex.Message);
             }
-            _lastGenerateSettings = settings;
+
+            this._lastGenerateSettings = settings;
             Trace.TraceInformation(watch.LastCheckpoint("CSV Done"));
         }
 
         public void CopyDataToClipboard(DataGridViewClipboardCopyMode mode)
         {
-            if (dataGrid.GetCellCount(DataGridViewElementStates.Selected) == 0) return;
-            var previousValue = dataGrid.ClipboardCopyMode;
-            dataGrid.ClipboardCopyMode = mode;
-            var clipboardContent = dataGrid.GetClipboardContent();
-            dataGrid.ClipboardCopyMode = previousValue;
+            if (this.dataGrid.GetCellCount(DataGridViewElementStates.Selected) == 0) return;
+            var previousValue = this.dataGrid.ClipboardCopyMode;
+            this.dataGrid.ClipboardCopyMode = mode;
+            var clipboardContent = this.dataGrid.GetClipboardContent();
+            this.dataGrid.ClipboardCopyMode = previousValue;
             if (clipboardContent == null) return;
             try
             {
@@ -431,32 +421,31 @@ namespace CsvQuery.Forms
         }
 
         private void OnContextmenuCopy(object sender, EventArgs eventArgs) 
-            => CopyDataToClipboard(DataGridViewClipboardCopyMode.EnableWithoutHeaderText);
+            => this.CopyDataToClipboard(DataGridViewClipboardCopyMode.EnableWithoutHeaderText);
 
         private void OnContextmenuCopyWithHeaders(object sender, EventArgs e) 
-            => CopyDataToClipboard(DataGridViewClipboardCopyMode.EnableAlwaysIncludeHeaderText);
+            => this.CopyDataToClipboard(DataGridViewClipboardCopyMode.EnableAlwaysIncludeHeaderText);
 
         private void OnContextmenuSelectAll(object sender, EventArgs e) 
-            => dataGrid.SelectAll();
+            => this.dataGrid.SelectAll();
 
         private void OnContextmenuShowRowNumbers(object sender, EventArgs e)
         {
-            contextmenuShowRowNumbers.Checked = dataGrid.RowHeadersVisible = !dataGrid.RowHeadersVisible;
-            FormatDataGrid();
+            this.contextmenuShowRowNumbers.Checked = this.dataGrid.RowHeadersVisible = !this.dataGrid.RowHeadersVisible;
+            this.FormatDataGrid();
         }
 
-        private void OnDataBindingComplete(object grid, DataGridViewBindingCompleteEventArgs args) => FormatDataGrid();
+        private void OnDataBindingComplete(object grid, DataGridViewBindingCompleteEventArgs args) => this.FormatDataGrid();
 
         private void FormatDataGrid()
         {
-            if (dataGrid.RowHeadersVisible)
+            if (this.dataGrid.RowHeadersVisible)
             {
-                for (var i = 0; i < dataGrid.Rows.Count; i++)
-                    dataGrid.Rows[i].HeaderCell.Value = (i + 1).ToString();
-                dataGrid.AutoResizeRowHeadersWidth(DataGridViewRowHeadersWidthSizeMode.AutoSizeToDisplayedHeaders);
+                for (var i = 0; i < this.dataGrid.Rows.Count; i++) this.dataGrid.Rows[i].HeaderCell.Value = (i + 1).ToString();
+                this.dataGrid.AutoResizeRowHeadersWidth(DataGridViewRowHeadersWidthSizeMode.AutoSizeToDisplayedHeaders);
             }
 
-            dataGrid.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.DisplayedCells);
+            this.dataGrid.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.DisplayedCells);
         }
     }
 }

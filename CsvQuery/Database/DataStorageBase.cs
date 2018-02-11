@@ -32,11 +32,11 @@ namespace CsvQuery.Database
 
         public void SetActiveTab(IntPtr bufferId)
         {
-            if (CreatedTables.ContainsKey(bufferId))
+            if (this.CreatedTables.ContainsKey(bufferId))
             {
-                ExecuteNonQuery(QueryDropViewThisIfExists);
-                ExecuteNonQuery(string.Format(QueryCreateViewThisForTable, CreatedTables[bufferId]));
-                CurrentActiveBufferId = bufferId;
+                this.ExecuteNonQuery(this.QueryDropViewThisIfExists);
+                this.ExecuteNonQuery(string.Format(this.QueryCreateViewThisForTable, this.CreatedTables[bufferId]));
+                this.CurrentActiveBufferId = bufferId;
             }
         }
 
@@ -45,12 +45,12 @@ namespace CsvQuery.Database
 
         public virtual void TestConnection()
         {
-            ExecuteNonQuery("SELECT 2*3");
+            this.ExecuteNonQuery("SELECT 2*3");
         }
 
         public IReadOnlyDictionary<string, string> GetUnsafeColumnMaps(IntPtr bufferId)
         {
-            return UnsafeColumnNames.GetValueOrDefault(bufferId);
+            return this.UnsafeColumnNames.GetValueOrDefault(bufferId);
         }
 
         public abstract List<string[]> ExecuteQuery(string query, bool includeColumnNames);
@@ -66,10 +66,8 @@ namespace CsvQuery.Database
 
             // Create columns
             foreach (var header in data[0])
-            {
-                // Column names in a DataGridView can't contain commas it seems
+            // Column names in a DataGridView can't contain commas it seems
                 table.Columns.Add(header.Replace(",", string.Empty));
-            }
             
             foreach (var row in data.Skip(1))
                 table.Rows.Add(row);
@@ -80,28 +78,28 @@ namespace CsvQuery.Database
         protected string GetOrAllocateTableName(IntPtr bufferId)
         {
             string tableName;
-            if (CreatedTables.ContainsKey(bufferId))
+            if (this.CreatedTables.ContainsKey(bufferId))
             {
-                tableName = CreatedTables[bufferId];
+                tableName = this.CreatedTables[bufferId];
             }
             else
             {
-                tableName = "T" + ++LastCreatedTableName;
-                CreatedTables.Add(bufferId, tableName);
+                tableName = "T" + ++this.LastCreatedTableName;
+                this.CreatedTables.Add(bufferId, tableName);
             }
-            ExecuteNonQuery(string.Format(QueryDropTableIfExists, tableName));
+
+            this.ExecuteNonQuery(string.Format(this.QueryDropTableIfExists, tableName));
             return tableName;
         }
 
         public void SetLastCreatedTableName(int tableNumber)
         {
-            LastCreatedTableName = tableNumber;
+            this.LastCreatedTableName = tableNumber;
         }
 
         protected void SaveUnsafeColumnNames(IntPtr bufferId, CsvColumnTypes columnTypes)
         {
-            UnsafeColumnNames[bufferId] = columnTypes.Columns.Where(c => c.CreationString != c.Name)
-                .ToDictionary(c => c.Name, c => c.CreationString);
+            this.UnsafeColumnNames[bufferId] = columnTypes.ColumnUnsafeNames;
         }
 
         public abstract void SaveMore(IntPtr bufferId, IEnumerable<string[]> data);
@@ -110,5 +108,7 @@ namespace CsvQuery.Database
         {
             return $"SELECT * FROM THIS LIMIT {linesToSelect}";
         }
+
+        public abstract void SaveDone(IntPtr bufferId);
     }
 }

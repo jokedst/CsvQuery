@@ -8,10 +8,13 @@ namespace CsvQuery.Database
     using System.Linq;
     using System.Text;
     using Csv;
+    using Tools;
 
     public class MssqlDataStorage : DataStorageBase
     {
         private readonly string _connectionString;
+        private readonly Dictionary<IntPtr, (string,DataTable, CsvColumnTypes)> _lastWriteSettings = new Dictionary<IntPtr, (string, DataTable, CsvColumnTypes)>();
+
 
         public MssqlDataStorage(string database)
         {
@@ -23,7 +26,7 @@ namespace CsvQuery.Database
                 InitialCatalog = database,
                 IntegratedSecurity = true
             };
-            _connectionString = builder.ConnectionString;
+            this._connectionString = builder.ConnectionString;
         }
 
         public override string QueryDropTableIfExists =>
@@ -51,7 +54,7 @@ namespace CsvQuery.Database
                         }
                     }
                     if (column.MinInteger >= -32768 && column.MaxInteger <= 32767)
-                        return "tinyint";
+                        return "smallint";
                     else if (column.MinInteger >= -2147483648 && column.MaxInteger <= 2147483647)
                         return "int";
                     else
@@ -59,7 +62,8 @@ namespace CsvQuery.Database
                 case ColumnType.Decimal:
                     return "float";
                 case ColumnType.String:
-                    return "NVARCHAR("+column.MaxSize+")";
+                    var maxLength = column.MaxSize <= 2000 ? column.MaxSize.ToString() : "MAX";
+                    return "NVARCHAR("+ maxLength + ")";
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -67,7 +71,7 @@ namespace CsvQuery.Database
 
         public override string SaveData(IntPtr bufferId, List<string[]> data, CsvColumnTypes columnTypes)
         {
-            var tableName = GetOrAllocateTableName(bufferId);
+            var tableName = this.GetOrAllocateTableName(bufferId);
 
             // Create SQL by string concat - look out for SQL injection! (although rather harmless since it's all your own data)
             var createQuery = new StringBuilder("CREATE TABLE [" + tableName + "] (");
@@ -77,22 +81,22 @@ namespace CsvQuery.Database
             {
                 if (first) first = false;
                 else createQuery.Append(", ");
-    
-                if (Main.Settings.DetectDbColumnTypes)
+
+                if (!Main.Settings.DetectDbColumnTypes)
                 {
-                    createQuery.Append('[').Append(column.Name).Append("] ");
-                    createQuery.Append(ToLocalType(column));
-                    createQuery.Append(column.Nullable ? " NULL" : " NOT NULL");
+                    // we'll just save everything as VARCHAR(N) NULL
+                    column.DataType = ColumnType.String;
+                    column.Nullable = true;
+                    column.MaxSize = Math.Max(1, column.MaxSize);
                 }
-                else
-                {
-                    var stringSize = Math.Max(1, column.MaxSize);
-                    createQuery.AppendFormat("[{0}] NVARCHAR({1})", column.Name, stringSize>2000?"MAX":stringSize.ToString());
-                }
+
+                createQuery.Append('[').Append(column.Name).Append("] ");
+                createQuery.Append(this.ToLocalType(column));
+                createQuery.Append(column.Nullable ? " NULL" : " NOT NULL");
             }
 
             createQuery.Append(")");
-            ExecuteNonQuery(createQuery.ToString());
+            this.ExecuteNonQuery(createQuery.ToString());
 
             // Convert to datatable - bulk insert via datatable is fast
             var table = new DataTable();
@@ -107,7 +111,7 @@ namespace CsvQuery.Database
             }
             Trace.TraceInformation($"Converted {table.Rows.Count} rows to data table");
 
-            using (var connection = new SqlConnection(_connectionString))
+            using (var connection = new SqlConnection(this._connectionString))
             {
                 connection.Open();
                 var transaction = connection.BeginTransaction();
@@ -131,20 +135,97 @@ namespace CsvQuery.Database
 
                 transaction.Commit();
             }
+            table.Clear();
+            this._lastWriteSettings[bufferId] = (tableName, table, columnTypes);
 
-            SaveUnsafeColumnNames(bufferId, columnTypes);
+            this.SaveUnsafeColumnNames(bufferId, columnTypes);
             return tableName;
         }
 
         public override void SaveMore(IntPtr bufferId, IEnumerable<string[]> data)
         {
-            throw new NotImplementedException();
+            if (!this._lastWriteSettings.ContainsKey(bufferId))
+                throw new CsvQueryException("Can not save more data - no settings for this file saved");
+            var(tableName, table, columnTypes) = this._lastWriteSettings[bufferId];
+
+            // We need to check if this data will fit in the data types we guessed in the first chunk
+            var oldTypes = columnTypes.Columns.Select(c => c.Clone()).ToList();
+
+            foreach (var row in data)
+            {
+                var objects = new object[columnTypes.Columns.Count];
+                for (var j = 0; j < row.Length; j++)
+                {
+                    columnTypes.Columns[j].Update(row[j]);
+                    objects[j] = columnTypes.Columns[j].Parse(row[j]);
+                }
+
+                table.Rows.Add(objects);
+            }
+
+            var alterations = new List<string>();
+            for (var c = 0; c < columnTypes.Columns.Count; c++)
+            {
+                var column = columnTypes.Columns[c];
+                if (column.FitsIn(oldTypes[c])) continue;
+                var query =
+                    $"ALTER TABLE [{tableName}] ALTER COLUMN [{column.Name}] {this.ToLocalType(column)} {(column.Nullable ? "NULL" : "NOT NULL")}";
+                alterations.Add(query);
+                Trace.TraceInformation("Column doesn't fit new data - altering table column: "+query);
+            }
+
+            using (var connection = new SqlConnection(this._connectionString))
+            {
+                connection.Open();
+
+                if (alterations.Any())
+                {
+                    var alterTransaction = connection.BeginTransaction();
+                    foreach (var alteration in alterations)
+                    {
+                        using (var command = new SqlCommand(alteration, connection, alterTransaction))
+                        {
+                            command.ExecuteNonQuery();
+                        }
+                    }
+                    alterTransaction.Commit();
+                }
+
+                var transaction = connection.BeginTransaction();
+
+                using (var bulkCopy = new SqlBulkCopy(connection, SqlBulkCopyOptions.Default, transaction))
+                {
+                    bulkCopy.BatchSize = 1000;
+                    bulkCopy.DestinationTableName = tableName;
+                    try
+                    {
+                        bulkCopy.WriteToServer(table);
+                    }
+                    catch (Exception ex)
+                    {
+                        Trace.TraceError($"Error in MSSQL bulk copy: {ex.Message}");
+                        transaction.Rollback();
+                        connection.Close();
+                        throw;
+                    }
+                }
+
+                transaction.Commit();
+            }
+            table.Clear();
+        }
+
+        public override void SaveDone(IntPtr bufferId)
+        {
+            var (_, table, _) = this._lastWriteSettings[bufferId];
+            table.Dispose();
+            this._lastWriteSettings.Remove(bufferId);
         }
 
         public override List<string[]> ExecuteQuery(string query, bool includeColumnNames)
         {
             var result = new List<string[]>();
-            using (var con = new SqlConnection(_connectionString))
+            using (var con = new SqlConnection(this._connectionString))
             {
                 Trace.TraceInformation($"MSSQL ExecuteQueryWithColumnNames '{query}'");
                 con.Open();
@@ -183,7 +264,7 @@ namespace CsvQuery.Database
 
         public override void ExecuteNonQuery(string query)
         {
-            using (var con = new SqlConnection(_connectionString))
+            using (var con = new SqlConnection(this._connectionString))
             {
                 con.Open();
                 using (var command = new SqlCommand(query, con))
@@ -197,7 +278,7 @@ namespace CsvQuery.Database
         public override void TestConnection()
         {
             // Test connection and permission to create tables
-            ExecuteNonQuery("BEGIN tran;CREATE TABLE [bnfkwencvwrjk]([X] int NULL);ROLLBACK tran");
+            this.ExecuteNonQuery("BEGIN tran;CREATE TABLE [bnfkwencvwrjk]([X] int NULL);ROLLBACK tran");
         }
 
         public override string CreateLimitedSelect(int linesToSelect)

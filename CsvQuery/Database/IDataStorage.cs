@@ -1,10 +1,14 @@
-using System.Data;
-
 namespace CsvQuery.Database
 {
     using System;
     using System.Collections.Generic;
+    using System.Data;
     using Csv;
+
+    public static class DataSettings
+    {
+        public const int ChunkSize = 10000;
+    }
 
     public interface IDataStorage
     {
@@ -62,6 +66,8 @@ namespace CsvQuery.Database
         /// <param name="linesToSelect"></param>
         /// <returns></returns>
         string CreateLimitedSelect(int linesToSelect);
+
+        void SaveDone(IntPtr bufferId);
     }
 
     public enum DataStorageProvider

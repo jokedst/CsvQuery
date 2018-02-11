@@ -155,8 +155,6 @@ namespace CsvQuery.PluginInfrastructure
     /// </summary>
     public class KeyModifier
     {
-        private readonly int value;
-
         /// <summary>
         /// The key code is a visible or control character or a key from the SCK_* enumeration, which contains:
         /// SCK_ADD, SCK_BACK, SCK_DELETE, SCK_DIVIDE, SCK_DOWN, SCK_END, SCK_ESCAPE, SCK_HOME, SCK_INSERT, SCK_LEFT, SCK_MENU, SCK_NEXT(Page Down), SCK_PRIOR(Page Up),
@@ -168,13 +166,10 @@ namespace CsvQuery.PluginInfrastructure
         /// </summary>
         public KeyModifier(SciMsg SCK_KeyCode, SciMsg SCMOD_modifier)
         {
-            value = (int) SCK_KeyCode | ((int) SCMOD_modifier << 16);
+            Value = (int) SCK_KeyCode | ((int) SCMOD_modifier << 16);
         }
 
-        public int Value
-        {
-            get { return Value; }
-        }
+        public int Value { get; }
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -187,14 +182,12 @@ namespace CsvQuery.PluginInfrastructure
 
     public class Cells
     {
-        char[] charactersAndStyles;
-
         public Cells(char[] charactersAndStyles)
         {
-            this.charactersAndStyles = charactersAndStyles;
+            this.Value = charactersAndStyles;
         }
 
-        public char[] Value { get { return charactersAndStyles; } }
+        public char[] Value { get; }
     }
 
     public class TextRange : IDisposable

@@ -3,7 +3,6 @@
     using System.ComponentModel;
     using Database;
     using PluginInfrastructure;
-    using Tools;
 
     /// <summary>
     /// Manages application settings

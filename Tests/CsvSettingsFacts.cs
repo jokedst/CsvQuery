@@ -1,5 +1,6 @@
 ﻿namespace Tests
 {
+    using System.Collections.Generic;
     using System.Linq;
     using CsvQuery.Csv;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -8,42 +9,14 @@
     /// Testing class CsvSettings
     /// </summary>
     [TestClass]
-    public class CsvSettingsFacts
+    public class CsvSettingsFacts:TestBaseClass
     {
-        public CsvSettingsFacts()
-        {
-            //
-            // TODO: Add constructor logic here
-            //
-        }
-
         /// <summary>
         ///Gets or sets the test context which provides
         ///information about and functionality for the current test run.
         ///</summary>
         public TestContext TestContext { get; set; }
-
-        #region Additional test attributes
-        //
-        // You can use the following additional attributes as you write your tests:
-        //
-        // Use ClassInitialize to run code before running the first test in the class
-        // [ClassInitialize()]
-        // public static void MyClassInitialize(TestContext testContext) { }
-        //
-        // Use ClassCleanup to run code after all tests in a class have run
-        // [ClassCleanup()]
-        // public static void MyClassCleanup() { }
-        //
-        // Use TestInitialize to run code before running each test 
-        // [TestInitialize()]
-        // public void MyTestInitialize() { }
-        //
-        // Use TestCleanup to run code after each test has run
-        // [TestCleanup()]
-        // public void MyTestCleanup() { }
-        //
-        #endregion
+        
 
         [TestMethod]
         public void CanParse()
@@ -54,11 +27,35 @@
             var set = new CsvSettings {Separator = ',', TextQualifier = '"'};
 
             // Act
-            var data = set.Parse(csvText).ToList();
+            var data = set.Parse(csvText);
 
             // Assert
             Assert.AreEqual(3, data.Count);
             Assert.AreEqual(2, data[2].Length);
+        }
+
+
+        [TestMethod] public void CanParseCrlf() => this.CanParseDifferent("\r\n",',',true);
+        [TestMethod] public void CanParseLf() => this.CanParseDifferent("\n", ',', true);
+        [TestMethod] public void CanParseUnquoted() => this.CanParseDifferent("\n", ';', false);
+
+        public void CanParseDifferent(string newline, char separator, bool quoted)
+        {
+            var indata = new List<string[]>
+            {
+                new[] {"A number", "another number here", "#¤%i"},
+                new[] {"1", "2g\"m", "3"},
+                new[] {"3", "12", "1,3\""},
+                new[] {"4", "2", "3"}
+            };
+            var csvText =string.Join(newline, indata.Select(x => string.Join(separator.ToString(), x.Select(l=>quoted?$"\"{l.Replace("\"","\"\"")}\"":l))));
+            var set = new CsvSettings { Separator = separator, TextQualifier =quoted? '"' :default(char),HasHeader = false};
+
+            // Act
+            var data = set.Parse(csvText);
+
+            // Assert
+            this.AssertDataEqual(indata, data);
         }
     }
 }

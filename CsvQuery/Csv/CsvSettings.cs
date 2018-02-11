@@ -1,6 +1,6 @@
 namespace CsvQuery.Csv
 {
-    using CsvQuery.Tools;
+    using Tools;
     using System;
     using System.Collections.Generic;
     using System.Data;
@@ -34,29 +34,28 @@ namespace CsvQuery.Csv
 
         public CsvSettings(char separator)
         {
-            Separator = separator;
+            this.Separator = separator;
         }
 
         public CsvSettings(char separator, char quoteEscapeChar, char commentChar, bool? hasHeader, List<int> fieldWidths = null)
         {
-            Separator = separator;
-            TextQualifier = quoteEscapeChar;
-            CommentCharacter = commentChar;
-            FieldWidths = fieldWidths;
-            HasHeader = hasHeader;
+            this.Separator = separator;
+            this.TextQualifier = quoteEscapeChar;
+            this.CommentCharacter = commentChar;
+            this.FieldWidths = fieldWidths;
+            this.HasHeader = hasHeader;
         }
-
 
         /// <summary>
         /// Parses a big text blob into rows and columns, using the settings
         /// </summary>
         /// <param name="text">Big blob of text</param>
         /// <returns>Parsed data</returns>
-        public IEnumerable<string[]> Parse(string text)
+        public List<string[]> Parse(string text)
         {
             using (var reader = new StringReader(text))
             {
-                return Parse(reader).ToList();
+                return this.Parse(reader).ToList();
             }
         }
 
@@ -65,20 +64,20 @@ namespace CsvQuery.Csv
         /// </summary>
         /// <param name="reader">Big blob of text</param>
         /// <returns>Parsed data</returns>
-        public IEnumerable<string[]> Parse(TextReader reader)
+        public IEnumerable<string[]> ParseVB(TextReader reader)
         {
             // The actual _parsing_ .NET can handle. Well, VisualBasic anyway...
             using (var parser = new TextFieldParser(reader))
             {
-                if (CommentCharacter != default(char))
-                    parser.CommentTokens = new[] {CommentCharacter.ToString()};
-                parser.SetDelimiters(Separator.ToString());
-                parser.HasFieldsEnclosedInQuotes = TextQualifier != default(char);
+                if (this.CommentCharacter != default(char))
+                    parser.CommentTokens = new[] {this.CommentCharacter.ToString()};
+                parser.SetDelimiters(this.Separator.ToString());
+                parser.HasFieldsEnclosedInQuotes = this.TextQualifier != default(char);
 
-                if (FieldWidths != null)
+                if (this.FieldWidths != null)
                 {
                     parser.TextFieldType = FieldType.FixedWidth;
-                    parser.SetFieldWidths(FieldWidths.ToArray());
+                    parser.SetFieldWidths(this.FieldWidths.ToArray());
                 }
 
                 while (!parser.EndOfData)
@@ -88,6 +87,98 @@ namespace CsvQuery.Csv
             }
         }
 
+        public IEnumerable<string[]> Parse(TextReader reader)
+        {
+            if (this.FieldWidths == null && this.TextQualifier != default(char))
+                return this.ParseRaw(reader);
+            return this.ParseVB(reader);
+        }
+
+        public IEnumerable<string[]> ParseRaw(TextReader reader)
+        {
+            int ch;
+            bool inQuotes=false;
+            var rowStart = true;
+            var cols = new List<string>();
+            var sb = new StringBuilder();
+
+            while ((ch = reader.Read()) != -1)
+            {
+                var c = (char) ch;
+                if (rowStart && c == this.CommentCharacter) continue;
+                rowStart = false;
+
+                if (c == '"')
+                {
+                    inQuotes = !inQuotes;
+                    if (inQuotes && sb.Length > 0) sb.Append('"');
+                }
+                else if (!inQuotes)
+                {
+                    if (c == this.Separator)
+                    {
+                        cols.Add(sb.ToString());
+                        sb.Clear();
+                    }
+                    else if (c == '\r' || c == '\n')
+                    {
+                        if (c == '\r' && reader.Peek() == '\n') reader.Read();
+                        cols.Add(sb.ToString());
+                        sb.Clear();
+                        yield return cols.ToArray();
+                        cols.Clear();
+                        rowStart = true;
+                    }
+                    else
+                    {
+                        sb.Append(c);
+                    }
+                }
+                else
+                    sb.Append(c);
+            }
+
+            cols.Add(sb.ToString());
+            sb.Clear();
+            yield return cols.ToArray();
+            cols.Clear();
+        }
+
+        public IEnumerable<string[]> ParseStandard(TextReader reader)
+        {
+            string line;
+            bool inQuotes = false;
+            var cols = new List<string>();
+            var sb = new StringBuilder();
+            while ((line = reader.ReadLine()) != null)
+            {
+                if (line.Length > 0 && line[0] == this.CommentCharacter) continue;
+                foreach (var c in line)
+                {
+                    if (c == '"')
+                    {
+                        inQuotes = !inQuotes;
+                        if (inQuotes && sb.Length > 0) sb.Append('"');
+                    }
+                    else if (!inQuotes)
+                    {
+                        if (c == this.Separator)
+                        {
+                            cols.Add(sb.ToString());
+                            sb.Clear();
+                        }
+                        else
+                        {
+                            sb.Append(c);
+                        }
+                    }
+                }
+                cols.Add(sb.ToString());
+                sb.Clear();
+                yield return cols.ToArray();
+                cols.Clear();
+            }
+        }
         /// <summary>
         /// Generates a CSV file from a <see cref="DataTable"/>, using the settings
         /// </summary>
@@ -102,14 +193,14 @@ namespace CsvQuery.Csv
             using (var tw = new StreamWriter(output, Encoding.UTF8, 1024 * 8, true))
             {
                 var first = true;
-                if (HasHeader ?? true)
+                if (this.HasHeader ?? true)
                 {
                     foreach (DataColumn column in dataTable.Columns)
                     {
                         if (first) first = false;
-                        else tw.Write(Separator);
+                        else tw.Write(this.Separator);
                         var columnName = headerAlias?.GetValueOrDefault(column.ColumnName) ?? column.ColumnName;
-                        Escape(tw, columnName);
+                        this.Escape(tw, columnName);
                     }
                     tw.WriteLine();
                     Trace.TraceInformation("CSV Generated header");
@@ -121,9 +212,9 @@ namespace CsvQuery.Csv
                     foreach (object cell in row.ItemArray)
                     {
                         if (first) first = false;
-                        else tw.Write(Separator);
+                        else tw.Write(this.Separator);
 
-                        Escape(tw, cell.ToString());
+                        this.Escape(tw, cell.ToString());
                     }
                     tw.WriteLine();
                 }
@@ -134,32 +225,17 @@ namespace CsvQuery.Csv
         /// <summary>
         /// Escapes a string if it contains the separator
         /// </summary>
-        /// <param name="text"> Text to escape </param>
-        /// <param name="always"> If true the text will always be escaped </param>
-        /// <returns> Escaped text </returns>
-        protected string Escape(string text, bool always = false)
-        {
-            if (!always && text.IndexOf(Separator) == -1)
-                return text;
-            return TextQualifier
-                   + text.Replace(TextQualifier.ToString(), TextQualifier.ToString() + TextQualifier)
-                   + TextQualifier;
-        }
-
-        /// <summary>
-        /// Escapes a string if it contains the separator
-        /// </summary>
         /// <param name="writer"><see cref="StreamWriter"/> text will be written to</param>
         /// <param name="text"> Text to escape </param>
         protected void Escape(StreamWriter writer, string text)
         {
-            if (text.IndexOf(Separator) == -1)
+            if (text.IndexOf(this.Separator) == -1)
                 writer.Write(text);
             else
             {
-                writer.Write(TextQualifier);
+                writer.Write(this.TextQualifier);
                 writer.Write(text);
-                writer.Write(TextQualifier);
+                writer.Write(this.TextQualifier);
             }
         }
     }

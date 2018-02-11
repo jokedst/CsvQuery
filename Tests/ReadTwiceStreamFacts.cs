@@ -1,6 +1,4 @@
-﻿using System.Linq;
-
-namespace Tests
+﻿namespace Tests
 {
     using System;
     using System.IO;

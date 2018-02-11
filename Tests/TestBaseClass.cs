@@ -1,13 +1,12 @@
 ﻿namespace Tests
 {
     using System.Collections.Generic;
-    using System.Linq;
     using CsvQuery;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     public abstract class TestBaseClass
     {
-        protected static int TestCount = 0;
+        protected static int TestCount;
 
         [TestInitialize]
         public void InitializeTestBase()
