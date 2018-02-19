@@ -4,7 +4,21 @@
     using System.Collections.Concurrent;
     using System.IO;
     using System.Threading;
+    using System.Threading.Tasks;
 
+    /// <summary>
+    /// A read/write stream that blocks the writer when the reader gets too far behind
+    /// </summary>
+    /// <remarks>
+    /// Usage example: <code>
+    ///   using (var stream = new BlockingStream(10))
+    ///   {
+    ///       var producer = stream.StartProducer(s =&gt; WriteToStream(s));
+    ///       var consumer = stream.StartConsumer(s =&gt; ReadFromStream(s));
+    ///       Task.WaitAll(producer, consumer);
+    ///   }
+    /// </code>
+    /// </remarks><inheritdoc />
     public class BlockingStream : Stream
     {
         private readonly BlockingCollection<byte[]> _blocks;
@@ -14,10 +28,35 @@
         /// <summary>
         /// Creates a read/write stream that blocks the writer when the reader gets too far behind
         /// </summary>
-        /// <param name="streamWriteCountCache"> </param>
+        /// <param name="streamWriteCountCache"> How many writes ahead the writer is allowed before blocking </param>
         public BlockingStream(int streamWriteCountCache)
         {
-            _blocks = new BlockingCollection<byte[]>(streamWriteCountCache);
+            this._blocks = new BlockingCollection<byte[]>(streamWriteCountCache);
+        }
+
+        /// <summary>
+        /// Starts a task that writes to this stream
+        /// </summary>
+        public Task StartProducer(Action<BlockingStream> producingAction)
+        {
+            return Task.Factory.StartNew(s =>
+            {
+                var writeStream = (BlockingStream)s;
+                producingAction(writeStream);
+                writeStream.CompleteWriting();
+            }, this);
+        }
+
+        /// <summary>
+        /// Starts a task that reads from this file
+        /// </summary>
+        public Task StartConsumer(Action<BlockingStream> consumingAction)
+        {
+            return Task.Factory.StartNew(s =>
+            {
+                var readStream = (BlockingStream)s;
+                consumingAction(readStream);
+            }, this);
         }
 
         public override bool CanTimeout => false;
@@ -47,24 +86,24 @@
             var bytesRead = 0;
             while (true)
             {
-                if (_currentBlock != null)
+                if (this._currentBlock != null)
                 {
-                    var copy = Math.Min(count - bytesRead, _currentBlock.Length - _currentBlockIndex);
-                    Array.Copy(_currentBlock, _currentBlockIndex, buffer, offset + bytesRead, copy);
-                    _currentBlockIndex += copy;
+                    var copy = Math.Min(count - bytesRead, this._currentBlock.Length - this._currentBlockIndex);
+                    Array.Copy(this._currentBlock, this._currentBlockIndex, buffer, offset + bytesRead, copy);
+                    this._currentBlockIndex += copy;
                     bytesRead += copy;
 
-                    if (_currentBlock.Length <= _currentBlockIndex)
+                    if (this._currentBlock.Length <= this._currentBlockIndex)
                     {
-                        _currentBlock = null;
-                        _currentBlockIndex = 0;
+                        this._currentBlock = null;
+                        this._currentBlockIndex = 0;
                     }
 
                     if (bytesRead == count)
                         return bytesRead;
                 }
 
-                if (!_blocks.TryTake(out _currentBlock, Timeout.Infinite))
+                if (!this._blocks.TryTake(out this._currentBlock, Timeout.Infinite))
                     return bytesRead;
             }
         }
@@ -75,25 +114,28 @@
 
             var newBuf = new byte[count];
             Array.Copy(buffer, offset, newBuf, 0, count);
-            _blocks.Add(newBuf);
-            TotalBytesWritten += count;
-            WriteCount++;
+            this._blocks.Add(newBuf);
+            this.TotalBytesWritten += count;
+            this.WriteCount++;
         }
 
         protected override void Dispose(bool disposing)
         {
             base.Dispose(disposing);
             if (disposing)
-                _blocks.Dispose();
+                this._blocks.Dispose();
         }
 
         public override void Close()
         {
-            CompleteWriting();
+            this.CompleteWriting();
             base.Close();
         }
 
-        public void CompleteWriting() => _blocks.CompleteAdding();
+        /// <summary>
+        /// Must be called when producer has finished writing data (unless StartProducer(...) is used)
+        /// </summary>
+        public void CompleteWriting() => this._blocks.CompleteAdding();
 
         private static void ValidateBufferArgs(byte[] buffer, int offset, int count)
         {

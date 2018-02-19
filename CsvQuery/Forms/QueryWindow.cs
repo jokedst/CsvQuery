@@ -380,17 +380,9 @@
 
                 using (var stream = new BlockingStream(10))
                 {
-                    var producer = Task.Factory.StartNew(s =>
-                    {
-                        settings.GenerateToStream(this.dataGrid.DataSource as DataTable, (Stream) s, headerLookup);
-                        ((BlockingStream) s).CompleteWriting();
-                    }, stream);
-
-                    var consumer = Task.Factory.StartNew(
-                        s => { PluginBase.CurrentScintillaGateway.AddText((Stream) s); }, stream);
-
-                    producer.Wait();
-                    consumer.Wait();
+                    var producer = stream.StartProducer(s => settings.GenerateToStream(this.dataGrid.DataSource as DataTable, s, headerLookup));
+                    var consumer = stream.StartConsumer(s => PluginBase.CurrentScintillaGateway.AddText(s));
+                    Task.WaitAll(producer, consumer);
                 }
             }
             catch (Exception ex)
