@@ -1,6 +1,7 @@
 ﻿namespace Tests
 {
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
     using CsvQuery.Csv;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -56,6 +57,17 @@
 
             // Assert
             this.AssertDataEqual(indata, data);
+        }
+
+        [TestMethod]
+        public void CanParseW3c()
+        {
+            var csvData = File.ReadAllText(@"TestFiles\w3c.log");
+            var settings = CsvAnalyzer.Analyze(csvData);
+
+            var data = settings.Parse(csvData);
+
+            Assert.AreEqual(6, data.Count, "Number of rows incorrect");
         }
     }
 }

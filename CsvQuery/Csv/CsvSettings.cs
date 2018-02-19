@@ -97,7 +97,7 @@ namespace CsvQuery.Csv
         public IEnumerable<string[]> ParseRaw(TextReader reader)
         {
             int ch;
-            bool inQuotes=false;
+            bool inQuotes = false;
             var rowStart = true;
             var cols = new List<string>();
             var sb = new StringBuilder();
@@ -105,8 +105,12 @@ namespace CsvQuery.Csv
             while ((ch = reader.Read()) != -1)
             {
                 var c = (char) ch;
-                if (rowStart && c == this.CommentCharacter) continue;
-                rowStart = false;
+                var nextIsRowStart = false;
+                if (rowStart && c == this.CommentCharacter)
+                {
+                    do { ch = reader.Read(); } while (ch != -1 && ch != '\n');
+                    continue;
+                }
 
                 if (c == '"')
                 {
@@ -127,7 +131,7 @@ namespace CsvQuery.Csv
                         sb.Clear();
                         yield return cols.ToArray();
                         cols.Clear();
-                        rowStart = true;
+                        nextIsRowStart = true;
                     }
                     else
                     {
@@ -136,12 +140,12 @@ namespace CsvQuery.Csv
                 }
                 else
                     sb.Append(c);
+                rowStart = nextIsRowStart;
             }
 
+            if(rowStart) yield break; // Last row was empty
             cols.Add(sb.ToString());
-            sb.Clear();
             yield return cols.ToArray();
-            cols.Clear();
         }
 
         public IEnumerable<string[]> ParseStandard(TextReader reader)

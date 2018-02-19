@@ -207,6 +207,7 @@
     <Compile Include="Settings.cs" />
     <Compile Include="Tools\SQLiteDatabase.cs" />
     <Compile Include="Tools\SQLiteVdbe.cs" />
+    <Compile Include="Tools\ReadWriteStreams.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Forms\ParseSettings.resx">

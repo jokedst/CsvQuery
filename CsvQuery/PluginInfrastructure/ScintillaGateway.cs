@@ -115,13 +115,13 @@ namespace CsvQuery.PluginInfrastructure
             int blockCount = 0, totalRead = 0;
             var startTime = Stopwatch.GetTimestamp();
             var beganRead = startTime;
-            long readWait = 0, sendWait = 0, beganSend;
+            long readWait = 0, sendWait = 0;
             try
             {
                 int read;
                 while ((read = utf8TextStream.Read(buffer, 0, buffer.Length)) > 0)
                 {
-                    beganSend = Stopwatch.GetTimestamp();
+                    var beganSend = Stopwatch.GetTimestamp();
                     readWait += beganSend - beganRead;
                     fixed (byte* textPtr = buffer)
                     {

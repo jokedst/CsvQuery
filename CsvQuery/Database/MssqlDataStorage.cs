@@ -15,7 +15,6 @@ namespace CsvQuery.Database
         private readonly string _connectionString;
         private readonly Dictionary<IntPtr, (string,DataTable, CsvColumnTypes)> _lastWriteSettings = new Dictionary<IntPtr, (string, DataTable, CsvColumnTypes)>();
 
-
         public MssqlDataStorage(string database)
         {
             Trace.TraceInformation($"Creating MssqlDataStorage for db {database}");
