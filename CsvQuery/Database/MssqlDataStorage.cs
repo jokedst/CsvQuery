@@ -43,10 +43,11 @@ namespace CsvQuery.Database
                 case ColumnType.Integer:
                     if (column.MinInteger >= 0)
                     {
-                        if (column.MaxInteger <= 1)
-                        {
-                            return "bit";
-                        }
+                        //// For some reason SQL Server doesn't like strings as a bit (works with int) so screw bit.
+                        //if (column.MaxInteger <= 1)
+                        //{
+                        //    return "bit";
+                        //}
                         if (column.MaxInteger < 256)
                         {
                             return "tinyint";
@@ -66,6 +67,11 @@ namespace CsvQuery.Database
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+        }
+
+        private string MssqlType(CsvColumnAnalyzer column)
+        {
+            return ToLocalType(column) + (column.Nullable ? " NULL" : " NOT NULL");
         }
 
         public override string SaveData(IntPtr bufferId, List<string[]> data, CsvColumnTypes columnTypes)
@@ -90,8 +96,7 @@ namespace CsvQuery.Database
                 }
 
                 createQuery.Append('[').Append(column.Name).Append("] ");
-                createQuery.Append(this.ToLocalType(column));
-                createQuery.Append(column.Nullable ? " NULL" : " NOT NULL");
+                createQuery.Append(this.MssqlType(column));
             }
 
             createQuery.Append(")");
@@ -168,9 +173,9 @@ namespace CsvQuery.Database
                 var column = columnTypes.Columns[c];
                 if (column.FitsIn(oldTypes[c])) continue;
                 var query =
-                    $"ALTER TABLE [{tableName}] ALTER COLUMN [{column.Name}] {this.ToLocalType(column)} {(column.Nullable ? "NULL" : "NOT NULL")}";
+                    $"ALTER TABLE [{tableName}] ALTER COLUMN [{column.Name}] {this.MssqlType(column)}";
                 alterations.Add(query);
-                Trace.TraceInformation("Column doesn't fit new data - altering table column: "+query);
+                Trace.TraceInformation($"Column doesn\'t fit new data - altering table column from '{this.ToLocalType(oldTypes[c])}': {query}");
             }
 
             using (var connection = new SqlConnection(this._connectionString))

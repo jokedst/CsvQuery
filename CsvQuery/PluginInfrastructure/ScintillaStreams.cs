@@ -1,5 +1,6 @@
 ﻿namespace CsvQuery.PluginInfrastructure
 {
+    using System.Diagnostics;
     using System.Text;
     using System.IO;
     using CsvQuery.Tools;
@@ -13,7 +14,7 @@
         {
             var doc = PluginBase.CurrentScintillaGateway;
             var codepage = doc.GetCodePage();
-            var encoding = (codepage == (int) SciMsg.SC_CP_UTF8) ? Encoding.UTF8 : Encoding.Default;
+            var encoding = codepage == (int) SciMsg.SC_CP_UTF8 ? Encoding.UTF8 : Encoding.Default;
             //if (codepage == 0)
             //{
             //   var style = doc.StyleGetCharacterSet((int) SciMsg.STYLE_DEFAULT);
@@ -29,6 +30,7 @@
             var doc = PluginBase.CurrentScintillaGateway;
             var length = doc.GetLength();
             int gap = doc.GetGapPosition();
+            Debug.WriteLine($"ScintillaStreams StreamAllRawText: gap at {gap}/{length}");
 
             if (length == gap)
             {

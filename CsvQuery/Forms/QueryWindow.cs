@@ -295,7 +295,15 @@
             foreach (var s in toshow[0])
             {
                 // Column names in a DataGridView can't contain commas it seems
-                table.Columns.Add(s.Replace(",", string.Empty));
+                var safeColumnName = s.Replace(",", string.Empty);
+                if (table.Columns.Contains(safeColumnName))
+                {
+                    var safePrefix = safeColumnName;
+                    if (safePrefix[safePrefix.Length - 1] >= '0' && safePrefix[safePrefix.Length - 1] <= '9') safePrefix = safePrefix + "_";
+                    var c = 2;
+                    do safeColumnName = safePrefix + c++; while (table.Columns.Contains(safeColumnName));
+                }
+                table.Columns.Add(safeColumnName);
             }
 
             // Insert rows

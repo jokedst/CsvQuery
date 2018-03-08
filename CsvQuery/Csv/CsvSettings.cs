@@ -22,11 +22,15 @@ namespace CsvQuery.Csv
         public static readonly CsvSettings Semicolon = new CsvSettings(';');
 
         public char Separator { get; set; }
-        public char TextQualifier { get; set; } = '"';
         public char CommentCharacter { get; set; }
         public List<int> FieldWidths { get; set; }
         public bool? HasHeader { get; set; }
         public string[] FieldNames { get; set; }
+
+        // This will replace TextQualifier below - only " is used anyway
+        public bool? UseQuotes { get; set; }
+        public char TextQualifier { get; set; } = '"';
+
 
         public CsvSettings()
         {
@@ -44,6 +48,7 @@ namespace CsvQuery.Csv
             this.CommentCharacter = commentChar;
             this.FieldWidths = fieldWidths;
             this.HasHeader = hasHeader;
+            this.UseQuotes = this.TextQualifier != default(char);
         }
 
         /// <summary>
@@ -89,8 +94,8 @@ namespace CsvQuery.Csv
 
         public IEnumerable<string[]> Parse(TextReader reader)
         {
-            if (this.FieldWidths == null && this.TextQualifier != default(char))
-                return this.ParseRaw(reader);
+            if (this.FieldWidths == null)
+                return this.ParseRawBuffered(reader);
             return this.ParseVB(reader);
         }
 
@@ -100,7 +105,8 @@ namespace CsvQuery.Csv
             bool inQuotes = false;
             var rowStart = true;
             var cols = new List<string>();
-            var sb = new StringBuilder();
+            var sb = new StringBuilder(100, 100000);
+            var useQuotes = this.TextQualifier != default(char);
 
             while ((ch = reader.Read()) != -1)
             {
@@ -112,7 +118,7 @@ namespace CsvQuery.Csv
                     continue;
                 }
 
-                if (c == '"')
+                if (c == '"' && useQuotes)
                 {
                     inQuotes = !inQuotes;
                     if (inQuotes && sb.Length > 0) sb.Append('"');
@@ -129,6 +135,7 @@ namespace CsvQuery.Csv
                         if (c == '\r' && reader.Peek() == '\n') reader.Read();
                         cols.Add(sb.ToString());
                         sb.Clear();
+                        //sb.Capacity = 100;
                         yield return cols.ToArray();
                         cols.Clear();
                         nextIsRowStart = true;
@@ -145,6 +152,78 @@ namespace CsvQuery.Csv
 
             if(rowStart) yield break; // Last row was empty
             cols.Add(sb.ToString());
+            yield return cols.ToArray();
+        }
+
+        /// <summary>
+        /// Does not use string builder - written to fix a problem, but kept until I can benchmark it (It's probably faster, but the bottleneck isn't really here).
+        /// </summary>
+        /// <param name="reader"></param>
+        /// <returns></returns>
+        public IEnumerable<string[]> ParseRawBuffered(TextReader reader)
+        {
+            int ch;
+            bool inQuotes = false;
+            var rowStart = true;
+            var cols = new List<string>();
+            var buffer = new char[1000];
+            var bpos = 0;
+
+            void Append(char c)
+            {
+                if (bpos >= buffer.Length)
+                {
+                    // Realloc
+                    var chArray = new char[buffer.Length + 1000];
+                    Array.Copy(buffer, chArray, buffer.Length);
+                    buffer = chArray;
+                }
+                buffer[bpos++] = c;
+            }
+
+            while ((ch = reader.Read()) != -1)
+            {
+                var c = (char)ch;
+                var nextIsRowStart = false;
+                if (rowStart && c == this.CommentCharacter)
+                {
+                    do { ch = reader.Read(); } while (ch != -1 && ch != '\n');
+                    continue;
+                }
+
+                if (c == '"' && (this.UseQuotes == true || this.UseQuotes == null && bpos == 0))
+                {
+                    inQuotes = !inQuotes;
+                    if (inQuotes && bpos > 0) Append('"');
+                }
+                else if (!inQuotes)
+                {
+                    if (c == this.Separator)
+                    {
+                        cols.Add(new string(buffer, 0, bpos));
+                        bpos = 0;
+                    }
+                    else if (c == '\r' || c == '\n')
+                    {
+                        if (c == '\r' && reader.Peek() == '\n') reader.Read();
+                        cols.Add(new string(buffer, 0, bpos));
+                        bpos = 0;
+                        yield return cols.ToArray();
+                        cols.Clear();
+                        nextIsRowStart = true;
+                    }
+                    else
+                    {
+                        Append(c);
+                    }
+                }
+                else
+                    Append(c);
+                rowStart = nextIsRowStart;
+            }
+
+            if (rowStart) yield break; // Last row was empty
+            cols.Add(new string(buffer, 0, bpos));
             yield return cols.ToArray();
         }
 
