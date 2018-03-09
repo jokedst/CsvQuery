@@ -7,6 +7,7 @@
     public static class Helpers
     {
         private const string Alphabet = "abcdefghijklmnopqrstuvwxyz";
+        private const string NonAscii = "กขฃคฅฆงจฉชซฌญฎฏฐฑฒณดตถทธนบปผฝพฟภมยรลวศษสหฬอฮ";
 
         public static IEnumerable<T> Interspace<T>(this IEnumerable<T> enumerable, T separator)
         {
@@ -21,6 +22,15 @@
         }
 
         public static string RandomString(this Random r, int length)
+        {
+            var chars = new char[length];
+            for (var i = 0; i < length; i++)
+                chars[i] = Alphabet[r.Next(Alphabet.Length)];
+            chars[0] = char.ToUpperInvariant(chars[0]);
+            return new string(chars);
+        }
+
+        public static string RandomNonAsciiString(this Random r, int length)
         {
             var chars = new char[length];
             for (var i = 0; i < length; i++)

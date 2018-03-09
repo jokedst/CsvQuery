@@ -95,7 +95,7 @@ namespace CsvQuery.Csv
         public IEnumerable<string[]> Parse(TextReader reader)
         {
             if (this.FieldWidths == null)
-                return this.ParseRawBuffered(reader);
+                return this.ParseStandard(reader);
             return this.ParseVB(reader);
         }
 
@@ -118,7 +118,7 @@ namespace CsvQuery.Csv
                     continue;
                 }
 
-                if (c == '"' && useQuotes)
+                if (c == '"' && (this.UseQuotes == true || this.UseQuotes == null && sb.Length > 0))
                 {
                     inQuotes = !inQuotes;
                     if (inQuotes && sb.Length > 0) sb.Append('"');
@@ -238,7 +238,7 @@ namespace CsvQuery.Csv
                 if (line.Length > 0 && line[0] == this.CommentCharacter) continue;
                 foreach (var c in line)
                 {
-                    if (c == '"')
+                    if (c == '"' && (this.UseQuotes == true || this.UseQuotes == null && (inQuotes || sb.Length == 0)))
                     {
                         inQuotes = !inQuotes;
                         if (inQuotes && sb.Length > 0) sb.Append('"');

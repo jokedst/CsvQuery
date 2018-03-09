@@ -49,8 +49,8 @@
                 new[] {"3", "12", "1,3\""},
                 new[] {"4", "2", "3"}
             };
-            var csvText =string.Join(newline, indata.Select(x => string.Join(separator.ToString(), x.Select(l=>quoted?$"\"{l.Replace("\"","\"\"")}\"":l))));
-            var set = new CsvSettings { Separator = separator, TextQualifier =quoted? '"' :default(char),HasHeader = false};
+            var csvText = string.Join(newline, indata.Select(x => string.Join(separator.ToString(), x.Select(l => quoted ? $"\"{l.Replace("\"", "\"\"")}\"" : l))));
+            var set = new CsvSettings {Separator = separator, TextQualifier = quoted ? '"' : default(char), HasHeader = false};
 
             // Act
             var data = set.Parse(csvText);
