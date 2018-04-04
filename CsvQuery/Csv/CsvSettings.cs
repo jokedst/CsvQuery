@@ -95,7 +95,7 @@ namespace CsvQuery.Csv
         public IEnumerable<string[]> Parse(TextReader reader)
         {
             if (this.FieldWidths == null)
-                return this.ParseStandard(reader);
+                return this.ParseVB(reader);
             return this.ParseVB(reader);
         }
 
