@@ -15,23 +15,23 @@
             var doc = PluginBase.CurrentScintillaGateway;
             var codepage = doc.GetCodePage();
             var encoding = codepage == (int) SciMsg.SC_CP_UTF8 ? Encoding.UTF8 : Encoding.Default;
-            //if (codepage == 0)
-            //{
-            //   var style = doc.StyleGetCharacterSet((int) SciMsg.STYLE_DEFAULT);
-            //}
             return new StreamReader(StreamAllRawText(), encoding);
         }
 
         /// <summary>
-        /// Reads the whole document as a byte stream
+        /// Reads the whole document as a byte stream.
+        /// Will likely throw exceptions if the document is edited while the stream is open.
         /// </summary>
         public static Stream StreamAllRawText()
         {
             var doc = PluginBase.CurrentScintillaGateway;
             var length = doc.GetLength();
+
+            // When editing a document Scintilla divides it into two - one before the cursor and one after, calling the break point the "gap"
             int gap = doc.GetGapPosition();
             Debug.WriteLine($"ScintillaStreams StreamAllRawText: gap at {gap}/{length}");
 
+            // If not currently editing there is no "gap", and the gap is the end of the document
             if (length == gap)
             {
                 var characterPointer = doc.GetCharacterPointer();
@@ -41,6 +41,7 @@
                 }
             }
 
+            // If there is a gap we create two streams - one for the first part and one for the second, and concatenate them
             return ConcatenatingStream.FromFactoryFunctions(false, () =>
             {
                 var rangePtr = doc.GetRangePointer(0, gap);

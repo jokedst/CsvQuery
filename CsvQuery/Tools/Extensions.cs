@@ -107,6 +107,7 @@
             dictionary.TryGetValue(key, out var ret);
             return ret;
         }
+
         public static TValue GetValueOrDefault<TKey, TValue>(this IEnumerable<KeyValuePair<TKey, TValue>> keyValues, TKey key)
         {
             if (key == null || keyValues == null) return default(TValue);
@@ -123,7 +124,6 @@
                     return keyValues.FirstOrDefault(x => x.Key.Equals(key)).Value;
             }
         }
-
 
         public static IEnumerable<T> Interspace<T>(this IEnumerable<T> enumerable, T separator)
         {
@@ -142,6 +142,7 @@
             foreach (TSource element in first) yield return element;
             yield return item;
         }
+
         public static IEnumerable<TSource> Prepend<TSource>(this IEnumerable<TSource> last, TSource item)
         {
             yield return item;

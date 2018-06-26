@@ -5,6 +5,9 @@ using System.Linq;
 
 namespace CsvQuery.Tools
 {
+    /// <summary>
+    /// Read-only stream that can have several underlying streams, reading seamlessly from each one in order
+    /// </summary>
     public class ConcatenatingStream : Stream
     {
         private readonly bool _closeStreams;
@@ -12,13 +15,23 @@ namespace CsvQuery.Tools
         private IEnumerator<Stream> _iterator;
         private long _position;
 
-        public ConcatenatingStream(IEnumerable<Stream> source, bool closeStreams)
+        /// <summary>
+        /// Creates a new ConcatenatingStream, using the <paramref name="sources"/> as underlying streams
+        /// </summary><inheritdoc/>
+        /// <param name="sources"> Streams to read from, in order. Enumerable will only be iterated when preceding stream is read to the end </param>
+        /// <param name="closeStreams"><see langword="true" /> to close underlying streams when read to the end, <see langword="false" /> to leave streams open </param>
+        public ConcatenatingStream(IEnumerable<Stream> sources, bool closeStreams)
         {
-            if (source == null) throw new ArgumentNullException(nameof(source));
-            this._iterator = source.GetEnumerator();
+            if (sources == null) throw new ArgumentNullException(nameof(sources));
+            this._iterator = sources.GetEnumerator();
             this._closeStreams = closeStreams;
         }
 
+        /// <summary>
+        /// Creates a new <see cref="ConcatenatingStream"/> using a set of factory functions to create the underlying streams
+        /// </summary>
+        /// <param name="closeStreams"> <see langword="true" /> to close underlying streams when read to the end, <see langword="false" /> to leave streams open </param>
+        /// <param name="factories"> Functions to create the underlying streams. The function will only be called after the previous stream has been read to the end </param>
         public static ConcatenatingStream FromFactoryFunctions<T>(bool closeStreams, params Func<T>[] factories)
             where T : Stream
         {
