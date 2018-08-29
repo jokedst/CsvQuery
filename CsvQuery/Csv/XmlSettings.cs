@@ -133,6 +133,7 @@ namespace CsvQuery.Csv
         {
             this._lineElement = lineElement;
             this.FieldNames = fieldNames;
+            this.Separator = '<';
         }
     }
 }
