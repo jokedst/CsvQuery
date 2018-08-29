@@ -1,6 +1,7 @@
 ﻿namespace Tests
 {
     using System.IO;
+    using CsvQuery;
     using CsvQuery.Csv;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -112,6 +113,17 @@
 
             Assert.AreEqual(',', result.Separator);
             Assert.AreEqual('\0', result.TextQualifier);
+        }
+
+        [TestMethod]
+        public void Can_detect_xml_file()
+        {
+            Main.Settings.ParseXmlFiles = true;
+            var data = File.ReadAllText("TestFiles\\simple.xml");
+
+            var result = CsvAnalyzer.Analyze(data);
+
+            Assert.IsTrue(result is XmlSettings);
         }
     }
 }

@@ -3,6 +3,7 @@
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using CsvQuery;
     using CsvQuery.Csv;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -68,6 +69,18 @@
             var data = settings.Parse(csvData);
 
             Assert.AreEqual(6, data.Count, "Number of rows incorrect");
+        }
+
+        [TestMethod]
+        public void CanParseXml()
+        {
+            Main.Settings.ParseXmlFiles = true;
+            var csvData = File.ReadAllText(@"TestFiles\simple.xml");
+            var settings = CsvAnalyzer.Analyze(csvData);
+
+            var data = settings.Parse(csvData);
+
+            Assert.AreEqual(3, data.Count, "Number of rows incorrect");
         }
     }
 }

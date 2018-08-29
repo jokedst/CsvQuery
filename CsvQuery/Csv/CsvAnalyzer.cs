@@ -26,6 +26,11 @@
             if (result != null)
                 return result;
 
+            if (Main.Settings.ParseXmlFiles && XmlSettings.TryAnalyze(csvString, out var xmlSettings))
+            {
+                return xmlSettings;
+            }
+
             // First do a letter frequency analysis on each row
             var s = new StringReader(csvString);
             string line;

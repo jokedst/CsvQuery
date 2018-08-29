@@ -155,6 +155,7 @@
     <Compile Include="Csv\CsvColumnTypes.cs" />
     <Compile Include="Csv\CsvSettings.cs" />
     <Compile Include="Csv\W3CSettings.cs" />
+    <Compile Include="Csv\XmlSettings.cs" />
     <Compile Include="Forms\ParseSettings.cs">
       <SubType>Form</SubType>
     </Compile>

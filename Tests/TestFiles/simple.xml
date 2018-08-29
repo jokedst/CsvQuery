@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<root>
+  <item>
+    <name>first</name>
+    <age>45</age>
+    <foo>bar</foo>
+  </item>
+  <item>
+    <name>second</name>
+    <age>46</age>
+    <foo>bar</foo>
+  </item>
+  <item>
+    <name>third</name>
+    <age>47</age>
+    <foo>bar</foo>
+  </item>
+</root>

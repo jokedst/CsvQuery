@@ -44,5 +44,8 @@
 
         [Description("Use original headers when generating a new CSV (only works on THIS-queries)"), Category("Generation"), DefaultValue(true)]
         public bool UseOriginalColumnHeadersOnGeneratedCsv { get; set; }
+
+        [Description("(Experimental) Read XML files and try to find line-similar entries"), Category("General"), DefaultValue(false)]
+        public bool ParseXmlFiles { get; set; }
     }
 }

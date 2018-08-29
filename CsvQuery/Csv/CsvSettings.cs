@@ -92,7 +92,7 @@ namespace CsvQuery.Csv
             }
         }
 
-        public IEnumerable<string[]> Parse(TextReader reader)
+        public virtual IEnumerable<string[]> Parse(TextReader reader)
         {
             if (this.FieldWidths == null)
                 return this.ParseVB(reader);
