@@ -95,7 +95,7 @@ namespace CsvQuery.Csv
                                 {
                                     values = new string[this.FieldNames.Length];
                                     lineDepth = reader.Depth;
-                                }else if (values != null && inColumn == -1)
+                                }else if (values != null && inColumn == -1 && !reader.IsEmptyElement)
                                 {
                                     inColumn = Array.FindIndex(FieldNames,
                                         x => x.Equals(reader.LocalName, StringComparison.OrdinalIgnoreCase));
@@ -134,6 +134,7 @@ namespace CsvQuery.Csv
             this._lineElement = lineElement;
             this.FieldNames = fieldNames;
             this.Separator = '<';
+            this.HasHeader = false;
         }
     }
 }
