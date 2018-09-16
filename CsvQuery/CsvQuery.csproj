@@ -171,6 +171,7 @@
     <Compile Include="Tools\CsvQueryException.cs" />
     <Compile Include="Tools\Extensions.cs" />
     <Compile Include="Database\MssqlDataStorage.cs" />
+    <Compile Include="Tools\JsonParser.cs" />
     <Compile Include="Tools\ReadTwiceStream.cs" />
     <Compile Include="PluginInfrastructure\SettingsBase.cs" />
     <Compile Include="Tools\SettingsChangedEventArgs.cs" />

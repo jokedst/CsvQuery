@@ -58,7 +58,7 @@ namespace CsvQuery.Csv
                         }
                     }
                 }
-                catch (XmlException e)
+                catch (XmlException)
                 {
                     // Stop reading :/
                 }
