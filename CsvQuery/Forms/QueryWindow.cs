@@ -314,6 +314,9 @@
             this.UiThread(() =>
             {
                 this.dataGrid.DataSource = table;
+                // Enforce correct column order
+                foreach (DataGridViewColumn col in this.dataGrid.Columns)
+                    col.DisplayIndex = col.Index;
             });
             watch.Checkpoint("Display");
 
