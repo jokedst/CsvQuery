@@ -19,14 +19,14 @@
  
     <Copy 
         SourceFiles="$(TargetPath)" 
-        DestinationFolder="C:\Program Files (x86)\Notepad++\plugins\" 
-        Condition="Exists('C:\Program Files (x86)\Notepad++\plugins\') AND '$(PlatformTarget)' == 'x86'"
+        DestinationFolder="C:\Program Files (x86)\Notepad++\plugins\CsvQuery\" 
+        Condition="Exists('C:\Program Files (x86)\Notepad++\plugins\CsvQuery\') AND '$(PlatformTarget)' == 'x86'"
         ContinueOnError="false" />
  
     <Copy 
         SourceFiles="$(TargetPath)" 
-        DestinationFolder="C:\Program Files\Notepad++\plugins\" 
-        Condition="Exists('C:\Program Files\Notepad++\plugins\') AND '$(PlatformTarget)' == 'x64'"
+        DestinationFolder="C:\Program Files\Notepad++\plugins\CsvQuery\" 
+        Condition="Exists('C:\Program Files\Notepad++\plugins\CsvQuery\') AND '$(PlatformTarget)' == 'x64'"
         ContinueOnError="false" />
   </Target>
 </Project>
