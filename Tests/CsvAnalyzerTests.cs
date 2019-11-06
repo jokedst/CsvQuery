@@ -38,6 +38,14 @@
         }
 
         [TestMethod]
+        public void CanHandleQuotesInText()
+        {
+            var data = File.ReadAllText(@"TestFiles\TabsWithQuotesInText.csv");
+            var result = CsvAnalyzer.Analyze(data);
+            Assert.AreEqual('\t', result.Separator);
+        }
+
+        [TestMethod]
         public void CanReadFiles()
         {
             var csvData = File.ReadAllText(@"TestFiles\sentences.csv");

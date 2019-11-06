@@ -82,5 +82,18 @@
 
             Assert.AreEqual(3, data.Count, "Number of rows incorrect");
         }
+
+        [TestMethod]
+        public void CanParseTabSeparatedWithQuotesInText()
+        {
+            Main.Settings.ParseXmlFiles = true;
+            var csvData = File.ReadAllText(@"TestFiles\TabsWithQuotesInText.csv");
+            var settings = CsvAnalyzer.Analyze(csvData);
+            settings.TextQualifier = default(char);
+            var data = settings.Parse(csvData);
+
+            Assert.AreEqual(6, data.Count, "Number of rows incorrect");
+            Assert.AreEqual("\"A4\" 210x325mm utskick, v24, h04poo, nära,7st butiker", data[5][3]);
+        }
     }
 }
