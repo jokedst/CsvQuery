@@ -54,6 +54,14 @@ namespace CsvQuery.Csv
         /// <summary>
         /// Parses a big text blob into rows and columns, using the settings
         /// </summary>
+        /// <remarks>
+        /// At this point there are FOUR parsers implemented:
+        ///   ParseVB - The original, included in .NET framework. Currently used. Slow though (^10 times slower).
+        ///   ParseStandard - My first replacement attempt. Reads line by line. Fastest for some reason.
+        ///   ParseRaw - Second attempt. Reads character by character, allowing multi-line quoted strings. Somewhat slower.
+        ///   ParseRawBuffered - Attempt to make ParseRaw faster by buffering directly instead of using StringBuilder. It's actually slower though. :(
+        /// However, since the parsing is NOT the current bottleneck, it doesn't really matter which one is used
+        /// </remarks>
         /// <param name="text">Big blob of text</param>
         /// <returns>Parsed data</returns>
         public List<string[]> Parse(string text)
@@ -227,6 +235,9 @@ namespace CsvQuery.Csv
             yield return cols.ToArray();
         }
 
+        /// <summary>
+        /// Read line-by-line. Can't handle multi-line text fields.
+        /// </summary>
         public IEnumerable<string[]> ParseStandard(TextReader reader)
         {
             string line;
@@ -262,6 +273,36 @@ namespace CsvQuery.Csv
                 cols.Clear();
             }
         }
+
+        //public IEnumerable<string[]> ParseParallell(TextReader reader)
+        //{
+        //    var inputLines = new BlockingCollection<string>();
+        //    ConcurrentDictionary<int, int> catalog = new ConcurrentDictionary<int, int>();
+
+        //    var readLines = Task.Factory.StartNew(() =>
+        //    {
+        //        string line;
+        //        while ((line = reader.ReadLine()) != null)
+        //            //foreach (var line in File.ReadLines(catalogPath))
+        //            inputLines.Add(line);
+
+        //        inputLines.CompleteAdding();
+        //    });
+
+        //    var processLines = Task.Factory.StartNew(() =>
+        //    {
+        //        Parallel.ForEach(inputLines.GetConsumingEnumerable(), line =>
+        //        {
+        //            string[] lineFields = line.Split('\t');
+        //            int genomicId = int.Parse(lineFields[3]);
+        //            int taxId = int.Parse(lineFields[0]);
+        //            catalog.TryAdd(genomicId, taxId);
+        //        });
+        //    });
+
+        //    Task.WaitAll(readLines, processLines);
+        //}
+
         /// <summary>
         /// Generates a CSV file from a <see cref="DataTable"/>, using the settings
         /// </summary>
