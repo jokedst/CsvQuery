@@ -1865,7 +1865,7 @@ namespace CsvQuery.PluginInfrastructure
         /// </summary>
         public unsafe string GetText(int length)
         {
-            byte[] textBuffer = new byte[10000];
+            byte[] textBuffer = new byte[length];
             fixed (byte* textPtr = textBuffer)
             {
                 IntPtr res = Win32.SendMessage(scintilla, SciMsg.SCI_GETTEXT, length, (IntPtr) textPtr);
