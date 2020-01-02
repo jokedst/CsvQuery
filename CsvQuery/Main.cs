@@ -233,6 +233,7 @@ namespace CsvQuery
                 dialog.Controls.Add(settingsButton);
             }
 
+            dialog.StartPosition = FormStartPosition.CenterParent;
             dialog.ShowDialog();
         }
 

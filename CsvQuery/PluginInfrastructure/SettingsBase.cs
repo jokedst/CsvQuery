@@ -220,6 +220,7 @@ namespace CsvQuery.PluginInfrastructure
                 dialog.Close();
             };
 
+            dialog.StartPosition = FormStartPosition.CenterParent;
             dialog.ShowDialog();
         }
 
