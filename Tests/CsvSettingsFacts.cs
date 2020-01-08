@@ -81,6 +81,34 @@
             var data = settings.Parse(csvData);
 
             Assert.AreEqual(3, data.Count, "Number of rows incorrect");
+            CollectionAssert.AreEquivalent(new[] {"name", "age", "foo"}, settings.FieldNames);
+            var expectedData = new List<string[]>
+            {
+                new[] {"first", "45", "bar"},
+                new[] {"second", "46", "bar"},
+                new[] {"third", "47", "bar"},
+            };
+            this.AssertDataEqual(expectedData, data);
+        }
+
+        [TestMethod]
+        public void CanParseComplexXml()
+        {
+            Main.Settings.ParseXmlFiles = true;
+            var csvData = File.ReadAllText(@"TestFiles\headerWithRows.xml");
+            var settings = CsvAnalyzer.Analyze(csvData);
+
+            var data = settings.Parse(csvData);
+
+            Assert.AreEqual(3, data.Count, "Number of rows incorrect");
+            CollectionAssert.AreEquivalent(new[] { "name", "age", "foo", "extra" }, settings.FieldNames);
+            var expectedData = new List<string[]>
+            {
+                new[] {"first", "45", "bar", null},
+                new[] {"second", "46", "bar", null},
+                new[] {"third", "47", "bar", "Read all about it!"},
+            };
+            this.AssertDataEqual(expectedData, data);
         }
 
         [TestMethod]

@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<root>
+  <subRoot>
+    <something>Foo</something>
+    <somethingElse>Bar</somethingElse>
+    <rows>
+      <item>
+        <name>first</name>
+        <age>45</age>
+        <foo>bar</foo>
+      </item>
+      <item>
+        <name>second</name>
+        <age>46</age>
+        <foo>bar</foo>
+      </item>
+      <item>
+        <name>third</name>
+        <age>47</age>
+        <foo>bar</foo>
+        <extra>Read all about it!</extra>
+      </item>
+    </rows>
+  </subRoot>
+</root>
