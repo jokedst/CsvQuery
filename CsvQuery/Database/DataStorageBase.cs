@@ -110,5 +110,7 @@ namespace CsvQuery.Database
         }
 
         public abstract void SaveDone(IntPtr bufferId);
+
+        public abstract string LastError();
     }
 }

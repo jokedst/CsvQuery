@@ -226,6 +226,11 @@ namespace CsvQuery.Database
             this._lastWriteSettings.Remove(bufferId);
         }
 
+        public override string LastError()
+        {
+            return null; // Not implemented
+        }
+
         public override List<string[]> ExecuteQuery(string query, bool includeColumnNames)
         {
             var result = new List<string[]>();

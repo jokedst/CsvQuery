@@ -713,7 +713,7 @@ void *sqlite3_wsd_find(void *K, int L);
     //#define SQLITE_WSD
     //#define GLOBAL(t,v) v
     //#define sqlite3GlobalConfig sqlite3Config
-    static Sqlite3Config sqlite3GlobalConfig;
+    public static Sqlite3Config sqlite3GlobalConfig;
 #endif
 
     /*

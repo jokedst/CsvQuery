@@ -68,6 +68,8 @@ namespace CsvQuery.Database
         string CreateLimitedSelect(int linesToSelect);
 
         void SaveDone(IntPtr bufferId);
+
+        string LastError();
     }
 
     public enum DataStorageProvider

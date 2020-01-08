@@ -21,6 +21,14 @@
                 "PRAGMA main.cache_size = 10000"
             };
 
+        private static string _lastError = null;
+
+        static SQLiteDataStorage()
+        {
+            Sqlite3.sqlite3_initialize();
+            Sqlite3.sqlite3GlobalConfig.xLog = LogError;
+        }
+
         public SQLiteDataStorage(string database = ":memory:")
         {
             this._db = new SQLiteDatabase(database);
@@ -39,6 +47,7 @@
         /// <returns></returns>
         public override string SaveData(IntPtr bufferId, List<string[]> data, CsvColumnTypes columnTypes)
         {
+            _lastError = null;
             string tableName = this.GetOrAllocateTableName(bufferId);
             
             // Create SQL by string concat - look out for SQL injection! (although rather harmless since it's all your own data)
@@ -149,6 +158,16 @@
             this._lastWriteSettings.Remove(bufferId);
         }
 
+        private static void LogError(object plogarg, int i, string msg)
+        {
+            _lastError = msg;
+        }
+
+        public override string LastError()
+        {
+            return _lastError;
+        }
+
         /// <summary>
         /// Executes the query. The first row in the results will be the column names
         /// </summary>
@@ -157,6 +176,7 @@
         /// <returns>Query results</returns>
         public override List<string[]> ExecuteQuery(string query, bool includeColumnNames)
         {
+            _lastError = null;
             Trace.TraceInformation($"SQLite ExecuteQuery '{query}'");
             var result = new List<string[]>();
             var c1 = new SQLiteVdbe(this._db, query);
@@ -188,6 +208,7 @@
 
         public override void ExecuteNonQuery(string query)
         {
+            _lastError = null;
             Trace.TraceInformation($"SQLite ExecuteNonQuery '{query}'");
             this._db.ExecuteNonQuery(query);
         }

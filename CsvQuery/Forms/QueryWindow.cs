@@ -276,7 +276,7 @@
             }
             catch (Exception)
             {
-                this.Message("Could not execute query", Resources.Title_CSV_Query_Error);
+                this.Message("Could not execute query\n" + Main.DataStorage.LastError(), Resources.Title_CSV_Query_Error);
                 return;
             }
             watch.Checkpoint("Execute query");
