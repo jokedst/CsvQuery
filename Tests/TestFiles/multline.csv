@@ -1,0 +1,8 @@
+﻿Title1,Title2 , Title 3
+ 1, "multi-line text, especially in 
+csv-files, is evil", in my opinion
+2, "multi-line with ""
+should not be allowed really", "I agree,
+but what do I know"
+  
+3, """This"" is evil", "a 4"" brick"

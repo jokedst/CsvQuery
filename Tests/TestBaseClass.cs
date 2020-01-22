@@ -1,5 +1,6 @@
 ﻿namespace Tests
 {
+    using System;
     using System.Collections.Generic;
     using CsvQuery;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -16,8 +17,8 @@
 
         public virtual void AssertDataEqual(IList<string[]> expected, IList<string[]> actual)
         {
-            Assert.AreEqual(expected.Count, actual.Count, "Not same number of rows");
-            for (var row = 0; row < expected.Count; row++)
+            var rowsToTest = Math.Min(expected.Count, actual.Count);
+            for (var row = 0; row < rowsToTest; row++)
             {
                 Assert.AreEqual(expected[row].Length, actual[row].Length,
                     "Row " + row + " does not have same number of columns");
@@ -25,6 +26,7 @@
                     Assert.AreEqual(expected[row][column], actual[row][column],
                         "Value in row " + row + ", column " + column + " are not equal");
             }
+            Assert.AreEqual(expected.Count, actual.Count, "Not same number of rows");
         }
 
         public virtual void AssertDataEqualAfterTypeConversion(IList<string[]> expected, IList<string[]> actual)

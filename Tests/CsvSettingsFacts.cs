@@ -124,4 +124,78 @@
             Assert.AreEqual("\"A4\" 210x325mm utskick, v24, h04poo, nära,7st butiker", data[5][3]);
         }
     }
+
+    [TestClass]
+    public class CsvSettingsParserFacts : TestBaseClass
+    {
+        [TestMethod]
+        public void CanParseMultilineFields()
+        {
+            var settings = new CsvSettings {Separator = ',', TextQualifier = '"', UseQuotes = true};
+
+            List<string[]> data;
+            using (var sr = new StreamReader(@"TestFiles\multline.csv")) data = settings.Parse(sr).ToList();
+
+            var expectedData = new List<string[]>
+            {
+                new[] {"Title1", "Title2", "Title 3"},
+                new[] {"1", "multi-line text, especially in \r\ncsv-files, is evil", "in my opinion"},
+                new[] {"2", "multi-line with \"\r\nshould not be allowed really", "I agree,\r\nbut what do I know"},
+                new[] {"3", "\"This\" is evil", "a 4\" brick"},
+            };
+            this.AssertDataEqual(expectedData, data);
+        }
+
+        [TestMethod]
+        public void CanParseMultilineFieldsParseStandard()
+        {
+            var settings = new CsvSettings { Separator = ',', TextQualifier = '"', UseQuotes = true };
+
+            List<string[]> data;
+            using (var sr = new StreamReader(@"TestFiles\multline.csv")) data = settings.ParseStandard(sr).ToList();
+
+            this.AssertDataEqual(new List<string[]>
+            {
+                new[] {"Title1", "Title2", "Title 3"},
+                new[] {"1", "multi-line text, especially in \r\ncsv-files, is evil", "in my opinion"},
+                new[] {"2", "multi-line with \"\r\nshould not be allowed really", "I agree,\r\nbut what do I know"},
+                new[] {"3", "\"This\" is evil", "a 4\" brick"},
+            }, data);
+        }
+
+        [TestMethod]
+        public void CanParseMultilineFieldsRaw()
+        {
+            var settings = new CsvSettings {Separator = ',', TextQualifier = '"', UseQuotes = true};
+
+            List<string[]> data;
+            using (var sr = new StreamReader(@"TestFiles\multline.csv")) data = settings.ParseRaw(sr).ToList();
+
+            var expectedData = new List<string[]>
+            {
+                new[] {"Title1", "Title2", "Title 3"},
+                new[] {"1", "multi-line text, especially in \r\ncsv-files, is evil", "in my opinion"},
+                new[] {"2", "multi-line with \"\r\nshould not be allowed really", "I agree,\r\nbut what do I know"},
+                new[] {"3", "\"This\" is evil", "a 4\" brick"},
+            };
+            this.AssertDataEqual(expectedData, data);
+        }
+
+        [TestMethod]
+        public void CanParseMultilineFieldsParseRawBuffered()
+        {
+            var settings = new CsvSettings {Separator = ',', TextQualifier = '"', UseQuotes = true};
+
+            List<string[]> data;
+            using (var sr = new StreamReader(@"TestFiles\multline.csv")) data = settings.ParseRawBuffered(sr).ToList();
+
+            this.AssertDataEqual(new List<string[]>
+            {
+                new[] {"Title1", "Title2", "Title 3"},
+                new[] {"1", "multi-line text, especially in \r\ncsv-files, is evil", "in my opinion"},
+                new[] {"2", "multi-line with \"\r\nshould not be allowed really", "I agree,\r\nbut what do I know"},
+                new[] {"3", "\"This\" is evil", "a 4\" brick"},
+            }, data);
+        }
+    }
 }
