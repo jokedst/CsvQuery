@@ -259,12 +259,12 @@
             while (--blockSize > 0 && enumerator.MoveNext());
         }
 
-        public static StringBuilder TrimEnd(this StringBuilder sb)
+        public static StringBuilder TrimEnd(this StringBuilder sb, int stopAt = 0)
         {
             if (sb == null || sb.Length == 0) return sb;
 
             int i = sb.Length - 1;
-            for (; i >= 0; i--)
+            for (; i >= stopAt; i--)
                 if (!char.IsWhiteSpace(sb[i]))
                     break;
 

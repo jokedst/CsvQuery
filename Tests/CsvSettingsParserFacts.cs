@@ -15,7 +15,7 @@
             new[] {"1", "multi-line text, especially in \r\ncsv-files, is evil", "in my opinion"},
             new[] {"2", "multi-line with \"\r\nshould not be allowed really", "I agree,\r\nbut what do I know"},
             new[] {"3", "\"This\" is evil", "a 4\" brick"},
-            new[] {"100", " spaces ", "\ttabs\t\t"},
+            new[] {" ", " spaces ", "\ttabs\t\t"},
         };
 
         [TestMethod]

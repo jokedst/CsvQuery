@@ -281,7 +281,7 @@ namespace CsvQuery.Csv
         /// </remarks>
         public IEnumerable<string[]> ParseCustom(TextReader reader)
         {
-            int ch;
+            int ch, quoteEnd=0;
             var inQuotes = false;
             var cols = new List<string>();
             var sb = new StringBuilder();
@@ -307,8 +307,9 @@ namespace CsvQuery.Csv
                     {
                         if (cols.Count > 0 || sb.Length > 0)
                         {
-                            cols.Add(sb.TrimEnd().ToString());
+                            cols.Add(sb.TrimEnd(quoteEnd).ToString());
                             sb.Clear();
+                            quoteEnd = 0;
                         }
 
                         if (cols.Count > 0)
@@ -323,8 +324,9 @@ namespace CsvQuery.Csv
                         inQuotes = true;
                     else if (c == this.Separator)
                     {
-                        cols.Add(sb.TrimEnd().ToString());
+                        cols.Add(sb.TrimEnd(quoteEnd).ToString());
                         sb.Clear();
+                        quoteEnd = 0;
                     }
                     else if (char.IsWhiteSpace(c))
                     {
@@ -344,8 +346,9 @@ namespace CsvQuery.Csv
                         sb.Append(this.Separator);
                     else
                     {
-                        cols.Add(sb.TrimEnd().ToString());
+                        cols.Add(sb.TrimEnd(quoteEnd).ToString());
                         sb.Clear();
+                        quoteEnd = 0;
                     }
                 }
                 else if (c == qualifier)
@@ -358,7 +361,10 @@ namespace CsvQuery.Csv
                             sb.Append(qualifier);
                         }
                         else
+                        {
                             inQuotes = false;
+                            quoteEnd = sb.Length;
+                        }
                     }
                     else
                         sb.Append(c);
@@ -368,7 +374,7 @@ namespace CsvQuery.Csv
             }
 
             if (cols.Count > 0 || sb.Length > 0)
-                cols.Add(sb.TrimEnd().ToString());
+                cols.Add(sb.TrimEnd(quoteEnd).ToString());
 
             if (cols.Count > 0)
                 yield return cols.ToArray();
