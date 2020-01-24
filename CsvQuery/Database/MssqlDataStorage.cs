@@ -226,48 +226,52 @@ namespace CsvQuery.Database
             this._lastWriteSettings.Remove(bufferId);
         }
 
-        public override string LastError()
-        {
-            return null; // Not implemented
-        }
-
         public override List<string[]> ExecuteQuery(string query, bool includeColumnNames)
         {
             var result = new List<string[]>();
-            using (var con = new SqlConnection(this._connectionString))
+            try
             {
-                Trace.TraceInformation($"MSSQL ExecuteQueryWithColumnNames '{query}'");
-                con.Open();
-                using (var command = new SqlCommand(query, con))
-                using (var reader = command.ExecuteReader())
+                using (var con = new SqlConnection(this._connectionString))
                 {
-                    while (reader.Read())
+                    Trace.TraceInformation($"MSSQL ExecuteQueryWithColumnNames '{query}'");
+                    con.Open();
+                    using (var command = new SqlCommand(query, con))
+                    using (var reader = command.ExecuteReader())
                     {
-                        var columns = reader.FieldCount;
-                        if (includeColumnNames)
+                        while (reader.Read())
                         {
-                            var cols = new string[columns];
-                            for (var i = 0; i < columns; i++)
-                                cols[i] = reader.GetName(i);
-                            result.Add(cols);
-                            includeColumnNames = false;
-                        }
+                            var columns = reader.FieldCount;
+                            if (includeColumnNames)
+                            {
+                                var cols = new string[columns];
+                                for (var i = 0; i < columns; i++)
+                                    cols[i] = reader.GetName(i);
+                                result.Add(cols);
+                                includeColumnNames = false;
+                            }
 
-                        var data = new string[columns];
-                        for (var i = 0; i < columns; i++)
-                            if (reader.IsDBNull(i))
-                            {
-                                data[i] = null;
-                            }
-                            else
-                            {
-                                var o = reader.GetValue(i);
-                                data[i] = o.ToString();
-                            }
-                        result.Add(data);
+                            var data = new string[columns];
+                            for (var i = 0; i < columns; i++)
+                                if (reader.IsDBNull(i))
+                                {
+                                    data[i] = null;
+                                }
+                                else
+                                {
+                                    var o = reader.GetValue(i);
+                                    data[i] = o.ToString();
+                                }
+
+                            result.Add(data);
+                        }
                     }
                 }
             }
+            catch (SqlException e)
+            {
+                throw new DataStorageException(e.Message, e);
+            }
+
             return result;
         }
 

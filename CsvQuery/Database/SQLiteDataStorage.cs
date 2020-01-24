@@ -163,11 +163,6 @@
             _lastError = msg;
         }
 
-        public override string LastError()
-        {
-            return _lastError;
-        }
-
         /// <summary>
         /// Executes the query. The first row in the results will be the column names
         /// </summary>
@@ -179,30 +174,39 @@
             _lastError = null;
             Trace.TraceInformation($"SQLite ExecuteQuery '{query}'");
             var result = new List<string[]>();
-            var c1 = new SQLiteVdbe(this._db, query);
-            int columns = 0;
-            while (c1.ExecuteStep() == Sqlite3.SQLITE_ROW)
+            try
             {
-                columns = c1.ResultColumnCount();
-                var data = new string[columns];
-                for (int i = 0; i < columns; i++)
+                var c1 = new SQLiteVdbe(this._db, query);
+                int columns = 0;
+                while (c1.ExecuteStep() == Sqlite3.SQLITE_ROW)
                 {
-                    data[i] = c1.Result_Text(i);
+                    columns = c1.ResultColumnCount();
+                    var data = new string[columns];
+                    for (int i = 0; i < columns; i++)
+                    {
+                        data[i] = c1.Result_Text(i);
+                    }
+                    result.Add(data);
                 }
-                result.Add(data);
-            }
 
-            if (includeColumnNames)
+                if (includeColumnNames)
+                {
+                    var columnNames = new List<string>();
+                    for (int i = 0; i < columns; i++)
+                    {
+                        columnNames.Add(c1.ColumnName(i));
+                    }
+                    result.Insert(0, columnNames.ToArray());
+                }
+
+                c1.Close();
+            }
+            catch (Exception e)
             {
-                var columnNames = new List<string>();
-                for (int i = 0; i < columns; i++)
-                {
-                    columnNames.Add(c1.ColumnName(i));
-                }
-                result.Insert(0, columnNames.ToArray());
+                if(_lastError != null)
+                    throw new DataStorageException(_lastError, e);
+                throw;
             }
-
-            c1.Close();
             return result;
         }
 

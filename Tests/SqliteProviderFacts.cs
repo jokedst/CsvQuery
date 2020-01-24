@@ -35,7 +35,7 @@
         }
 
         [TestMethod]
-        [ExpectedException(typeof(SQliteException))]
+        [ExpectedException(typeof(DataStorageException))]
         public void CanHandleCpQuery()
         {
             // This should throw an SQliteException

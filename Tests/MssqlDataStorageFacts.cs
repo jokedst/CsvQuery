@@ -12,7 +12,7 @@
         public override IDataStorage DataStorage { get; } = new MssqlDataStorage("CsvQueryTest");
 
         [TestMethod]
-        [ExpectedException(typeof(SqlException))]
+        [ExpectedException(typeof(DataStorageException))]
         public void CanHandleCpQuery()
         {
             // This should throw an SQliteException
