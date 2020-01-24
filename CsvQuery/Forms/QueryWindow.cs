@@ -366,8 +366,8 @@
                 return;
             }
 
-            var initialSettings = this._lastGenerateSettings ?? new CsvSettings(Main.Settings.DefaultSeparator.Unescape(),
-                                      Main.Settings.DefaultQuoteChar, '\0', true);
+            var initialSettings = this._lastGenerateSettings 
+                                  ?? new CsvSettings(Main.Settings.DefaultSeparator.Unescape(), true, '\0', true);
             var settingsDialog = new ParseSettings(initialSettings)
             {
                 btnReparse = {Text = "&Ok"},

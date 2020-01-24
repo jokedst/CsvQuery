@@ -258,5 +258,51 @@
             }
             while (--blockSize > 0 && enumerator.MoveNext());
         }
+
+        public static StringBuilder TrimEnd(this StringBuilder sb)
+        {
+            if (sb == null || sb.Length == 0) return sb;
+
+            int i = sb.Length - 1;
+            for (; i >= 0; i--)
+                if (!char.IsWhiteSpace(sb[i]))
+                    break;
+
+            if (i < sb.Length - 1)
+                sb.Length = i + 1;
+
+            return sb;
+        }
+
+        public static string TrimToString(this StringBuilder sb)
+        {
+            if (sb == null) return null;
+            var length = sb.Length;
+            if (length == 0) return "";
+
+            var end = length - 1;
+            for (; end >= 0; end--)
+            {
+                if (!char.IsWhiteSpace(sb[end]))
+                {
+                    break;
+                }
+            }
+
+            if (end == -1)
+            {
+                return "";
+            }
+
+            for (int start = 0; start <= end; start++)
+            {
+                if (!char.IsWhiteSpace(sb[start]))
+                {
+                    return sb.ToString(start, end - start + 1);
+                }
+            }
+
+            return sb.ToString();
+        }
     }
 }

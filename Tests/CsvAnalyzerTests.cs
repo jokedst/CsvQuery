@@ -92,7 +92,7 @@
             var result = CsvAnalyzer.Analyze(data);
 
             Assert.AreEqual(',', result.Separator);
-            Assert.AreEqual('"', result.TextQualifier);
+            Assert.IsTrue(result.UseQuotes);
         }
 
         [TestMethod]
@@ -105,7 +105,7 @@
             var result = CsvAnalyzer.Analyze(data);
 
             Assert.AreEqual(',', result.Separator);
-            Assert.AreEqual('\0', result.TextQualifier);
+            Assert.IsFalse(result.UseQuotes);
         }
 
         [TestMethod]
@@ -120,7 +120,7 @@
             var result = CsvAnalyzer.Analyze(data);
 
             Assert.AreEqual(',', result.Separator);
-            Assert.AreEqual('\0', result.TextQualifier);
+            Assert.IsFalse(result.UseQuotes);
         }
 
         [TestMethod]

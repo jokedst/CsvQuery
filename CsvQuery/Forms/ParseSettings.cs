@@ -10,25 +10,24 @@
     {
         public ParseSettings()
         {
-            InitializeComponent();
+            this.InitializeComponent();
         }
 
         public ParseSettings(CsvSettings csvSettings)
             : this()
         {
-            txbSep.Text = csvSettings.Separator.ToString();
-            txbQuoteChar.Text = csvSettings.TextQualifier.ToString();
-            txbCommentChar.Text = csvSettings.CommentCharacter.ToString();
-            hasHeaderCheckbox.CheckState = csvSettings.HasHeader.ToCheckboxState();
-            FixedWidthCheckbox.Checked = csvSettings.FieldWidths != null;
+            this.txbSep.Text = csvSettings.Separator.ToString();
+            this.useQuotesCheckBox.Checked = csvSettings.UseQuotes;
+            this.txbCommentChar.Text = csvSettings.CommentCharacter.ToString();
+            this.hasHeaderCheckbox.CheckState = csvSettings.HasHeader.ToCheckboxState();
+            this.FixedWidthCheckbox.Checked = csvSettings.FieldWidths != null;
         }
 
         public CsvSettings Settings =>
-            new CsvSettings(
-                txbSep.Text.Unescape(),
-                txbQuoteChar.Text.Unescape(),
-                txbCommentChar.Text.FirstOrDefault(),
-                hasHeaderCheckbox.CheckState.ToNullableBool(),
-                FixedWidthCheckbox.Checked ? new List<int>() : null);
+            new CsvSettings(this.txbSep.Text.Unescape(),
+                this.useQuotesCheckBox.Checked,
+                this.txbCommentChar.Text.FirstOrDefault(),
+                this.hasHeaderCheckbox.CheckState.ToNullableBool(),
+                this.FixedWidthCheckbox.Checked ? new List<int>() : null);
     }
 }

@@ -89,6 +89,7 @@
     <Compile Include="ConcatenatingStreamFacts.cs" />
     <Compile Include="CsvColumnTypesFacts.cs" />
     <Compile Include="CsvSettingsFacts.cs" />
+    <Compile Include="CsvSettingsParserFacts.cs" />
     <Compile Include="DataStorageFacts.cs" />
     <Compile Include="FactsRegardingCsvGeneration.cs" />
     <Compile Include="MssqlDataStorageFacts.cs" />

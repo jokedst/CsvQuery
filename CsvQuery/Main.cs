@@ -122,7 +122,7 @@ namespace CsvQuery
                 var askUserDialog = new ParseSettings
                 {
                     MainLabel = {Text = "Manually enter values for parsing CSV\n\nUse this if detection fails"},
-                    txbQuoteChar = {Text = Main.Settings.DefaultQuoteChar.ToString()},
+                    useQuotesCheckBox = {Checked = true},
                     txbSep = {Text = Main.Settings.DefaultSeparator}
                 };
                 if (askUserDialog.ShowDialog() != DialogResult.OK)
