@@ -100,40 +100,22 @@
             // Compare results of different parsers
             if (Param.Flag('C'))
             {
-                var standard = csvSettings.ParseStandard(sr).ToList();
-                timer.Checkpoint($"Standard.ToList()");
-                mm.Position = 0;
                 var vb = csvSettings.ParseVB(sr).ToList();
                 timer.Checkpoint($"VB.ToList()");
-                mm.Position = 0;
-                var raw = csvSettings.ParseRaw(sr).ToList();
-                timer.Checkpoint($"ParseRaw.ToList()");
-                mm.Position = 0;
-                var buffered = csvSettings.ParseRawBuffered(sr).ToList();
-                timer.Checkpoint($"ParseRawBuffered.ToList()");
                 mm.Position = 0;
                 sr = new StreamReader(mm, Encoding.UTF8, false, 1024 * 16, true);
                 var custom = csvSettings.ParseCustom(sr).ToList();
                 timer.Checkpoint($"ParseCustom.ToList()");
 
-                if (standard.Count != vb.Count) Console.Error.WriteLine($"Error: VB rows={vb.Count} != Std rows={standard.Count}");
-                if (standard.Count != raw.Count) Console.Error.WriteLine($"Error: ParseRaw rows={raw.Count} != Std rows={standard.Count}");
-                if (standard.Count != buffered.Count) Console.Error.WriteLine($"Error: ParseRawBuffered rows={buffered.Count} != Std rows={standard.Count}");
-                if (standard.Count != custom.Count) Console.Error.WriteLine($"Error: Custom rows={buffered.Count} != Std rows={standard.Count}");
+                if (custom.Count != vb.Count) Console.Error.WriteLine($"Error: VB rows={vb.Count} != Std rows={custom.Count}");
 
-                for (int i = 0; i < standard.Count; i++)
+                for (int i = 0; i < custom.Count; i++)
                 {
-                    if (standard[i].Length != vb[i].Length) Console.Error.WriteLine($"Error (line {i}): VB columns={vb[i].Length} != Std columns={standard[i].Length}");
-                    if (standard[i].Length != raw[i].Length) Console.Error.WriteLine($"Error (line {i}): ParseRaw columns={raw[i].Length} != Std columns={standard[i].Length}");
-                    if (standard[i].Length != buffered[i].Length) Console.Error.WriteLine($"Error (line {i}): ParseRawBuffered columns={buffered[i].Length} != Std columns={standard[i].Length}");
-                    if (standard[i].Length != custom[i].Length) Console.Error.WriteLine($"Error (line {i}): Custom columns={buffered[i].Length} != Std columns={standard[i].Length}");
-
-                    for (int c = 0; c < standard[i].Length; c++)
+                    if (custom[i].Length != vb[i].Length) Console.Error.WriteLine($"Error (line {i}): VB columns={vb[i].Length} != Std columns={custom[i].Length}");
+                 
+                    for (int c = 0; c < custom[i].Length; c++)
                     {
-                        if (standard[i][c] != vb[i][c]) Console.Error.WriteLine($"Error (line {i}, column {c}): VB column='{vb[i][c]}' != Std column='{standard[i][c]}'");
-                        if (standard[i][c] != raw[i][c]) Console.Error.WriteLine($"Error (line {i}, column {c}): raw column='{raw[i][c]}' != Std column='{standard[i][c]}'");
-                        if (standard[i][c] != buffered[i][c]) Console.Error.WriteLine($"Error (line {i}, column {c}): buffered column='{buffered[i][c]}' != Std column='{standard[i][c]}'");
-                        if (standard[i][c] != custom[i][c]) Console.Error.WriteLine($"Error (line {i}, column {c}): custom column='{custom[i][c]}' != Std column='{standard[i][c]}'");
+                        if (custom[i][c] != vb[i][c]) Console.Error.WriteLine($"Error (line {i}, column {c}): VB column='{vb[i][c]}' != Std column='{custom[i][c]}'");
                     }
                 }
 
@@ -142,26 +124,12 @@
 
             for (int i = 0; i < loops; i++)
             {
-                mm.Position = 0;
-                sr = new StreamReader(mm, Encoding.UTF8, false, 1024 * 16, true);
-                count = 0;
-                foreach (var line in csvSettings.ParseStandard(sr))
-                    count++;
-                timer.Checkpoint($"Standard");
-
                 // VB is ten times slower
-                //mm.Position = 0;
-                //count = 0;
-                //foreach (var line in csvSettings.ParseVB(sr))
-                //    count++;
-                //timer.Checkpoint($"VB");
-
                 mm.Position = 0;
-                sr = new StreamReader(mm, Encoding.UTF8, false, 1024 * 16, true);
                 count = 0;
-                foreach (var line in csvSettings.ParseRaw(sr))
+                foreach (var line in csvSettings.ParseVB(sr))
                     count++;
-                timer.Checkpoint($"ParseRaw");
+                timer.Checkpoint($"VB");
 
                 mm.Position = 0;
                 sr = new StreamReader(mm, Encoding.UTF8, false, 1024 * 16, true);
@@ -169,13 +137,6 @@
                 foreach (var line in csvSettings.ParseCustom(sr))
                     count++;
                 timer.Checkpoint($"ParseCustom");
-
-                mm.Position = 0;
-                sr = new StreamReader(mm, Encoding.UTF8, false, 1024 * 16, true);
-                count = 0;
-                foreach (var line in csvSettings.ParseRawBuffered(sr))
-                    count++;
-                timer.Checkpoint($"ParseRawBuffered");
             }
 
             Console.WriteLine(timer.LastCheckpoint($"End"));
