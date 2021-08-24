@@ -115,20 +115,35 @@ namespace CsvQuery
             PluginBase.AddMenuItem("&About", AboutCsvQuery);
         }
 
+        private static (IntPtr BufferId, string Separator) _lastSeparator;
+
         private static void ParseWithManualSettings()
         {
             try
             {
+                var separator = Main.Settings.DefaultSeparator;
+                var bufferId = NotepadPPGateway.GetCurrentBufferId();
+                if (_lastSeparator.BufferId == bufferId) separator = _lastSeparator.Separator;
+                else
+                {
+                    // Analyze text to maybe at least set the separator
+                    var text = PluginBase.CurrentScintillaGateway.GetTextRange(0, Math.Min(10000, PluginBase.CurrentScintillaGateway.GetTextLength()));
+                    var guessedSettings = CsvAnalyzer.Analyze(text);
+                    if (guessedSettings.Separator != '\0')
+                        separator = guessedSettings.Separator.ToString();
+                }
+
                 var askUserDialog = new ParseSettings
                 {
                     MainLabel = {Text = "Manually enter values for parsing CSV\n\nUse this if detection fails"},
                     useQuotesCheckBox = {Checked = true},
-                    txbSep = {Text = Main.Settings.DefaultSeparator}
+                    txbSep = {Text = separator}
                 };
                 if (askUserDialog.ShowDialog() != DialogResult.OK)
                     return;
 
                 var csvSettings = askUserDialog.Settings;
+                _lastSeparator = (bufferId, csvSettings.Separator.ToString());
                 QueryWindowVisible(true, true);
                 QueryWindow.StartParse(csvSettings);
             }
