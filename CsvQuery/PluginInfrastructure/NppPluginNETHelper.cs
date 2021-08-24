@@ -190,6 +190,14 @@ namespace CsvQuery.PluginInfrastructure
         public IntPtr hToolbarIcon;
     }
 
+    [StructLayout(LayoutKind.Sequential)]
+    public struct toolbarIconsWithDarkMode
+    {
+        public IntPtr hToolbarBmp;
+        public IntPtr hToolbarIcon;
+        public IntPtr hToolbarIconDarkMode;
+    }
+
     public class TemporaryPointer:IDisposable
     {
         public IntPtr Pointer { get; }
