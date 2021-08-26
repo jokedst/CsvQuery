@@ -252,7 +252,8 @@
     <Content Include="CsharpSqlite\License-CsharpSqlite-MIT.txt" />
     <Content Include="Properties\CsvQueryIcon.ico" />
     <Content Include="Properties\CSVQueryIcon.png" />
-    <None Include="Resources\CQIcon.ico" />
+    <None Include="Properties\CsvQueryIconLight.ico" />
+    <None Include="Properties\CsvQueryIconDark.ico" />
     <None Include="License.txt" />
     <None Include="gpl-3.0.txt" />
     <None Include="packages.config" />

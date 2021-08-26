@@ -519,6 +519,14 @@ namespace CsvQuery.PluginInfrastructure
         /// </summary>
         NPPM_SAVEFILE = Constants.NPPMSG + 94,
 
+        /// <summary>
+        /// VOID NPPM_ADDTOOLBARICON_FORDARKMODE(UINT funcItem[X]._cmdID, toolbarIconsWithDarkMode iconHandles)
+        /// Use NPPM_ADDTOOLBARICON_FORDARKMODE instead obsolete NPPM_ADDTOOLBARICON which doesn't support the dark mode
+        /// 2 formats / 3 icons are needed:  1 * BMP + 2 * ICO 
+        /// All 3 handles below should be set so the icon will be displayed correctly if toolbar icon sets are changed by users, also in dark mode
+        /// </summary>
+        NPPM_ADDTOOLBARICON_FORDARKMODE = Constants.NPPMSG + 101,
+
         RUNCOMMAND_USER = Constants.WM_USER + 3000,
         NPPM_GETFULLCURRENTPATH = RUNCOMMAND_USER + FULL_CURRENT_PATH,
         NPPM_GETCURRENTDIRECTORY = RUNCOMMAND_USER + CURRENT_DIRECTORY,

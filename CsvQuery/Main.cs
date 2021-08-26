@@ -107,7 +107,7 @@ namespace CsvQuery
 
         public static void CommandMenuInit()
         {
-            PluginBase.AddMenuItem("Toggle query window", ToggleQueryWindow, false, new ShortcutKey(true, true, false, Keys.C));
+            PluginBase.AddMenuItem("Toggle CSV Query window", ToggleQueryWindow, false, new ShortcutKey(true, true, false, Keys.C));
             PluginBase.AddMenuItem("Manual parse settings", ParseWithManualSettings);
             PluginBase.AddMenuItem("List parsed files", ListSqliteTables);
             PluginBase.AddMenuItem("---", null);
@@ -155,22 +155,35 @@ namespace CsvQuery
 
         public static void SetToolBarIcon()
         {
-            var icons = new toolbarIcons { hToolbarBmp = Resources.cq.GetHbitmap() };
-            using (var iconPointer = new TemporaryPointer(icons))
+            if (NotepadPPGateway.GetNppMajorVersion() < 8)
             {
-                Win32.SendMessage(PluginBase.nppData._nppHandle,
-                    (uint)NppMsg.NPPM_ADDTOOLBARICON,
-                    PluginBase.GetMenuItemId("Toggle query window"),
-                    iconPointer.Pointer);
+                // Old way - for backwards compatibility to Npp before 8.0
+                var icons = new toolbarIcons { hToolbarBmp = Resources.cq.GetHbitmap() };
+                using (var iconPointer = new TemporaryPointer(icons))
+                {
+                    Win32.SendMessage(PluginBase.nppData._nppHandle,
+                        (uint)NppMsg.NPPM_ADDTOOLBARICON,
+                        PluginBase.GetMenuItemId("Toggle CSV Query window"),
+                        iconPointer.Pointer);
+                }
             }
-
-            //var iconPointer = Marshal.AllocHGlobal(Marshal.SizeOf(icons));
-            //Marshal.StructureToPtr(icons, iconPointer, false);
-            //Win32.SendMessage(PluginBase.nppData._nppHandle, 
-            //    (uint)NppMsg.NPPM_ADDTOOLBARICON, 
-            //    PluginBase.GetMenuItemId("Toggle query window"), 
-            //    iconPointer);
-            //Marshal.FreeHGlobal(iconPointer);
+            else
+            {
+                // New way - for 8.0 and up (dark mode support)
+                var icons2 = new toolbarIconsWithDarkMode
+                {
+                    hToolbarBmp = Resources.cq.GetHbitmap(),
+                    hToolbarIcon = Resources.CsvQueryIconLight.Handle,
+                    hToolbarIconDarkMode = Resources.CsvQueryIconDark.Handle,
+                };
+                using (var iconPointer = new TemporaryPointer(icons2))
+                {
+                    Win32.SendMessage(PluginBase.nppData._nppHandle,
+                        (uint)NppMsg.NPPM_ADDTOOLBARICON_FORDARKMODE,
+                        PluginBase.GetMenuItemId("Toggle CSV Query window"),
+                        iconPointer.Pointer);
+                }
+            }
         }
 
         public static void PluginCleanUp()
@@ -322,7 +335,7 @@ namespace CsvQuery
                 {
                     hClient = QueryWindow.Handle,
                     pszName = "CSV Query",
-                    dlgID = PluginBase.GetMenuItemId("Toggle query window"),
+                    dlgID = PluginBase.GetMenuItemId("Toggle CSV Query window"),
                     uMask = NppTbMsg.DWS_DF_CONT_BOTTOM | NppTbMsg.DWS_ICONTAB | NppTbMsg.DWS_ICONBAR,
                     hIconTab = (uint) queryWindowIcon.Handle,
                     pszModuleName = PluginName
@@ -342,7 +355,7 @@ namespace CsvQuery
                 {
                     Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_DMMSHOW, 0, QueryWindow.Handle);
                     Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_SETMENUITEMCHECK,
-                        PluginBase.GetMenuItemId("Toggle query window"), 
+                        PluginBase.GetMenuItemId("Toggle CSV Query window"), 
                         1);
                 }
                 else
@@ -351,7 +364,7 @@ namespace CsvQuery
                         0, QueryWindow.Handle);
                     Win32.SendMessage(PluginBase.nppData._nppHandle,
                         (uint)NppMsg.NPPM_SETMENUITEMCHECK,
-                        PluginBase.GetMenuItemId("Toggle query window"), 0);
+                        PluginBase.GetMenuItemId("Toggle CSV Query window"), 0);
                 }
             }
         }

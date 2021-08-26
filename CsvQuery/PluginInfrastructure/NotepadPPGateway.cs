@@ -61,6 +61,12 @@ namespace CsvQuery.PluginInfrastructure
             return Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_GETCURRENTBUFFERID, Unused, Unused);
         }
 
+		public static int GetNppMajorVersion()
+        {
+			var version = Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_GETNPPVERSION, Unused, Unused).ToInt32();
+			return version >> 16;
+		}
+
 	    public void OpenFileInNpp(string filename)
 	    {
             // NPPM_DOOPEN
