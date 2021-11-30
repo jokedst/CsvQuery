@@ -24,6 +24,7 @@
         private Task _worker = Task.CompletedTask;
         private Color[] _winColors = null;
         private CsvSettings _lastGenerateSettings = null;
+        private (IntPtr bufferId, string query) _lastRunQuery = (IntPtr.Zero, null);
 
         public QueryWindow()
         {
@@ -238,9 +239,24 @@
                 return;
             }
             watch.Checkpoint("Saved to DB");
-            var selectQuery = "SELECT * FROM THIS";
-            if (count > 10000) selectQuery = Main.DataStorage.CreateLimitedSelect(10000);
-            this.UiThread(() => this.txbQuery.Text = selectQuery);
+            // I this is a refresh, i.e. parsing the same file as was there before, don't replace the existing query
+            if (!(this.dataGrid.DataSource is DataTable table)
+                || !table.ExtendedProperties.ContainsKey("bufferId")
+                || !(table.ExtendedProperties["bufferId"] is IntPtr previousBufferId)
+                || previousBufferId != bufferId
+                || string.IsNullOrWhiteSpace(this.txbQuery.Text)
+                || this._lastRunQuery.query == null
+                || this._lastRunQuery.bufferId != previousBufferId)
+            {
+                var selectQuery = "SELECT * FROM THIS";
+                if (count > 10000) selectQuery = Main.DataStorage.CreateLimitedSelect(10000);
+                this.UiThread(() => this.txbQuery.Text = selectQuery);
+            }
+            else if (this._lastRunQuery.bufferId == previousBufferId && this._lastRunQuery.query != null)
+            {
+                this.UiThread(() => this.txbQuery.Text = this._lastRunQuery.query);
+            }
+
             this.Execute(bufferId, watch);
 
             var diagnostic = watch.LastCheckpoint("Resize");
@@ -326,6 +342,7 @@
             watch.Checkpoint("Display");
 
             // Store query in history
+            this._lastRunQuery = (bufferId, query);
             if (!this.txbQuery.AutoCompleteCustomSource.Contains(query))
             {
                 this.UiThread(() => this.txbQuery.AutoCompleteCustomSource.Add(query));
