@@ -10,6 +10,27 @@ It tries to auto-detect separators, headers and column types. If it fails it ask
 
 ![screenshot](/Meta/Screenshot.png?raw=true "Small file with header row parsed")
 
+
+Use modern SQL
+--------------
+CsvQuery has a built-in SQLite engine. This is quite old, 3.7.7.1, so new features like windowing functions doesn't work.
+There is no plans on updating this (unless someone else makes a new C# port of SQLite).
+
+However, CsvQuery can also use SQL Server as backend. Then all features in SQL Server can be used right from CsvQuery.
+
+To use SQL Server you must first install SQL Server locally. Any version should work (there are free ones).  
+Make sure "Integrated security" is checked during install of SQL Server (it is by default).
+
+Then go into CsvQuery settings (Plugins -> CsvQuery -> Settings)
+* Set "StorageProvider" to "MSSQL"
+* Set "Database" to "CsvQueryDB"
+
+Now click "Read File" again, and it will use SQL Server syntax in CsvQuery.
+
+Another option is to use an external SQLite tool with a more modern SQLite engine.  
+To do this, change the CsvQuery setting "Database" to a filename instead of ":memory:". 
+The next time you click "Read file" this file will be created as a standard SQLite file, and can be queried with the external tool.
+
 License
 -------
 This package as a whole is licensed under the GPL v3. See gpl-3.0.txt
