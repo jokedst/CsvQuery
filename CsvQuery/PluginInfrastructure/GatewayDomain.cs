@@ -175,9 +175,9 @@ namespace CsvQuery.PluginInfrastructure
     [StructLayout(LayoutKind.Sequential)]
     public struct CharacterRange
     {
-        public CharacterRange(int cpmin, int cpmax) { cpMin = cpmin; cpMax = cpmax; }
-        public int cpMin;
-        public int cpMax;
+        public CharacterRange(IntPtr cpmin, IntPtr cpmax) { cpMin = cpmin; cpMax = cpmax; }
+        public IntPtr cpMin;
+        public IntPtr cpMax;
     }
 
     public class Cells
@@ -196,18 +196,18 @@ namespace CsvQuery.PluginInfrastructure
         IntPtr _ptrSciTextRange;
         bool _disposed = false;
 
-        public TextRange(CharacterRange chrRange, int stringCapacity)
+        public TextRange(CharacterRange chrRange, long stringCapacity)
             : this(chrRange.cpMin, chrRange.cpMax, stringCapacity)
         { }
 
-        public TextRange(int cpmin, int cpmax, int stringCapacity = 0)
+        public TextRange(IntPtr cpmin, IntPtr cpmax, long stringCapacity = 0)
         {
             // The capacity must be _at least_ the given range plus one
-            stringCapacity = Math.Max(stringCapacity, Math.Abs(cpmax - cpmin) + 1);
+            stringCapacity = Math.Max(stringCapacity, Math.Abs(cpmax.ToInt64() - cpmin.ToInt64()) + 1);
 
             _sciTextRange.chrg.cpMin = cpmin;
             _sciTextRange.chrg.cpMax = cpmax;
-            _sciTextRange.lpstrText = Marshal.AllocHGlobal(stringCapacity);
+            _sciTextRange.lpstrText = Marshal.AllocHGlobal(new IntPtr(stringCapacity));
         }
 
         [StructLayout(LayoutKind.Sequential)]

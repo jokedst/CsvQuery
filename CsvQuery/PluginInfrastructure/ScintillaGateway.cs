@@ -75,7 +75,7 @@ namespace CsvQuery.PluginInfrastructure
         public string GetTextRange(int start, int end)
         {
             var codepage = GetCodePage();
-            using (var tr = new TextRange(start, end))
+            using (var tr = new TextRange(new IntPtr(start), new IntPtr(end)))
             {
                 GetTextRange(tr);
                 if (codepage == (int) SciMsg.SC_CP_UTF8)
