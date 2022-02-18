@@ -6,6 +6,44 @@ using System.Text;
 
 namespace CsvQuery.PluginInfrastructure
 {
+    public static class LegacyCheck
+    {
+        private static int _version = -1;
+        private static int _majorVersion = -1;
+        private static int _minorVersion = -1;
+
+
+        private static void Init()
+        {
+            int Unused = 0;
+            _version = Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_GETNPPVERSION, Unused, Unused).ToInt32();
+            _majorVersion = _version >> 16;
+
+            // Minor version is stored really strange in Npp, e.g. 8.1 has lower bits = 1, but 8.1.9.3 has lower bits = 193
+            var minorBits = _version & 0xffff;
+            var firstDigit = minorBits.ToString().Substring(0,1);
+            if (!int.TryParse(firstDigit, out _version)) _minorVersion = -1;
+        }
+
+        public static bool OldIconCode
+        {
+            get
+            {
+                if(_version==-1)Init();
+                return _majorVersion < 8;
+            }
+        }
+
+        public static bool Old64BitScintilla
+        {
+            get
+            {
+                if (_version == -1) Init();
+                return (_majorVersion < 8) || (_majorVersion == 8 && _minorVersion < 3);
+            }
+        }
+    }
+
     /// <summary>
     /// Colours are set using the RGB format (Red, Green, Blue). The intensity of each colour is set in the range 0 to 255.
     /// If you have three such intensities, they are combined as: red | (green &lt;&lt; 8) | (blue &lt;&lt; 16).
@@ -178,6 +216,16 @@ namespace CsvQuery.PluginInfrastructure
         public CharacterRange(IntPtr cpmin, IntPtr cpmax) { cpMin = cpmin; cpMax = cpmax; }
         public IntPtr cpMin;
         public IntPtr cpMax;
+    }
+
+    /// <summary>
+    /// This is used before N++ 8.3
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential)]
+    public struct CharacterRangeLegacy
+    {
+        public int cpMin;
+        public int cpMax;
     }
 
     public class Cells

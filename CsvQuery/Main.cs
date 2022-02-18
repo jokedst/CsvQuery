@@ -155,7 +155,7 @@ namespace CsvQuery
 
         public static void SetToolBarIcon()
         {
-            if (NotepadPPGateway.GetNppMajorVersion() < 8)
+            if (LegacyCheck.OldIconCode)
             {
                 // Old way - for backwards compatibility to Npp before 8.0
                 var icons = new toolbarIcons { hToolbarBmp = Resources.cq.GetHbitmap() };
