@@ -46,6 +46,8 @@
 
             while ((line = s.ReadLine()) != null)
             {
+                if (line.Length == 0)
+                    continue;
                 var letterFrequency = new Dictionary<char, int>();
                 int spaces = 0, i = 0;
                 foreach (var c in line)
