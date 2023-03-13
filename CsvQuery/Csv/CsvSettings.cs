@@ -120,10 +120,10 @@ namespace CsvQuery.Csv
             {
                 var c = (char)ch;
 
-                if (c == '\n' || (c == '\r' && (char)reader.Peek() == '\n'))
+                if (c == '\n' || c == '\r')
                 {
                     // If it's a \r\n combo consume the \n part and throw it away.
-                    if (c == '\r')
+                    if (c == '\r' && ((char)reader.Peek() == '\n'))
                         reader.Read();
 
                     if (inQuotes)

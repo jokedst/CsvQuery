@@ -4,7 +4,7 @@ CSV Query - Notepad++ plugin
 [![Build status](https://ci.appveyor.com/api/projects/status/j1r9m77jwiyfsn4u?svg=true)](https://ci.appveyor.com/project/jokedst/csvquery)
 
 A plugin to Notepad++ to parse different types of CSV files and display them in a table.
-The data is stored in a in-memory SQLite database (or MSSQL if configured), so you can write SQL queries against the data.
+The data is stored in a in-memory SQLite database, so you can write SQL queries against the data.
 
 It tries to auto-detect separators, headers and column types. If it fails it asks you for it.
 
@@ -13,10 +13,10 @@ It tries to auto-detect separators, headers and column types. If it fails it ask
 
 Use modern SQL
 --------------
-CsvQuery has a built-in SQLite engine. This is quite old, 3.7.7.1, so new features like windowing functions doesn't work.
+CsvQuery has a built-in SQLite engine. This is *quite old*, 3.7.7.1, so new features like common table expressions (`WITH` subqueries) and common table expressions don't work.
 There is no plans on updating this (unless someone else makes a new C# port of SQLite).
 
-However, CsvQuery can also use SQL Server as backend. Then all features in SQL Server can be used right from CsvQuery.
+*In principle*, CsvQuery can also use SQL Server as backend. Then all features in SQL Server can be used right from CsvQuery. __*In practice, the ability of CsvQuery to connect to SQL Server has not been tested recently and is probably broken until further notice.*__
 
 To use SQL Server you must first install SQL Server locally. Any version should work (there are free ones).  
 Make sure "Integrated security" is checked during install of SQL Server (it is by default).
@@ -51,6 +51,8 @@ Auto-detection
 CSV Query detects the separator by calculating the variance in occurrence of characters on each line, then chose the one that seems best, preferring one of comma, semicolon, pipe or tab. It's certainly not perfect, but it handles all the files I regularly work with, which is why I wrote the plugin in the first place.
 
 If the first line is "significantly different" from the rest it assumes the first line is a header and use it for the column names in the database.
+
+Prior to 2023, this plugin did not work correctly with files that had CR (Macintosh) newlines, and only worked if the line terminator was LF (Unix) or CRLF (Windows).
 
 
 Used Libraries

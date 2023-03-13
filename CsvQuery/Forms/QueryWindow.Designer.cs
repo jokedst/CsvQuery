@@ -53,9 +53,10 @@
             this.txbQuery.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
             this.txbQuery.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.CustomSource;
             this.txbQuery.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txbQuery.Location = new System.Drawing.Point(2, 1);
+            this.txbQuery.Location = new System.Drawing.Point(3, 1);
+            this.txbQuery.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.txbQuery.Name = "txbQuery";
-            this.txbQuery.Size = new System.Drawing.Size(110, 21);
+            this.txbQuery.Size = new System.Drawing.Size(145, 24);
             this.txbQuery.TabIndex = 0;
             this.txbQuery.KeyDown += new System.Windows.Forms.KeyEventHandler(this.OnQueryTextboxKeyDown);
             // 
@@ -68,15 +69,15 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.dataGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dataGrid.ContextMenuStrip = this.contextMenuStrip;
-            this.dataGrid.Location = new System.Drawing.Point(13, 27);
+            this.dataGrid.Location = new System.Drawing.Point(17, 33);
+            this.dataGrid.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.dataGrid.Name = "dataGrid";
             this.dataGrid.ReadOnly = true;
             this.dataGrid.RowHeadersVisible = false;
-            this.dataGrid.Size = new System.Drawing.Size(259, 223);
-            this.dataGrid.TabIndex = 1;
+            this.dataGrid.RowHeadersWidth = 51;
+            this.dataGrid.Size = new System.Drawing.Size(345, 274);
+            this.dataGrid.TabIndex = 3;
             this.dataGrid.DataBindingComplete += new System.Windows.Forms.DataGridViewBindingCompleteEventHandler(this.OnDataBindingComplete);
-            //this.dataGrid.RowHeadersWidthSizeMode = DataGridViewRowHeadersWidthSizeMode.AutoSizeToDisplayedHeaders;
-            //this.dataGrid.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.DisplayedCells;
             // 
             // contextMenuStrip
             // 
@@ -89,37 +90,37 @@
             this.createNewCSVToolStripMenuItem,
             this.contextmenuShowRowNumbers});
             this.contextMenuStrip.Name = "contextMenuStrip";
-            this.contextMenuStrip.Size = new System.Drawing.Size(173, 76);
+            this.contextMenuStrip.Size = new System.Drawing.Size(205, 130);
             // 
             // copyToolStripMenuItem
             // 
             this.copyToolStripMenuItem.Name = "copyToolStripMenuItem";
-            this.copyToolStripMenuItem.Size = new System.Drawing.Size(172, 22);
+            this.copyToolStripMenuItem.Size = new System.Drawing.Size(204, 24);
             this.copyToolStripMenuItem.Text = "&Copy";
             this.copyToolStripMenuItem.Click += new System.EventHandler(this.OnContextmenuCopy);
             // 
             // copyWithHeadersToolStripMenuItem
             // 
             this.copyWithHeadersToolStripMenuItem.Name = "copyWithHeadersToolStripMenuItem";
-            this.copyWithHeadersToolStripMenuItem.Size = new System.Drawing.Size(172, 22);
+            this.copyWithHeadersToolStripMenuItem.Size = new System.Drawing.Size(204, 24);
             this.copyWithHeadersToolStripMenuItem.Text = "Copy with &headers";
             this.copyWithHeadersToolStripMenuItem.Click += new System.EventHandler(this.OnContextmenuCopyWithHeaders);
             // 
             // contextmenuSelectAll
             // 
             this.contextmenuSelectAll.Name = "contextmenuSelectAll";
-            this.contextmenuSelectAll.Size = new System.Drawing.Size(172, 22);
+            this.contextmenuSelectAll.Size = new System.Drawing.Size(204, 24);
             this.contextmenuSelectAll.Text = "Select &All";
             // 
             // toolStripMenuItem1
             // 
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(169, 6);
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(201, 6);
             // 
             // createNewCSVToolStripMenuItem
             // 
             this.createNewCSVToolStripMenuItem.Name = "createNewCSVToolStripMenuItem";
-            this.createNewCSVToolStripMenuItem.Size = new System.Drawing.Size(172, 22);
+            this.createNewCSVToolStripMenuItem.Size = new System.Drawing.Size(204, 24);
             this.createNewCSVToolStripMenuItem.Text = "Create &new CSV...";
             this.createNewCSVToolStripMenuItem.Click += new System.EventHandler(this.OnMenuClickCreateNewCSV);
             // 
@@ -127,7 +128,7 @@
             // 
             this.contextmenuShowRowNumbers.CheckOnClick = true;
             this.contextmenuShowRowNumbers.Name = "contextmenuShowRowNumbers";
-            this.contextmenuShowRowNumbers.Size = new System.Drawing.Size(295, 36);
+            this.contextmenuShowRowNumbers.Size = new System.Drawing.Size(204, 24);
             this.contextmenuShowRowNumbers.Text = "Show row numbers";
             this.contextmenuShowRowNumbers.Click += new System.EventHandler(this.OnContextmenuShowRowNumbers);
             // 
@@ -135,9 +136,10 @@
             // 
             this.btnAnalyze.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnAnalyze.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnAnalyze.Location = new System.Drawing.Point(197, 0);
+            this.btnAnalyze.Location = new System.Drawing.Point(263, 0);
+            this.btnAnalyze.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.btnAnalyze.Name = "btnAnalyze";
-            this.btnAnalyze.Size = new System.Drawing.Size(75, 23);
+            this.btnAnalyze.Size = new System.Drawing.Size(100, 28);
             this.btnAnalyze.TabIndex = 2;
             this.btnAnalyze.Text = "&Read File";
             this.btnAnalyze.UseVisualStyleBackColor = true;
@@ -147,23 +149,25 @@
             // 
             this.btnExec.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnExec.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnExec.Location = new System.Drawing.Point(116, 0);
+            this.btnExec.Location = new System.Drawing.Point(155, 0);
+            this.btnExec.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.btnExec.Name = "btnExec";
-            this.btnExec.Size = new System.Drawing.Size(75, 23);
-            this.btnExec.TabIndex = 3;
+            this.btnExec.Size = new System.Drawing.Size(100, 28);
+            this.btnExec.TabIndex = 1;
             this.btnExec.Text = "&Execute";
             this.btnExec.UseVisualStyleBackColor = true;
             this.btnExec.Click += new System.EventHandler(this.OnClickExecButton);
             // 
             // QueryWindow
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(284, 262);
+            this.ClientSize = new System.Drawing.Size(379, 322);
             this.Controls.Add(this.btnExec);
             this.Controls.Add(this.btnAnalyze);
             this.Controls.Add(this.dataGrid);
             this.Controls.Add(this.txbQuery);
+            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.Name = "QueryWindow";
             this.Text = "QueryWindow";
             ((System.ComponentModel.ISupportInitialize)(this.dataGrid)).EndInit();
