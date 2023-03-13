@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>CsvQuery</RootNamespace>
     <AssemblyName>CsvQuery</AssemblyName>
-    <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <OutputPath>bin\$(Configuration)-$(Platform)\</OutputPath>
     <TargetFrameworkProfile />
   </PropertyGroup>

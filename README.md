@@ -52,6 +52,8 @@ CSV Query detects the separator by calculating the variance in occurrence of cha
 
 If the first line is "significantly different" from the rest it assumes the first line is a header and use it for the column names in the database.
 
+Prior to 2023, this plugin did not work correctly with files that had CR (Macintosh) newlines, and only worked if the line terminator was LF (Unix) or CRLF (Windows).
+
 
 Used Libraries
 --------------

@@ -372,7 +372,11 @@
 
         private void OnQueryTextboxKeyDown(object sender, KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.Return) this.btnExec.PerformClick();
+            switch (e.KeyCode)
+            {
+                case Keys.Enter: this.btnExec.PerformClick(); e.Handled = true; break;
+                case Keys.Tab: e.Handled = true; break;
+            }
         }
 
         private void OnMenuClickCreateNewCSV(object sender, EventArgs e)
