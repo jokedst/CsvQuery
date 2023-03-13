@@ -40,7 +40,7 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
           name: plugin_dll_x86
-          path: CsvQuery\bin\${{ matrix.build_configuration }}\CsvQuery.dll
+          path: CsvQuery\bin\${{ matrix.build_configuration }}-x86\CsvQuery.dll
 
     #- name: run tests
     #  run: TODO: figure out command to run for this
