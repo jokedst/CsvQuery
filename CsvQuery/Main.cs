@@ -20,6 +20,7 @@ namespace CsvQuery
     public class Main
     {
         public const string PluginName = "CsvQuery";
+        public const string RowNumberColumnName = "_origin row";
         public static Settings Settings = new Settings();
 
         public static QueryWindow QueryWindow;

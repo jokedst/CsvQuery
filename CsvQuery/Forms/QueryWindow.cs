@@ -239,7 +239,7 @@
                 return;
             }
             watch.Checkpoint("Saved to DB");
-            // I this is a refresh, i.e. parsing the same file as was there before, don't replace the existing query
+            // If this is a refresh, i.e. parsing the same file as was there before, don't replace the existing query
             if (!(this.dataGrid.DataSource is DataTable table)
                 || !table.ExtendedProperties.ContainsKey("bufferId")
                 || !(table.ExtendedProperties["bufferId"] is IntPtr previousBufferId)
@@ -337,7 +337,10 @@
                 this.dataGrid.DataSource = table;
                 // Enforce correct column order
                 foreach (DataGridViewColumn col in this.dataGrid.Columns)
+                {
                     col.DisplayIndex = col.Index;
+                    if (col.Name == Main.RowNumberColumnName) col.Visible = false;
+                }
             });
             watch.Checkpoint("Display");
 
@@ -466,7 +469,15 @@
         {
             if (this.dataGrid.RowHeadersVisible)
             {
-                for (var i = 0; i < this.dataGrid.Rows.Count; i++) this.dataGrid.Rows[i].HeaderCell.Value = (i + 1).ToString();
+                // Perhaps track if this table was generated with row numbers? Just going by column name might get wrong.
+                var useTableRowNumbers = this.dataGrid.Columns.Contains(Main.RowNumberColumnName);
+                for (var i = 0; i < this.dataGrid.Rows.Count; i++)
+                {
+                    if(useTableRowNumbers)
+                        this.dataGrid.Rows[i].HeaderCell.Value = this.dataGrid.Rows[i].Cells[Main.RowNumberColumnName].Value;
+                    else
+                        this.dataGrid.Rows[i].HeaderCell.Value = (i + 1).ToString();
+                }
                 this.dataGrid.AutoResizeRowHeadersWidth(DataGridViewRowHeadersWidthSizeMode.AutoSizeToDisplayedHeaders);
             }
 

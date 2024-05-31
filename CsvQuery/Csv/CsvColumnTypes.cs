@@ -8,6 +8,7 @@
     public class CsvColumnTypes
     {
         public bool HasHeader { get; set; }
+        public bool IncludeRowNumbers { get; set; }
         public List<CsvColumnAnalyzer> Columns { get; set; }
         public Dictionary<string,string> ColumnUnsafeNames { get; }
 
@@ -16,6 +17,7 @@
             if(data==null || data.Count==0)
                 throw new ArgumentException("No data to analyze", nameof(data));
 
+            this.IncludeRowNumbers = csvSettings?.IncludeRowNumbers ?? false;
             if (csvSettings == null)
                 csvSettings = new CsvSettings();
 
@@ -76,7 +78,17 @@
             var usedNames = new List<string>();
             var namedColumns = csvSettings.FieldNames?.Length ?? 0;
             this.ColumnUnsafeNames = new Dictionary<string, string>();
-            for (var z = 0; z < headerTypes.Count; z++)
+            var firstColumn = 0;
+            if (this.IncludeRowNumbers)
+            {
+                // Name the meta column with a space, since that's not allowed on other columns
+                usedNames.Add(Main.RowNumberColumnName);
+                this.Columns[0].Name = Main.RowNumberColumnName;
+                this.Columns[0].IsMetaColumn = true;
+                firstColumn++;
+            }
+
+            for (var z = firstColumn; z < headerTypes.Count; z++)
             {
                 var unsafeName = namedColumns > z
                     ? csvSettings.FieldNames[z]

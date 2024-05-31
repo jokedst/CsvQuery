@@ -132,6 +132,8 @@ namespace CsvQuery.Csv
 #endif
         public bool IsNumeric => this.DataType == ColumnType.Integer || this.DataType == ColumnType.Decimal;
 
+        public bool IsMetaColumn { get; internal set; }
+
         private bool IsDecimal(string text, DecimalTypes updatedDecimalType)
         {
             // Try invariant, comma and user local settings

@@ -28,6 +28,9 @@ namespace CsvQuery.Csv
         public string[] FieldNames { get; set; }
         public bool UseQuotes { get; set; } = true;
 
+        /// <summary> If true inserts original file row number as the first column in the data. (only works with custom parser) </summary>
+        public bool IncludeRowNumbers { get; set; }=true;
+
         public CsvSettings()
         {
         }
@@ -51,7 +54,7 @@ namespace CsvQuery.Csv
         /// </summary>
         /// <remarks>
         /// At this point there are FOUR parsers implemented:
-        ///   ParseVB - The original, included in .NET framework. Currently used. Slow though (^10 times slower).
+        ///   ParseVB - The original, included in .NET framework. Previously used. Slow though (^10 times slower).
         ///   ParseStandard - My first replacement attempt. Reads line by line. Fastest for some reason.
         ///   ParseRaw - Second attempt. Reads character by character, allowing multi-line quoted strings. Somewhat slower.
         ///   ParseRawBuffered - Attempt to make ParseRaw faster by buffering directly instead of using StringBuilder. It's actually slower though. :(
@@ -115,6 +118,14 @@ namespace CsvQuery.Csv
             var cols = new List<string>();
             var sb = new StringBuilder();
             char qualifier = this.UseQuotes ? '"' : '\0';
+            int rowNumber = 1, lastStartedRowNumber = 1;
+
+            string[] Format(List<string> columns)
+            {
+                if (this.IncludeRowNumbers)                
+                    return new[] { lastStartedRowNumber.ToString() }.Concat(columns).ToArray();
+                return columns.ToArray();
+            }
 
             while ((ch = reader.Read()) != -1)
             {
@@ -142,10 +153,13 @@ namespace CsvQuery.Csv
                         }
 
                         if (cols.Count > 0)
-                            yield return cols.ToArray();
-                        
+                            yield return Format(cols);
+                        lastStartedRowNumber = rowNumber + 1;
+
+
                         cols.Clear();
                     }
+                    rowNumber++;
                 }
                 else if (sb.Length == 0 && !inQuotes)
                 {
@@ -206,7 +220,7 @@ namespace CsvQuery.Csv
                 cols.Add(sb.TrimEnd(quoteEnd).ToString());
 
             if (cols.Count > 0)
-                yield return cols.ToArray();
+                yield return Format(cols);
         }
 
         /// <summary>
