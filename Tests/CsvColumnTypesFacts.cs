@@ -52,6 +52,24 @@
             Assert.IsTrue(result.Columns[6].DataType == ColumnType.Decimal);
         }
 
+        /// <summary>
+        /// With CR as the newline (rare but not unheard of),
+        /// the plugin should act the same as if CRLF or LF was the newline
+        /// </summary>
+        [TestMethod]
+        public void WorksWithCRNewline()
+        {
+            var data = CsvSettings.Comma.Parse(File.ReadAllText(@"TestFiles\random50x10CRonly.csv")).ToList();
+            var result = new CsvColumnTypes(data, null);
+            // if there are more than 10 columns it's probably because CsvQuery didn't properly recognize CR as a newline
+            Assert.AreEqual(result.Columns.Count, 10);
+            // same tests as for previous data with header
+            Assert.AreEqual(true, result.HasHeader);
+            Assert.IsTrue(result.Columns[0].DataType == ColumnType.Integer);
+            Assert.IsTrue(result.Columns[6].DataType == ColumnType.Decimal);
+            Assert.IsTrue(result.Columns[1].DataType == ColumnType.String);
+        }
+
         [TestMethod]
         public void CanDetectLocalCurrency()
         {

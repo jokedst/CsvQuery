@@ -109,8 +109,13 @@
     <None Include="TestFiles\convertcsv.csv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <EmbeddedResource Include="TestFiles\semicolon.csv" />
+    <EmbeddedResource Include="TestFiles\semicolon.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
     <None Include="TestFiles\multline.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="TestFiles\random50x10CRonly.csv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="TestFiles\TabsWithQuotesInText.csv">

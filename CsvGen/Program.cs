@@ -38,14 +38,16 @@
             {
                 var rowsToCreate = Param.Get('n', 100000);
                 var columns = Param.Get('c', 10);
+                var newline = System.Text.RegularExpressions.Regex.Unescape( Param.Get('N', "\\r\\n"));
+                var sep = Param.Get('s', ",");
                 var filename = Param.FirstOr($"random{rowsToCreate}x{columns}.csv");
 
                 using (var fs = new StreamWriter(filename))
-                    GenerateCsv(columns, rowsToCreate, fs);
+                    GenerateCsv(columns, rowsToCreate, fs, sep, newline);
             }
         }
 
-        private static void GenerateCsv(int columns, int rowsToCreate, TextWriter fs, string separator=",")
+        private static void GenerateCsv(int columns, int rowsToCreate, TextWriter fs, string separator=",", string newline = "\r\n")
         {
             var r = new Random();
             var columnTypes = Enumerable.Range(0, columns).Select(x => x < 7 ? x : r.Next(7)).Cast<CsvColumnType>().ToList();
@@ -53,14 +55,14 @@
             // Headers
             foreach (var str in columnTypes.Select(x => r.RandomString(5) + x.ToString()).Interspace(separator))
                 fs.Write(str);
-            fs.WriteLine();
+            fs.Write(newline);
 
             // Rows
             for (var l = 0; l < rowsToCreate; l++)
             {
                 foreach (var str in columnTypes.Select(x => r.GenColumn(x)).Interspace(separator))
                     fs.Write(str);
-                fs.WriteLine();
+                fs.Write(newline);
             }
         }
 
