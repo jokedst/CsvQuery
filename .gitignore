@@ -10,3 +10,4 @@ obj
 /*.vspx
 
 /TestResults
+.nuget/nuget.exe
