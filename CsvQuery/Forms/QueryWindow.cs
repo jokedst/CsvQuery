@@ -20,6 +20,12 @@
     /// </summary><inheritdoc />
     public partial class QueryWindow : Form
     {
+        /// <summary> Maximum number of characters read from the document for auto-detection </summary>
+        private const int MaxAnalysisTextLength = 100000;
+
+        /// <summary> Maximum number of rows shown in results when data is very large </summary>
+        private const int MaxResultRows = 10000;
+
         /// <summary> Background worker </summary>
         private Task _worker = Task.CompletedTask;
         private Color[] _winColors = null;
@@ -131,7 +137,7 @@
                 }
                 catch (Exception e)
                 {
-                    Trace.TraceError("CSV Action failed: {0}", e.Message);
+                    Trace.TraceError("CSV Action failed: {0}", e.ToString());
                     this.Message("Error when executing an action: " + e.Message, Resources.Title_CSV_Query_Error);
                 }
                 finally
@@ -172,7 +178,7 @@
             var bufferId = NotepadPPGateway.GetCurrentBufferId();
 
             var textLength = PluginBase.CurrentScintillaGateway.GetTextLength();
-            var text = PluginBase.CurrentScintillaGateway.GetTextRange(0, Math.Min(100000, textLength));
+            var text = PluginBase.CurrentScintillaGateway.GetTextRange(0, Math.Min(MaxAnalysisTextLength, textLength));
 
             watch.Checkpoint("GetText");
 
@@ -249,7 +255,7 @@
                 || this._lastRunQuery.bufferId != previousBufferId)
             {
                 var selectQuery = "SELECT * FROM THIS";
-                if (count > 10000) selectQuery = Main.DataStorage.CreateLimitedSelect(10000);
+                if (count > MaxResultRows) selectQuery = Main.DataStorage.CreateLimitedSelect(MaxResultRows);
                 this.UiThread(() => this.txbQuery.Text = selectQuery);
             }
             else if (this._lastRunQuery.bufferId == previousBufferId && this._lastRunQuery.query != null)
@@ -295,9 +301,9 @@
                 this.Message("Could not execute query:\n" + e.Message, Resources.Title_CSV_Query_Error);
                 return;
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                this.Message("Could not execute query", Resources.Title_CSV_Query_Error);
+                this.Message("Could not execute query: " + e.Message, Resources.Title_CSV_Query_Error);
                 return;
             }
             watch.Checkpoint("Execute query");

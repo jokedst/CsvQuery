@@ -263,7 +263,6 @@
                 return propertyName;
             }
 
-            if (ch == '\'') return this.ReadString(reader, '\'');
             // technically not allowed with unquoted prop-names, but wtf
             if ((ch < 'a' || ch > 'z') && (ch < 'A' || ch > 'Z') && ch != '_' && ch != '$')
                 throw new JsonException($"Unexpected character '{ch}' starting propertyname");
