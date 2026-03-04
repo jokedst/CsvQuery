@@ -9,6 +9,8 @@
 
     public class CsvAnalyzer
     {
+        private const int MaxLinesToAnalyze = 20;
+
         private class Stat
         {
             public int Occurances;
@@ -32,7 +34,6 @@
             }
 
             // First do a letter frequency analysis on each row
-            var s = new StringReader(csvString);
             string line;
             int lineCount = 0, linesQuoted=0;
             var frequencies = new List<Dictionary<char, int>>();
@@ -44,6 +45,8 @@
             var inQuotes = false;
             var letterFrequencyQuoted = new Dictionary<char, int>();
 
+            using (var s = new StringReader(csvString))
+            {
             while ((line = s.ReadLine()) != null)
             {
                 if (line.Length == 0)
@@ -83,7 +86,8 @@
                     linesQuoted++;
                 }
 
-                if (lineCount++ > 20) break;
+                if (lineCount++ > MaxLinesToAnalyze) break;
+            }
             }
 
             // Then check the variance on the frequency of each char
@@ -113,16 +117,16 @@
                     if (frequency.ContainsKey(c)) f = frequency[c];
                     variance += (f - mean) * (f - mean);
                 }
-                variance /= lineCount;
+                variance /= linesQuoted;
                 variancesQuoted.Add(c, variance);
             }
 
             // The char with lowest variance is most likely the separator
-            result = new CsvSettings { Separator = GetSeparatorFromVariance(variances, occurrences, lineCount, out var uncertancy) };
-            var separatorQuoted = GetSeparatorFromVariance(variancesQuoted, occurrencesQuoted, linesQuoted, out var uncertancyQuoted);
-            if (uncertancyQuoted < uncertancy)
+            result = new CsvSettings { Separator = GetSeparatorFromVariance(variances, occurrences, lineCount, out var uncertainty) };
+            var separatorQuoted = GetSeparatorFromVariance(variancesQuoted, occurrencesQuoted, linesQuoted, out var uncertaintyQuoted);
+            if (uncertaintyQuoted < uncertainty)
                 result.Separator = separatorQuoted;
-            else if (uncertancy < uncertancyQuoted || (uncertancy == uncertancyQuoted && lineCount > linesQuoted)) // It was better ignoring quotes!
+            else if (uncertainty < uncertaintyQuoted || (uncertainty == uncertaintyQuoted && lineCount > linesQuoted)) // It was better ignoring quotes!
                 result.UseQuotes = false;
 
             if (result.Separator != default(char)) return result;
@@ -189,7 +193,8 @@
 
         private static Dictionary<char, Stat> CalcVariances(string csvString, char textQualifyer, char escapeChar)
         {
-            var s = new StringReader(csvString);
+            using (var s = new StringReader(csvString))
+            {
             string line;
             int lineCount = 0;
             var statistics = new Dictionary<char, Stat>();
@@ -211,7 +216,7 @@
                 }
 
                 frequencies.Add(letterFrequency);
-                if (lineCount++ > 20) break;
+                if (lineCount++ > MaxLinesToAnalyze) break;
             }
 
             // Then check the variance on the frequency of each char
@@ -230,12 +235,13 @@
             }
 
             return statistics;
+            }
         }
 
-        private static char GetSeparatorFromVariance(Dictionary<char, float> variances, Dictionary<char, int> occurrences, int lineCount, out int uncertancy)
+        private static char GetSeparatorFromVariance(Dictionary<char, float> variances, Dictionary<char, int> occurrences, int lineCount, out int uncertainty)
         {
             var preferredSeparators = Main.Settings.Separators.Replace("\\t", "\t");
-            uncertancy = 0;
+            uncertainty = 0;
 
             // The char with lowest variance is most likely the separator
             // Optimistic: check prefered with 0 variance 
@@ -248,7 +254,7 @@
             if (separator != null)
                 return separator.Value;
 
-            uncertancy++;
+            uncertainty++;
             var defaultKV = default(KeyValuePair<char, float>);
 
             // Ok, no perfect separator. Check if the best char that exists on all lines is a prefered separator
@@ -256,13 +262,13 @@
             var best = sortedVariances.FirstOrDefault(x => occurrences[x.Key] >= lineCount);
             if (!best.Equals(defaultKV) && preferredSeparators.IndexOf(best.Key) != -1)
                 return best.Key;
-            uncertancy++;
+            uncertainty++;
 
             // No? Second best?
             best = sortedVariances.Where(x => occurrences[x.Key] >= lineCount).Skip(1).FirstOrDefault();
             if (!best.Equals(defaultKV) && preferredSeparators.IndexOf(best.Key) != -1)
                 return best.Key;
-            uncertancy++;
+            uncertainty++;
 
             // Ok, screw the preferred separators, is any other char a perfect separator? (and common, i.e. at least 3 per line)
             separator = variances
@@ -273,7 +279,7 @@
             if (separator != null)
                 return separator.Value;
 
-            uncertancy++;
+            uncertainty++;
             // Ok, I have no idea
             return '\0';
         }

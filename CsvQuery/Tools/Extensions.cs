@@ -20,10 +20,8 @@
         /// <param name="c">Occurance that should be counted</param>
         public static void Increase<T>(this Dictionary<T, int> counts, T c)
         {
-            if (!counts.ContainsKey(c))
-                counts.Add(c, 1);
-            else
-                counts[c]++;
+            counts.TryGetValue(c, out var current);
+            counts[c] = current + 1;
         }
 
         /// <summary>

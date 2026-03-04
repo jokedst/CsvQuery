@@ -59,7 +59,6 @@
                         case 'u':
                             var read = reader.ReadBlock(buffer, 0, 4);
                             if (read != 4) throw new JsonException("Unexpected EOF in unicode sequence");
-                            // Fuck unicode
                             this._sb.Append((char)Convert.ToUInt32(new string(buffer), 16));
                             break;
                         default:
@@ -263,7 +262,6 @@
                 return propertyName;
             }
 
-            if (ch == '\'') return this.ReadString(reader, '\'');
             // technically not allowed with unquoted prop-names, but wtf
             if ((ch < 'a' || ch > 'z') && (ch < 'A' || ch > 'Z') && ch != '_' && ch != '$')
                 throw new JsonException($"Unexpected character '{ch}' starting propertyname");
